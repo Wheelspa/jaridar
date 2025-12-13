@@ -1,34 +1,237 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Jaridar Fashion Couture - Custom Styles */
+
+/* Hero section background gradient */
+.hero-gradient {
+    background: linear-gradient(135deg, rgba(232, 160, 191, 0.15) 0%, rgba(173, 216, 230, 0.15) 100%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Button styles */
+.btn-primary {
+    @apply rounded-full px-8 py-3 text-sm uppercase tracking-widest font-semibold bg-rose text-charcoal;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.btn-primary:hover {
+    @apply bg-rose-dark shadow-lg;
+    transform: translateY(-2px);
 }
 
-.App-link {
-    color: #61dafb;
+.btn-secondary {
+    @apply rounded-full px-8 py-3 text-sm uppercase tracking-widest font-semibold bg-transparent border border-charcoal text-charcoal;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.btn-secondary:hover {
+    @apply bg-charcoal text-white;
+}
+
+/* Input styles */
+.input-underline {
+    @apply border-0 border-b border-gray-300 bg-transparent px-0 py-2 rounded-none;
+    transition: border-color 0.3s ease;
+}
+
+.input-underline:focus {
+    @apply border-rose outline-none ring-0;
+}
+
+/* Product card */
+.product-card {
+    @apply relative overflow-hidden bg-transparent;
+}
+
+.product-card .quick-actions {
+    @apply absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translate(-50%, 10px);
+}
+
+.product-card:hover .quick-actions {
+    @apply opacity-100;
+    transform: translate(-50%, 0);
+}
+
+/* Category card hover */
+.category-card {
+    @apply relative overflow-hidden;
+}
+
+.category-card::before {
+    content: '';
+    @apply absolute inset-0 bg-charcoal/0;
+    transition: background-color 0.4s ease;
+}
+
+.category-card:hover::before {
+    @apply bg-charcoal/30;
+}
+
+/* Header glass effect */
+.header-glass {
+    background: rgba(253, 251, 247, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Size selector */
+.size-option {
+    @apply w-10 h-10 border border-gray-300 flex items-center justify-center text-sm cursor-pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.size-option:hover {
+    @apply border-rose;
+}
+
+.size-option.selected {
+    @apply border-charcoal bg-charcoal text-white;
+}
+
+/* Color swatch */
+.color-swatch {
+    @apply w-8 h-8 rounded-full border-2 border-transparent cursor-pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.color-swatch.selected {
+    @apply border-charcoal;
+}
+
+/* Rating stars */
+.star-filled {
+    color: #C5A059;
+}
+
+.star-empty {
+    color: #E5E7EB;
+}
+
+/* Quantity selector */
+.qty-btn {
+    @apply w-8 h-8 border border-gray-300 flex items-center justify-center cursor-pointer;
+    transition: background-color 0.2s ease;
+}
+
+.qty-btn:hover {
+    @apply bg-gray-100;
+}
+
+/* Cart item */
+.cart-item {
+    @apply border-b border-gray-100 py-4;
+}
+
+/* Order status badge */
+.status-pending {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-confirmed {
+    @apply bg-blue-100 text-blue-800;
+}
+
+.status-shipped {
+    @apply bg-purple-100 text-purple-800;
+}
+
+.status-delivered {
+    @apply bg-green-100 text-green-800;
+}
+
+/* Loading skeleton */
+.skeleton {
+    @apply bg-gray-200 animate-pulse;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    @apply fixed inset-0 bg-charcoal/50 z-50;
+    backdrop-filter: blur(4px);
+}
+
+/* Wishlist heart animation */
+.heart-btn {
+    transition: transform 0.2s ease;
+}
+
+.heart-btn:active {
+    transform: scale(0.9);
+}
+
+.heart-btn.active {
+    animation: heartPulse 0.3s ease;
+}
+
+@keyframes heartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Newsletter section */
+.newsletter-section {
+    background: linear-gradient(135deg, #E8A0BF 0%, #ADD8E6 100%);
+}
+
+/* Footer */
+.footer-link {
+    @apply text-gray-500;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    @apply text-rose;
+}
+
+/* Breadcrumb */
+.breadcrumb-separator {
+    @apply mx-2 text-gray-400;
+}
+
+/* Tab underline */
+.tab-underline {
+    @apply relative;
+}
+
+.tab-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-rose;
+    transition: width 0.3s ease;
+}
+
+.tab-underline.active::after,
+.tab-underline:hover::after {
+    @apply w-full;
+}
+
+/* Mobile menu */
+.mobile-menu {
+    @apply fixed inset-0 bg-pearl z-50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.mobile-menu.open {
+    transform: translateX(0);
+}
+
+/* Price tag */
+.price-original {
+    @apply text-gray-400 line-through text-sm;
+}
+
+.price-sale {
+    @apply text-rose-dark font-semibold;
+}
+
+/* Badge */
+.badge-new {
+    @apply absolute top-3 left-3 bg-serenity text-charcoal text-xs uppercase tracking-wider px-2 py-1 font-semibold;
+}
+
+.badge-sale {
+    @apply absolute top-3 right-3 bg-rose text-charcoal text-xs uppercase tracking-wider px-2 py-1 font-semibold;
 }
