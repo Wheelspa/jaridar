@@ -51,6 +51,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     phone: Optional[str] = None
+    is_admin: bool = False
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -61,6 +62,8 @@ class UserResponse(BaseModel):
     name: str
     email: str
     phone: Optional[str] = None
+    is_admin: bool = False
+    isAdmin: bool = False
     created_at: str
 
 class UserUpdate(BaseModel):
@@ -87,6 +90,20 @@ class ProductResponse(ProductBase):
     rating: float = 0.0
     review_count: int = 0
     created_at: str
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    original_price: Optional[float] = None
+    category: Optional[str] = None
+    subcategory: Optional[str] = None
+    images: Optional[List[str]] = None
+    sizes: Optional[List[str]] = None
+    colors: Optional[List[str]] = None
+    stock: Optional[int] = None
+    featured: Optional[bool] = None
+    is_new: Optional[bool] = None
 
 class CartItem(BaseModel):
     product_id: str
@@ -173,6 +190,27 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail='Invalid token')
 
+async def get_current_admin(user: dict = Depends(get_current_user)):
+    if not user.get('is_admin', False):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Admin access required')
+    return user
+
+async def ensure_admin_user():
+    admin = await db.users.find_one({'email': 'admin@jaridar.com'})
+    if not admin:
+        admin_doc = {
+            'id': str(uuid.uuid4()),
+            'name': 'Admin',
+            'email': 'admin@jaridar.com',
+            'password': hash_password('admin123'),
+            'phone': None,
+            'address': None,
+            'is_admin': True,
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(admin_doc)
+        logger.info("Default admin account created: admin@jaridar.com")
+
 # ==================== AUTH ROUTES ====================
 
 @api_router.post("/auth/register")
@@ -188,18 +226,22 @@ async def register(user: UserCreate):
         'password': hash_password(user.password),
         'phone': user.phone,
         'address': None,
+        'is_admin': user.is_admin,
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
     
     token = create_token(user_doc['id'])
+    is_admin = user_doc.get('is_admin', False)
     return {
         'token': token,
         'user': {
             'id': user_doc['id'],
             'name': user_doc['name'],
             'email': user_doc['email'],
-            'phone': user_doc['phone']
+            'phone': user_doc['phone'],
+            'is_admin': is_admin,
+            'isAdmin': is_admin
         }
     }
 
@@ -210,19 +252,27 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail='Invalid credentials')
     
     token = create_token(user['id'])
+    is_admin = user.get('is_admin', False)
     return {
         'token': token,
         'user': {
             'id': user['id'],
             'name': user['name'],
             'email': user['email'],
-            'phone': user.get('phone')
+            'phone': user.get('phone'),
+            'is_admin': is_admin,
+            'isAdmin': is_admin
         }
     }
 
 @api_router.get("/auth/me")
 async def get_me(user: dict = Depends(get_current_user)):
-    return user
+    is_admin = user.get('is_admin', False)
+    return {
+        **user,
+        'is_admin': is_admin,
+        'isAdmin': is_admin
+    }
 
 @api_router.put("/auth/profile")
 async def update_profile(update: UserUpdate, user: dict = Depends(get_current_user)):
@@ -230,6 +280,10 @@ async def update_profile(update: UserUpdate, user: dict = Depends(get_current_us
     if update_data:
         await db.users.update_one({'id': user['id']}, {'$set': update_data})
     updated_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'password': 0})
+    if updated_user:
+        is_admin = updated_user.get('is_admin', False)
+        updated_user['is_admin'] = is_admin
+        updated_user['isAdmin'] = is_admin
     return updated_user
 
 # ==================== PRODUCTS ROUTES ====================
@@ -304,6 +358,47 @@ async def get_categories():
         }
     ]
     return categories
+
+# ==================== ADMIN PRODUCTS ROUTES ====================
+
+@api_router.get("/admin/products", response_model=List[ProductResponse])
+async def admin_get_products(admin: dict = Depends(get_current_admin)):
+    products = await db.products.find({}, {'_id': 0}).to_list(1000)
+    return products
+
+@api_router.post("/admin/products", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+async def admin_create_product(product: ProductBase, admin: dict = Depends(get_current_admin)):
+    product_doc = product.model_dump()
+    product_doc['id'] = str(uuid.uuid4())
+    product_doc['rating'] = 0.0
+    product_doc['review_count'] = 0
+    product_doc['created_at'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.products.insert_one(product_doc)
+    created_product = await db.products.find_one({'id': product_doc['id']}, {'_id': 0})
+    return created_product
+
+@api_router.put("/admin/products/{product_id}", response_model=ProductResponse)
+async def admin_update_product(product_id: str, product_update: ProductUpdate, admin: dict = Depends(get_current_admin)):
+    existing = await db.products.find_one({'id': product_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail='Product not found')
+    
+    update_data = {k: v for k, v in product_update.model_dump().items() if v is not None}
+    if update_data:
+        await db.products.update_one({'id': product_id}, {'$set': update_data})
+    
+    updated_product = await db.products.find_one({'id': product_id}, {'_id': 0})
+    return updated_product
+
+@api_router.delete("/admin/products/{product_id}")
+async def admin_delete_product(product_id: str, admin: dict = Depends(get_current_admin)):
+    existing = await db.products.find_one({'id': product_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail='Product not found')
+    
+    await db.products.delete_one({'id': product_id})
+    return {'message': 'Product deleted successfully', 'id': product_id}
 
 # ==================== CART ROUTES ====================
 
@@ -590,7 +685,8 @@ async def subscribe_newsletter(data: NewsletterSubscribe):
 
 @api_router.post("/seed")
 async def seed_data():
-    """Seed initial product data"""
+    """Seed initial product data and default admin account"""
+    await ensure_admin_user()
     existing = await db.products.find_one()
     if existing:
         return {'message': 'Data already seeded'}
@@ -871,6 +967,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    await ensure_admin_user()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

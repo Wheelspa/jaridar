@@ -19,10 +19,20 @@ export const AuthProvider = ({ children }) => {
         }
     }, [token]);
 
+    const formatUserData = (data) => {
+        if (!data) return null;
+        const isAdmin = Boolean(data.isAdmin || data.is_admin);
+        return {
+            ...data,
+            is_admin: isAdmin,
+            isAdmin: isAdmin
+        };
+    };
+
     const fetchUser = async () => {
         try {
             const response = await axios.get(`${API}/auth/me`);
-            setUser(response.data);
+            setUser(formatUserData(response.data));
         } catch (error) {
             console.error('Failed to fetch user:', error);
             logout();
@@ -34,21 +44,23 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         const response = await axios.post(`${API}/auth/login`, { email, password });
         const { token: newToken, user: userData } = response.data;
+        const formattedUser = formatUserData(userData);
         localStorage.setItem('jaridar_token', newToken);
         axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
         setToken(newToken);
-        setUser(userData);
-        return userData;
+        setUser(formattedUser);
+        return formattedUser;
     };
 
     const register = async (name, email, password, phone) => {
         const response = await axios.post(`${API}/auth/register`, { name, email, password, phone });
         const { token: newToken, user: userData } = response.data;
+        const formattedUser = formatUserData(userData);
         localStorage.setItem('jaridar_token', newToken);
         axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
         setToken(newToken);
-        setUser(userData);
-        return userData;
+        setUser(formattedUser);
+        return formattedUser;
     };
 
     const logout = () => {
@@ -60,12 +72,15 @@ export const AuthProvider = ({ children }) => {
 
     const updateProfile = async (data) => {
         const response = await axios.put(`${API}/auth/profile`, data);
-        setUser(response.data);
-        return response.data;
+        const formattedUser = formatUserData(response.data);
+        setUser(formattedUser);
+        return formattedUser;
     };
 
+    const isAdmin = Boolean(user?.isAdmin || user?.is_admin);
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, isAuthenticated: !!user, isAdmin }}>
             {children}
         </AuthContext.Provider>
     );

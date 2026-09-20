@@ -1,28 +1,28 @@
 /* Jaridar Fashion Couture - Custom Styles */
 
-/* Hero section background gradient */
+/* Hero section background gradient - warm luxury gradient */
 .hero-gradient {
-    background: linear-gradient(135deg, rgba(232, 160, 191, 0.15) 0%, rgba(173, 216, 230, 0.15) 100%);
+    background: linear-gradient(135deg, #FFFBF7 0%, #FAF0E6 50%, #F5E6E0 100%);
 }
 
 /* Button styles */
 .btn-primary {
-    @apply rounded-full px-8 py-3 text-sm uppercase tracking-widest font-semibold bg-rose text-charcoal;
+    @apply rounded-full px-8 py-3 text-sm uppercase tracking-widest font-semibold bg-rose text-white shadow-sm;
     transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .btn-primary:hover {
-    @apply bg-rose-dark shadow-lg;
+    @apply bg-rose-dark shadow-md;
     transform: translateY(-2px);
 }
 
 .btn-secondary {
-    @apply rounded-full px-8 py-3 text-sm uppercase tracking-widest font-semibold bg-transparent border border-charcoal text-charcoal;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    @apply rounded-full px-8 py-3 text-sm uppercase tracking-widest font-semibold bg-transparent border border-gold text-charcoal;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .btn-secondary:hover {
-    @apply bg-charcoal text-white;
+    @apply bg-gold text-white border-gold;
 }
 
 /* Input styles */
@@ -68,7 +68,7 @@
 
 /* Header glass effect */
 .header-glass {
-    background: rgba(253, 251, 247, 0.85);
+    background: rgba(255, 251, 247, 0.90);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }
@@ -103,7 +103,7 @@
 
 /* Rating stars */
 .star-filled {
-    color: #C5A059;
+    color: #C9A961;
 }
 
 .star-empty {
@@ -173,17 +173,17 @@
 
 /* Newsletter section */
 .newsletter-section {
-    background: linear-gradient(135deg, #E8A0BF 0%, #ADD8E6 100%);
+    background: linear-gradient(135deg, #F4E3E5 0%, #FAF0E6 50%, #FAF6F0 100%);
 }
 
 /* Footer */
 .footer-link {
-    @apply text-gray-500;
+    @apply text-gray-400;
     transition: color 0.2s ease;
 }
 
 .footer-link:hover {
-    @apply text-rose;
+    @apply text-gold;
 }
 
 /* Breadcrumb */
@@ -198,7 +198,7 @@
 
 .tab-underline::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-rose;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-gold;
     transition: width 0.3s ease;
 }
 
@@ -209,7 +209,7 @@
 
 /* Mobile menu */
 .mobile-menu {
-    @apply fixed inset-0 bg-pearl z-50;
+    @apply fixed inset-0 bg-ivory-warm z-50;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
 }
@@ -229,9 +229,9 @@
 
 /* Badge */
 .badge-new {
-    @apply absolute top-3 left-3 bg-serenity text-charcoal text-xs uppercase tracking-wider px-2 py-1 font-semibold;
+    @apply absolute top-3 left-3 bg-gold text-white text-xs uppercase tracking-wider px-2 py-1 font-semibold rounded-sm;
 }
 
 .badge-sale {
-    @apply absolute top-3 right-3 bg-rose text-charcoal text-xs uppercase tracking-wider px-2 py-1 font-semibold;
+    @apply absolute top-3 right-3 bg-rose text-white text-xs uppercase tracking-wider px-2 py-1 font-semibold rounded-sm;
 }

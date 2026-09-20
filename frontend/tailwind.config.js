@@ -11,22 +11,27 @@ module.exports = {
             },
             colors: {
                 rose: {
-                    DEFAULT: '#E8A0BF',
-                    light: '#F2C4D9',
-                    dark: '#D689A8',
+                    DEFAULT: '#C87D87',
+                    light: '#F4E3E5',
+                    dark: '#A65B65',
+                },
+                gold: {
+                    DEFAULT: '#C9A961',
+                    light: '#E2CFA0',
+                    dark: '#A3843E',
                 },
                 serenity: {
                     DEFAULT: '#ADD8E6',
                     light: '#C5E5EF',
                     dark: '#9AC7D9',
                 },
-                gold: {
-                    DEFAULT: '#C5A059',
-                    light: '#D4B574',
-                    dark: '#B08A3E',
+                ivory: {
+                    DEFAULT: '#FFFBF7',
+                    warm: '#FAF6F0',
+                    light: '#FFFFFF',
                 },
-                pearl: '#FDFBF7',
-                charcoal: '#1A1A1A',
+                pearl: '#FAF6F0',
+                charcoal: '#2D2420',
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",

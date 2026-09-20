@@ -9,8 +9,8 @@ body {
     font-family: 'Mulish', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #FDFBF7;
-    color: #1A1A1A;
+    background-color: #FFFBF7;
+    color: #2D2420;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -23,25 +23,25 @@ code {
 
 @layer base {
     :root {
-        --background: 40 33% 98%;
-        --foreground: 0 0% 10%;
+        --background: 33 50% 98%;
+        --foreground: 20 17% 15%;
         --card: 0 0% 100%;
-        --card-foreground: 0 0% 10%;
+        --card-foreground: 20 17% 15%;
         --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 10%;
-        --primary: 338 56% 77%;
-        --primary-foreground: 0 0% 10%;
-        --secondary: 195 53% 79%;
-        --secondary-foreground: 0 0% 10%;
-        --accent: 40 40% 55%;
+        --popover-foreground: 20 17% 15%;
+        --primary: 352 44% 63%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 42 50% 58%;
+        --secondary-foreground: 20 17% 15%;
+        --accent: 42 50% 58%;
         --accent-foreground: 0 0% 100%;
-        --muted: 0 0% 96%;
-        --muted-foreground: 0 0% 45%;
+        --muted: 33 20% 95%;
+        --muted-foreground: 20 10% 45%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 90%;
-        --input: 0 0% 90%;
-        --ring: 338 56% 77%;
+        --border: 33 20% 90%;
+        --input: 33 20% 90%;
+        --ring: 352 44% 63%;
         --radius: 0.5rem;
     }
 }
@@ -62,24 +62,24 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-    background: #F3F4F6;
+    background: #FAF6F0;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #E8A0BF;
+    background: #C9A961;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #D689A8;
+    background: #A3843E;
 }
 
 /* Glass morphism utility */
 .glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 251, 247, 0.75);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(201, 169, 97, 0.15);
 }
 
 /* Animation classes */
@@ -129,8 +129,8 @@ code {
 
 /* Selection style */
 ::selection {
-    background: #E8A0BF;
-    color: #1A1A1A;
+    background: #C87D87;
+    color: #FFFBF7;
 }
 
 /* Link hover effect */
@@ -144,8 +144,8 @@ code {
     bottom: -2px;
     left: 0;
     width: 0;
-    height: 1px;
-    background: #E8A0BF;
+    height: 1.5px;
+    background: #C9A961;
     transition: width 0.3s ease;
 }
 
