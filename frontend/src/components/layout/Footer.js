@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Mail } from 'lucide-react';
+import { Instagram, Facebook, Mail, MapPin, Phone } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -22,10 +22,10 @@ export const Footer = () => {
     };
 
     return (
-        <footer className="bg-charcoal text-white pt-16 pb-8 border-t border-stone-800" data-testid="footer">
+        <footer className="bg-charcoal text-white pt-14 pb-8 border-t border-white/10" data-testid="footer">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 {/* 4 Columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-16 border-b border-stone-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-10">
                     {/* Col 1: About Jaridar */}
                     <div className="space-y-4">
                         <Link to="/" className="flex items-center gap-2.5">
@@ -40,6 +40,23 @@ export const Footer = () => {
                         <p className="text-stone-400 text-xs leading-relaxed max-w-sm">
                             Where traditional elegance meets contemporary couture. Discover exquisite sarees, lehengas, and fusion ensembles crafted with heritage artistry.
                         </p>
+                        
+                        {/* Contact details */}
+                        <div className="space-y-2 text-xs text-stone-300 pt-1">
+                            <div className="flex items-start gap-2">
+                                <MapPin size={14} className="text-rose flex-shrink-0 mt-0.5" />
+                                <span>123 Couture Lane, Mumbai, MH 400001</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Phone size={14} className="text-rose flex-shrink-0" />
+                                <span>+91 98765 43210</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Mail size={14} className="text-rose flex-shrink-0" />
+                                <span>care@jaridar.com</span>
+                            </div>
+                        </div>
+
                         <div className="flex items-center gap-3 pt-2">
                             <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-stone-800 hover:bg-rose flex items-center justify-center text-stone-300 hover:text-white transition-colors" aria-label="Instagram">
                                 <Instagram size={15} />
@@ -57,11 +74,11 @@ export const Footer = () => {
                     <div>
                         <h4 className="font-heading text-xs uppercase tracking-[0.2em] text-gold font-semibold mb-5">Quick Links</h4>
                         <ul className="space-y-2.5 text-xs text-stone-300">
-                            <li><Link to="/" className="hover:text-rose transition-colors">Home</Link></li>
-                            <li><Link to="/shop" className="hover:text-rose transition-colors">Shop All</Link></li>
-                            <li><Link to="/shop?category=ethnic" className="hover:text-rose transition-colors">Collections</Link></li>
-                            <li><Link to="/about" className="hover:text-rose transition-colors">About Us</Link></li>
-                            <li><Link to="/contact" className="hover:text-rose transition-colors">Contact Us</Link></li>
+                            <li><Link to="/shop?category=ethnic" className="hover:text-rose transition-colors">Ethnic Wear</Link></li>
+                            <li><Link to="/shop?category=traditional" className="hover:text-rose transition-colors">Traditional Wear</Link></li>
+                            <li><Link to="/shop?category=western" className="hover:text-rose transition-colors">Western Wear</Link></li>
+                            <li><Link to="/shop?category=bridal" className="hover:text-rose transition-colors">Bridal Collection</Link></li>
+                            <li><Link to="/shop?filter=new" className="hover:text-rose transition-colors">New Arrivals</Link></li>
                         </ul>
                     </div>
 
@@ -69,9 +86,8 @@ export const Footer = () => {
                     <div>
                         <h4 className="font-heading text-xs uppercase tracking-[0.2em] text-gold font-semibold mb-5">Customer Care</h4>
                         <ul className="space-y-2.5 text-xs text-stone-300">
-                            <li><Link to="/about" className="hover:text-rose transition-colors">About Us</Link></li>
                             <li><Link to="/contact" className="hover:text-rose transition-colors">Contact Us</Link></li>
-                            <li><Link to="/size-guide" className="hover:text-rose transition-colors">Size Guide</Link></li>
+                            <li><a href="#" className="hover:text-rose transition-colors">Size Guide</a></li>
                             <li><a href="#" className="hover:text-rose transition-colors">Shipping Policy</a></li>
                             <li><a href="#" className="hover:text-rose transition-colors">Returns & Exchanges</a></li>
                         </ul>
@@ -107,7 +123,7 @@ export const Footer = () => {
                 </div>
 
                 {/* Bottom Row: WE ACCEPT & Copyright */}
-                <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
+                <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] uppercase tracking-widest text-stone-500 font-semibold">We Accept:</span>
                         <div className="flex items-center gap-2">

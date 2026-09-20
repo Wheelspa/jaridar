@@ -1,6 +1,8 @@
 import React from 'react';
 import { Award, Sparkles, Heart, Shield } from 'lucide-react';
 
+const aboutImage = '/images/about/about-1.jpg';
+
 export default function AboutPage() {
     return (
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 space-y-16">
@@ -14,9 +16,9 @@ export default function AboutPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl border border-[#EADFD6]">
+                <div className="aspect-[4/3] rounded-md overflow-hidden border border-[#EADFD6]">
                     <img 
-                        src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800" 
+                        src={aboutImage} 
                         alt="Artisan Craftsmanship" 
                         className="w-full h-full object-cover"
                     />
