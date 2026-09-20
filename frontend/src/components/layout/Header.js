@@ -89,12 +89,12 @@ export const Header = () => {
             </div>
 
             {/* Main Sticky Header */}
-            <header className="sticky top-0 z-50 bg-[#FFFBF7]/95 backdrop-blur-md border-b border-stone-200/60" data-testid="header">
+            <header className="sticky top-0 z-50 bg-[#FFFBF7]/95 backdrop-blur-md border-b border-[#EADFD6]" data-testid="header">
                 <div className="max-w-7xl mx-auto px-6 lg:px-12 h-[72px] flex items-center justify-between">
                     {/* Left: Mobile menu toggle + Logo */}
                     <div className="flex items-center gap-4">
                         <button 
-                            className="md:hidden p-2 text-stone-700 hover:text-rose transition-colors"
+                            className="md:hidden p-2 text-charcoal hover:text-rose transition-colors"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             data-testid="mobile-menu-btn"
                             aria-label="Toggle Menu"
@@ -108,7 +108,7 @@ export const Header = () => {
                             </div>
                             <div className="flex flex-col">
                                 <h1 className="font-heading text-xl md:text-2xl text-charcoal tracking-tight font-bold leading-none">JARIDAR</h1>
-                                <span className="text-[9px] text-gold-dark uppercase tracking-[0.25em] font-medium pt-0.5">Couture</span>
+                                <span className="text-[9px] text-[#8E6F2C] uppercase tracking-[0.25em] font-medium pt-0.5">Couture</span>
                             </div>
                         </Link>
                     </div>
@@ -118,7 +118,7 @@ export const Header = () => {
                         <Link 
                             to="/" 
                             className={`text-xs uppercase tracking-[0.18em] font-medium h-full flex items-center border-b-2 transition-colors ${
-                                location.pathname === '/' ? 'text-rose border-rose font-semibold' : 'text-stone-700 border-transparent hover:text-rose'
+                                location.pathname === '/' ? 'text-rose border-rose font-semibold' : 'text-charcoal border-transparent hover:text-rose'
                             }`}
                         >
                             HOME
@@ -127,7 +127,7 @@ export const Header = () => {
                         <Link 
                             to="/shop" 
                             className={`text-xs uppercase tracking-[0.18em] font-medium h-full flex items-center border-b-2 transition-colors ${
-                                location.pathname === '/shop' && !location.search ? 'text-rose border-rose font-semibold' : 'text-stone-700 border-transparent hover:text-rose'
+                                location.pathname === '/shop' && !location.search ? 'text-rose border-rose font-semibold' : 'text-charcoal border-transparent hover:text-rose'
                             }`}
                         >
                             SHOP
@@ -142,23 +142,23 @@ export const Header = () => {
                             <Link 
                                 to="/shop" 
                                 className={`text-xs uppercase tracking-[0.18em] font-medium h-full flex items-center gap-1 border-b-2 transition-colors ${
-                                    isCollectionsOpen || location.search.includes('category=') ? 'text-rose border-rose font-semibold' : 'text-stone-700 border-transparent hover:text-rose'
+                                    isCollectionsOpen || location.search.includes('category=') ? 'text-rose border-rose font-semibold' : 'text-charcoal border-transparent hover:text-rose'
                                 }`}
                             >
                                 COLLECTIONS
-                                <ChevronDown size={14} className={`transition-transform duration-200 ${isCollectionsOpen ? 'rotate-180 text-rose' : 'text-stone-400'}`} />
+                                <ChevronDown size={14} className={`transition-transform duration-200 ${isCollectionsOpen ? 'rotate-180 text-rose' : 'text-[#6B5B55]'}`} />
                             </Link>
 
                             {/* Dropdown Mega Panel */}
                             {isCollectionsOpen && (
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[840px] bg-white rounded-2xl shadow-2xl border border-rose-100/80 p-8 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[840px] bg-white rounded-2xl shadow-2xl border border-[#F6E4E6] p-8 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="grid grid-cols-4 gap-6">
                                         {megaMenuData.map((cat) => (
                                             <div key={cat.id} className="space-y-3">
                                                 <Link 
                                                     to={cat.path} 
                                                     onClick={() => setIsCollectionsOpen(false)}
-                                                    className="font-heading text-base font-semibold text-charcoal hover:text-rose border-b border-stone-100 pb-2 flex items-center justify-between"
+                                                    className="font-heading text-base font-semibold text-charcoal hover:text-rose border-b border-[#EADFD6] pb-2 flex items-center justify-between"
                                                 >
                                                     <span>{cat.name}</span>
                                                     <span className="text-xs text-rose">→</span>
@@ -169,9 +169,9 @@ export const Header = () => {
                                                             key={sub.name}
                                                             to={sub.path}
                                                             onClick={() => setIsCollectionsOpen(false)}
-                                                            className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-rose-50/50 transition-all group/item"
+                                                            className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-[#F6E4E6]/50 transition-all group/item"
                                                         >
-                                                            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-stone-100 bg-stone-50">
+                                                            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-[#EADFD6] bg-[#FAF0EA]">
                                                                 <img 
                                                                     src={sub.image} 
                                                                     alt={sub.name} 
@@ -180,7 +180,7 @@ export const Header = () => {
                                                             </div>
                                                             <div>
                                                                 <h4 className="text-xs font-medium text-charcoal group-hover/item:text-rose transition-colors">{sub.name}</h4>
-                                                                <span className="text-[10px] text-stone-400 font-normal">Explore</span>
+                                                                <span className="text-[10px] text-[#6B5B55] font-normal">Explore</span>
                                                             </div>
                                                         </Link>
                                                     ))}
@@ -195,7 +195,7 @@ export const Header = () => {
                         <Link 
                             to="/about" 
                             className={`text-xs uppercase tracking-[0.18em] font-medium h-full flex items-center border-b-2 transition-colors ${
-                                location.pathname === '/about' ? 'text-rose border-rose font-semibold' : 'text-stone-700 border-transparent hover:text-rose'
+                                location.pathname === '/about' ? 'text-rose border-rose font-semibold' : 'text-charcoal border-transparent hover:text-rose'
                             }`}
                         >
                             ABOUT US
@@ -204,7 +204,7 @@ export const Header = () => {
                         <Link 
                             to="/contact" 
                             className={`text-xs uppercase tracking-[0.18em] font-medium h-full flex items-center border-b-2 transition-colors ${
-                                location.pathname === '/contact' ? 'text-rose border-rose font-semibold' : 'text-stone-700 border-transparent hover:text-rose'
+                                location.pathname === '/contact' ? 'text-rose border-rose font-semibold' : 'text-charcoal border-transparent hover:text-rose'
                             }`}
                         >
                             CONTACT
@@ -217,7 +217,7 @@ export const Header = () => {
                         <div className="relative">
                             <button 
                                 onClick={() => setIsSearchOpen(!isSearchOpen)} 
-                                className="p-2 text-stone-700 hover:text-rose transition-colors rounded-full hover:bg-rose-50/50"
+                                className="p-2 text-charcoal hover:text-rose transition-colors rounded-full hover:bg-[#F6E4E6]/50"
                                 aria-label="Toggle Search"
                                 data-testid="search-toggle-btn"
                             >
@@ -225,14 +225,14 @@ export const Header = () => {
                             </button>
 
                             {isSearchOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white p-3 rounded-2xl shadow-xl border border-stone-200 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white p-3 rounded-2xl shadow-xl border border-[#EADFD6] z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                                     <form onSubmit={handleSearch} className="flex items-center gap-2">
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             placeholder="Search sarees, lehengas..."
-                                            className="w-full px-4 py-2 text-xs bg-stone-50 rounded-xl border border-stone-200 focus:outline-none focus:border-rose text-charcoal"
+                                            className="w-full px-4 py-2 text-xs bg-[#FAF0EA] rounded-xl border border-[#EADFD6] focus:outline-none focus:border-rose text-charcoal"
                                             autoFocus
                                             data-testid="search-input"
                                         />
@@ -251,47 +251,47 @@ export const Header = () => {
                         {isAuthenticated ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="p-2 text-stone-700 hover:text-rose transition-colors rounded-full hover:bg-rose-50/50" data-testid="user-menu-btn">
+                                    <button className="p-2 text-charcoal hover:text-rose transition-colors rounded-full hover:bg-[#F6E4E6]/50" data-testid="user-menu-btn">
                                         <User size={20} />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuContent align="end" className="w-48 bg-white border border-[#EADFD6]">
                                     <div className="px-3 py-2 text-sm">
                                         <p className="font-medium text-charcoal">{user?.name}</p>
-                                        <p className="text-stone-500 text-xs">{user?.email}</p>
+                                        <p className="text-[#6B5B55] text-xs">{user?.email}</p>
                                     </div>
-                                    <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator className="bg-[#EADFD6]" />
                                     {isAdmin && (
                                         <>
                                             <DropdownMenuItem asChild>
                                                 <Link to="/admin" className="font-semibold text-rose" data-testid="admin-dashboard-link">Admin Dashboard</Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
+                                            <DropdownMenuSeparator className="bg-[#EADFD6]" />
                                         </>
                                     )}
                                     <DropdownMenuItem asChild>
-                                        <Link to="/account/orders">My Orders</Link>
+                                        <Link to="/account/orders" className="text-charcoal hover:text-rose">My Orders</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link to="/account/wishlist">Wishlist</Link>
+                                        <Link to="/account/wishlist" className="text-charcoal hover:text-rose">Wishlist</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link to="/account/profile">Profile</Link>
+                                        <Link to="/account/profile" className="text-charcoal hover:text-rose">Profile</Link>
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={logout} className="text-red-600">
+                                    <DropdownMenuSeparator className="bg-[#EADFD6]" />
+                                    <DropdownMenuItem onClick={logout} className="text-rose font-medium">
                                         Logout
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <Link to="/login" className="p-2 text-stone-700 hover:text-rose transition-colors rounded-full hover:bg-rose-50/50" data-testid="login-btn">
+                            <Link to="/login" className="p-2 text-charcoal hover:text-rose transition-colors rounded-full hover:bg-[#F6E4E6]/50" data-testid="login-btn">
                                 <User size={20} />
                             </Link>
                         )}
 
                         {/* Wishlist */}
-                        <Link to="/account/wishlist" className="p-2 text-stone-700 hover:text-rose transition-colors rounded-full hover:bg-rose-50/50 relative" data-testid="wishlist-btn">
+                        <Link to="/account/wishlist" className="p-2 text-charcoal hover:text-rose transition-colors rounded-full hover:bg-[#F6E4E6]/50 relative" data-testid="wishlist-btn">
                             <Heart size={20} />
                             {wishlistCount > 0 && (
                                 <span className="absolute top-0 right-0 w-4 h-4 bg-rose text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -301,7 +301,7 @@ export const Header = () => {
                         </Link>
 
                         {/* Cart */}
-                        <Link to="/cart" className="p-2 text-stone-700 hover:text-rose transition-colors rounded-full hover:bg-rose-50/50 relative" data-testid="cart-btn">
+                        <Link to="/cart" className="p-2 text-charcoal hover:text-rose transition-colors rounded-full hover:bg-[#F6E4E6]/50 relative" data-testid="cart-btn">
                             <ShoppingBag size={20} />
                             {cartCount > 0 && (
                                 <span className="absolute top-0 right-0 w-4 h-4 bg-rose text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -332,9 +332,9 @@ export const Header = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search products..."
-                                className="w-full pl-4 pr-10 py-3 bg-stone-50 rounded-full border border-stone-200 text-sm"
+                                className="w-full pl-4 pr-10 py-3 bg-[#FAF0EA] rounded-full border border-[#EADFD6] text-sm text-charcoal"
                             />
-                            <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-500 hover:text-rose">
+                            <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B5B55] hover:text-rose">
                                 <Search size={20} />
                             </button>
                         </div>
@@ -343,7 +343,7 @@ export const Header = () => {
                     <nav className="space-y-3">
                         <Link 
                             to="/" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-stone-100 text-charcoal" 
+                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#EADFD6] text-charcoal" 
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Home
@@ -351,20 +351,20 @@ export const Header = () => {
                         
                         <Link 
                             to="/shop" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-stone-100 text-charcoal" 
+                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#EADFD6] text-charcoal" 
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Shop All
                         </Link>
 
                         {/* Collections Accordion */}
-                        <div className="border-b border-stone-100 pb-2">
+                        <div className="border-b border-[#EADFD6] pb-2">
                             <div 
                                 className="flex items-center justify-between py-2 cursor-pointer"
                                 onClick={() => setExpandedMobileCategory(expandedMobileCategory === 'collections' ? null : 'collections')}
                             >
                                 <span className="text-base uppercase tracking-wider font-heading text-charcoal">Collections</span>
-                                <ChevronDown size={18} className={`transition-transform duration-200 ${expandedMobileCategory === 'collections' ? 'rotate-180 text-rose' : 'text-stone-400'}`} />
+                                <ChevronDown size={18} className={`transition-transform duration-200 ${expandedMobileCategory === 'collections' ? 'rotate-180 text-rose' : 'text-[#6B5B55]'}`} />
                             </div>
 
                             {expandedMobileCategory === 'collections' && (
@@ -384,7 +384,7 @@ export const Header = () => {
                                                         key={sub.name}
                                                         to={sub.path}
                                                         onClick={() => setIsMenuOpen(false)}
-                                                        className="text-xs text-stone-600 hover:text-rose py-1"
+                                                        className="text-xs text-[#6B5B55] hover:text-rose py-1"
                                                     >
                                                         • {sub.name}
                                                     </Link>
@@ -399,13 +399,13 @@ export const Header = () => {
                         {isAdmin && (
                             <Link 
                                 to="/admin" 
-                                className="block text-base uppercase tracking-wider font-heading py-2 text-rose border-b border-stone-100"
+                                className="block text-base uppercase tracking-wider font-heading py-2 text-rose border-b border-[#EADFD6]"
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 Admin Dashboard
                             </Link>
                         )}
-                        <Link to="/about" className="block text-base uppercase tracking-wider font-heading py-2 border-b border-stone-100 text-charcoal" onClick={() => setIsMenuOpen(false)}>About Us</Link>
+                        <Link to="/about" className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#EADFD6] text-charcoal" onClick={() => setIsMenuOpen(false)}>About Us</Link>
                         <Link to="/contact" className="block text-base uppercase tracking-wider font-heading py-2 text-charcoal" onClick={() => setIsMenuOpen(false)}>Contact</Link>
                     </nav>
                 </div>

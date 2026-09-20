@@ -212,10 +212,10 @@ export default function AdminPage() {
     return (
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8 space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#EADFD6] pb-6">
                 <div>
                     <h1 className="text-3xl font-heading font-bold text-charcoal">Admin Dashboard</h1>
-                    <p className="text-gray-500 text-sm mt-1">Manage store inventory, add, update or delete products.</p>
+                    <p className="text-[#6B5B55] text-sm mt-1">Manage store inventory, add, update or delete products.</p>
                 </div>
                 <Button
                     onClick={openAddModal}
@@ -227,21 +227,21 @@ export default function AdminPage() {
             </div>
 
             {/* Controls bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FAF0EA] p-4 rounded-lg border border-[#EADFD6]">
                 <div className="relative w-full sm:w-80">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" size={18} />
                     <Input
                         type="text"
                         placeholder="Search products..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="pl-10 bg-white"
+                        className="pl-10 bg-white border-[#EADFD6]"
                     />
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
+                <div className="flex items-center gap-3 text-sm text-[#6B5B55]">
                     <Package size={18} />
-                    <span>Total Products: <strong>{products.length}</strong></span>
-                    <Button variant="outline" size="sm" onClick={fetchProducts} className="ml-2 gap-1">
+                    <span>Total Products: <strong className="text-charcoal">{products.length}</strong></span>
+                    <Button variant="outline" size="sm" onClick={fetchProducts} className="ml-2 gap-1 border-[#EADFD6]">
                         <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
                         Refresh
                     </Button>
@@ -254,46 +254,46 @@ export default function AdminPage() {
                     <RefreshCw className="w-8 h-8 animate-spin text-rose" />
                 </div>
             ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-16 bg-gray-50 rounded-lg border border-dashed">
-                    <Package className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                    <h3 className="text-lg font-medium text-gray-900">No products found</h3>
-                    <p className="text-sm text-gray-500 mt-1">Try adjusting your search query or add a new product.</p>
+                <div className="text-center py-16 bg-[#FAF0EA] rounded-lg border border-dashed border-[#EADFD6]">
+                    <Package className="mx-auto h-12 w-12 text-[#6B5B55] mb-3" />
+                    <h3 className="text-lg font-medium text-charcoal">No products found</h3>
+                    <p className="text-sm text-[#6B5B55] mt-1">Try adjusting your search query or add a new product.</p>
                 </div>
             ) : (
-                <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+                <div className="border border-[#EADFD6] rounded-lg overflow-hidden bg-white shadow-sm">
                     <Table>
-                        <TableHeader className="bg-gray-50">
-                            <TableRow>
-                                <TableHead className="w-16">Thumbnail</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Stock</TableHead>
-                                <TableHead>Badges</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                        <TableHeader className="bg-[#FAF0EA]">
+                            <TableRow className="border-b border-[#EADFD6]">
+                                <TableHead className="w-16 text-[#6B5B55]">Thumbnail</TableHead>
+                                <TableHead className="text-[#6B5B55]">Name</TableHead>
+                                <TableHead className="text-[#6B5B55]">Category</TableHead>
+                                <TableHead className="text-[#6B5B55]">Price</TableHead>
+                                <TableHead className="text-[#6B5B55]">Stock</TableHead>
+                                <TableHead className="text-[#6B5B55]">Badges</TableHead>
+                                <TableHead className="text-right text-[#6B5B55]">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredProducts.map((product) => (
-                                <TableRow key={product.id}>
+                                <TableRow key={product.id} className="border-b border-[#EADFD6]">
                                     <TableCell>
                                         <img
                                             src={product.images && product.images[0] ? product.images[0] : 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600'}
                                             alt={product.name}
-                                            className="w-12 h-12 object-cover rounded-md border"
+                                            className="w-12 h-12 object-cover rounded-md border border-[#EADFD6]"
                                         />
                                     </TableCell>
                                     <TableCell className="font-medium text-charcoal">
                                         <div>{product.name}</div>
                                         {product.subcategory && (
-                                            <div className="text-xs text-gray-400">{product.subcategory}</div>
+                                            <div className="text-xs text-[#6B5B55]">{product.subcategory}</div>
                                         )}
                                     </TableCell>
-                                    <TableCell className="capitalize">{product.category}</TableCell>
+                                    <TableCell className="capitalize text-charcoal">{product.category}</TableCell>
                                     <TableCell>
-                                        <div className="font-semibold">₹{product.price?.toLocaleString('en-IN')}</div>
+                                        <div className="font-semibold text-charcoal">₹{product.price?.toLocaleString('en-IN')}</div>
                                         {product.original_price && (
-                                            <div className="text-xs text-gray-400 line-through">
+                                            <div className="text-xs text-[#6B5B55] line-through">
                                                 ₹{product.original_price?.toLocaleString('en-IN')}
                                             </div>
                                         )}
@@ -358,7 +358,7 @@ export default function AdminPage() {
                     <form onSubmit={handleSubmit} className="space-y-4 py-2">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="sm:col-span-2">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Product Name *
                                 </label>
                                 <Input
@@ -366,12 +366,13 @@ export default function AdminPage() {
                                     value={formData.name}
                                     onChange={handleChange}
                                     placeholder="e.g. Pastel Pink Embroidered Saree"
+                                    className="border-[#EADFD6]"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Price (₹) *
                                 </label>
                                 <Input
@@ -382,12 +383,13 @@ export default function AdminPage() {
                                     placeholder="8999"
                                     min="0"
                                     step="0.01"
+                                    className="border-[#EADFD6]"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Original Price (₹)
                                 </label>
                                 <Input
@@ -398,18 +400,19 @@ export default function AdminPage() {
                                     placeholder="12999"
                                     min="0"
                                     step="0.01"
+                                    className="border-[#EADFD6]"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Category *
                                 </label>
                                 <select
                                     name="category"
                                     value={formData.category}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-rose"
+                                    className="w-full px-3 py-2 border border-[#EADFD6] rounded-md text-sm bg-white text-charcoal focus:outline-none focus:ring-1 focus:ring-rose"
                                     required
                                 >
                                     <option value="ethnic">Ethnic Wear</option>
@@ -420,7 +423,7 @@ export default function AdminPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Subcategory
                                 </label>
                                 <Input
@@ -428,11 +431,12 @@ export default function AdminPage() {
                                     value={formData.subcategory}
                                     onChange={handleChange}
                                     placeholder="e.g. Sarees, Lehengas, Dresses"
+                                    className="border-[#EADFD6]"
                                 />
                             </div>
 
                             <div className="sm:col-span-2">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Description *
                                 </label>
                                 <textarea
@@ -441,13 +445,13 @@ export default function AdminPage() {
                                     onChange={handleChange}
                                     rows={3}
                                     placeholder="Enter detailed description of the product..."
-                                    className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-rose"
+                                    className="w-full px-3 py-2 border border-[#EADFD6] rounded-md text-sm text-charcoal focus:outline-none focus:ring-1 focus:ring-rose"
                                     required
                                 />
                             </div>
 
                             <div className="sm:col-span-2">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Image URLs (comma separated)
                                 </label>
                                 <textarea
@@ -456,12 +460,12 @@ export default function AdminPage() {
                                     onChange={handleChange}
                                     rows={2}
                                     placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-                                    className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-rose"
+                                    className="w-full px-3 py-2 border border-[#EADFD6] rounded-md text-sm text-charcoal focus:outline-none focus:ring-1 focus:ring-rose"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Available Sizes (comma separated)
                                 </label>
                                 <Input
@@ -469,11 +473,12 @@ export default function AdminPage() {
                                     value={formData.sizes}
                                     onChange={handleChange}
                                     placeholder="XS, S, M, L, XL"
+                                    className="border-[#EADFD6]"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Available Colors (comma separated)
                                 </label>
                                 <Input
@@ -481,11 +486,12 @@ export default function AdminPage() {
                                     value={formData.colors}
                                     onChange={handleChange}
                                     placeholder="Pink, Rose, Gold"
+                                    className="border-[#EADFD6]"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B5B55] mb-1">
                                     Stock Quantity
                                 </label>
                                 <Input
@@ -495,6 +501,7 @@ export default function AdminPage() {
                                     onChange={handleChange}
                                     placeholder="10"
                                     min="0"
+                                    className="border-[#EADFD6]"
                                 />
                             </div>
 

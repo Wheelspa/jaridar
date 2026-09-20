@@ -68,9 +68,9 @@ export const ProductCard = ({ product }) => {
     };
 
     return (
-        <div className="bg-white rounded-md p-3 border border-stone-200/60 hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full group" data-testid={`product-card-${product.id}`}>
+        <div className="bg-white rounded-md p-3 border border-[#EADFD6] hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full group" data-testid={`product-card-${product.id}`}>
             <Link to={`/product/${product.id}`} className="block flex-1">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-stone-100 mb-3">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-[#FAF0EA] mb-3">
                     <img 
                         src={product.images[0]} 
                         alt={product.name}
@@ -92,7 +92,7 @@ export const ProductCard = ({ product }) => {
                     <button 
                         onClick={handleWishlist}
                         className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all ${
-                            inWishlist ? 'bg-rose text-white' : 'bg-white/90 text-stone-700 hover:bg-rose hover:text-white'
+                            inWishlist ? 'bg-rose text-white' : 'bg-white/90 text-charcoal hover:bg-rose hover:text-white'
                         }`}
                         aria-label="Wishlist"
                         data-testid={`wishlist-btn-${product.id}`}
@@ -103,7 +103,7 @@ export const ProductCard = ({ product }) => {
 
                 <div className="space-y-1">
                     {/* Category */}
-                    <p className="text-[10px] uppercase tracking-widest text-stone-400 font-medium">
+                    <p className="text-[10px] uppercase tracking-widest text-[#6B5B55] font-medium">
                         {product.category}
                     </p>
                     
@@ -116,7 +116,7 @@ export const ProductCard = ({ product }) => {
                     <div className="flex items-center gap-2 pt-1">
                         <span className="font-semibold text-xs md:text-sm text-charcoal">{formatPrice(product.price)}</span>
                         {product.original_price && (
-                            <span className="text-xs text-stone-400 line-through font-normal">{formatPrice(product.original_price)}</span>
+                            <span className="text-xs text-[#6B5B55] line-through font-normal">{formatPrice(product.original_price)}</span>
                         )}
                     </div>
                 </div>

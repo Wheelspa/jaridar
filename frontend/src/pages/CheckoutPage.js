@@ -161,129 +161,129 @@ const CheckoutPage = () => {
     const grandTotal = cart.total + shippingCost;
 
     return (
-        <div className="min-h-screen bg-pearl" data-testid="checkout-page">
+        <div className="min-h-screen bg-[#FFFBF7]" data-testid="checkout-page">
             {/* Progress Bar */}
-            <div className="bg-white border-b">
-                <div className="max-w-3xl mx-auto px-6 py-6">
-                    <div className="flex items-center justify-center gap-4">
-                        <div className={`flex items-center gap-2 ${step >= 1 ? 'text-rose' : 'text-gray-400'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-rose text-white' : 'bg-gray-200'}`}>
-                                {step > 1 ? <Check size={16} /> : '1'}
+            <div className="bg-white border-b border-[#EADFD6]">
+                <div className="max-w-3xl mx-auto px-4 py-4">
+                    <div className="flex items-center justify-center gap-4 text-xs font-semibold uppercase tracking-wider">
+                        <div className={`flex items-center gap-2 ${step >= 1 ? 'text-rose' : 'text-[#6B5B55]'}`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-rose text-white' : 'bg-[#FAF0EA] text-[#6B5B55] border border-[#EADFD6]'}`}>
+                                {step > 1 ? <Check size={14} /> : '1'}
                             </div>
-                            <span className="hidden sm:inline font-medium">Shipping</span>
+                            <span className="hidden sm:inline">Shipping</span>
                         </div>
-                        <ChevronRight size={20} className="text-gray-300" />
-                        <div className={`flex items-center gap-2 ${step >= 2 ? 'text-rose' : 'text-gray-400'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-rose text-white' : 'bg-gray-200'}`}>
+                        <ChevronRight size={16} className="text-[#6B5B55]" />
+                        <div className={`flex items-center gap-2 ${step >= 2 ? 'text-rose' : 'text-[#6B5B55]'}`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-rose text-white' : 'bg-[#FAF0EA] text-[#6B5B55] border border-[#EADFD6]'}`}>
                                 2
                             </div>
-                            <span className="hidden sm:inline font-medium">Payment</span>
+                            <span className="hidden sm:inline">Payment</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-6 py-12">
-                <div className="grid lg:grid-cols-3 gap-12">
+            <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
+                <div className="grid lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2">
                         {step === 1 && (
                             <motion.div
-                                initial={{ opacity: 0, x: -20 }}
+                                initial={{ opacity: 0, x: -15 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-white rounded-lg p-6 md:p-8"
+                                className="bg-white rounded-md border border-[#EADFD6] p-6 md:p-8 shadow-xs"
                             >
-                                <h2 className="font-heading text-2xl mb-6">Shipping Address</h2>
+                                <h2 className="font-heading text-xl uppercase tracking-wider text-charcoal font-semibold mb-6 border-b border-[#EADFD6] pb-3">Shipping Address</h2>
                                 
-                                <div className="grid md:grid-cols-2 gap-6">
+                                <div className="grid md:grid-cols-2 gap-5 text-xs">
                                     <div>
-                                        <Label htmlFor="fullName">Full Name *</Label>
+                                        <Label htmlFor="fullName" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">Full Name *</Label>
                                         <Input
                                             id="fullName"
                                             name="fullName"
                                             value={shippingAddress.fullName}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             data-testid="input-fullName"
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="phone">Phone Number *</Label>
+                                        <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">Phone Number *</Label>
                                         <Input
                                             id="phone"
                                             name="phone"
                                             value={shippingAddress.phone}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             placeholder="10-digit number"
                                             data-testid="input-phone"
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="email">Email *</Label>
+                                        <Label htmlFor="email" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">Email *</Label>
                                         <Input
                                             id="email"
                                             name="email"
                                             type="email"
                                             value={shippingAddress.email}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             data-testid="input-email"
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <Label htmlFor="addressLine1">Address Line 1 *</Label>
+                                        <Label htmlFor="addressLine1" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">Address Line 1 *</Label>
                                         <Input
                                             id="addressLine1"
                                             name="addressLine1"
                                             value={shippingAddress.addressLine1}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             placeholder="House No, Building, Street"
                                             data-testid="input-address1"
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <Label htmlFor="addressLine2">Address Line 2</Label>
+                                        <Label htmlFor="addressLine2" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">Address Line 2</Label>
                                         <Input
                                             id="addressLine2"
                                             name="addressLine2"
                                             value={shippingAddress.addressLine2}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             placeholder="Landmark (Optional)"
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="city">City *</Label>
+                                        <Label htmlFor="city" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">City *</Label>
                                         <Input
                                             id="city"
                                             name="city"
                                             value={shippingAddress.city}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             data-testid="input-city"
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="state">State *</Label>
+                                        <Label htmlFor="state" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">State *</Label>
                                         <Input
                                             id="state"
                                             name="state"
                                             value={shippingAddress.state}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             data-testid="input-state"
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="pincode">Pincode *</Label>
+                                        <Label htmlFor="pincode" className="text-xs uppercase tracking-wider text-charcoal font-semibold mb-1 block">Pincode *</Label>
                                         <Input
                                             id="pincode"
                                             name="pincode"
                                             value={shippingAddress.pincode}
                                             onChange={handleAddressChange}
-                                            className="mt-1"
+                                            className="mt-1 border-[#EADFD6] text-xs"
                                             placeholder="6-digit pincode"
                                             data-testid="input-pincode"
                                         />
@@ -292,7 +292,7 @@ const CheckoutPage = () => {
 
                                 <button 
                                     onClick={handleProceedToPayment}
-                                    className="btn-primary w-full mt-8"
+                                    className="btn-primary w-full mt-6"
                                     data-testid="proceed-payment-btn"
                                 >
                                     Continue to Payment
@@ -302,27 +302,27 @@ const CheckoutPage = () => {
 
                         {step === 2 && (
                             <motion.div
-                                initial={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, x: 15 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-white rounded-lg p-6 md:p-8"
+                                className="bg-white rounded-md border border-[#EADFD6] p-6 md:p-8 shadow-xs"
                             >
-                                <h2 className="font-heading text-2xl mb-6">Payment Method</h2>
+                                <h2 className="font-heading text-xl uppercase tracking-wider text-charcoal font-semibold mb-6 border-b border-[#EADFD6] pb-3">Payment Method</h2>
 
                                 {/* Shipping Address Summary */}
-                                <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                                    <div className="flex justify-between items-start">
+                                <div className="bg-[#FAF0EA] rounded-md p-4 mb-6 border border-[#EADFD6]">
+                                    <div className="flex justify-between items-start text-xs">
                                         <div>
-                                            <p className="font-medium">{shippingAddress.fullName}</p>
-                                            <p className="text-sm text-gray-600 mt-1">
+                                            <p className="font-semibold text-charcoal">{shippingAddress.fullName}</p>
+                                            <p className="text-[#6B5B55] mt-1 leading-relaxed">
                                                 {shippingAddress.addressLine1}<br />
                                                 {shippingAddress.addressLine2 && <>{shippingAddress.addressLine2}<br /></>}
                                                 {shippingAddress.city}, {shippingAddress.state} - {shippingAddress.pincode}
                                             </p>
-                                            <p className="text-sm text-gray-600 mt-1">{shippingAddress.phone}</p>
+                                            <p className="text-[#6B5B55] mt-1 font-medium">{shippingAddress.phone}</p>
                                         </div>
                                         <button 
                                             onClick={() => setStep(1)}
-                                            className="text-sm text-rose hover:underline"
+                                            className="text-xs text-rose hover:underline font-semibold"
                                         >
                                             Edit
                                         </button>
@@ -331,16 +331,16 @@ const CheckoutPage = () => {
 
                                 {/* Payment Options */}
                                 <div className="space-y-4">
-                                    <div className="border rounded-lg p-4 flex items-center gap-4 bg-rose/5 border-rose">
-                                        <div className="w-10 h-10 rounded-full bg-rose/20 flex items-center justify-center">
-                                            <CreditCard size={20} className="text-rose" />
+                                    <div className="border border-rose rounded-md p-4 flex items-center gap-4 bg-[#F6E4E6]/50">
+                                        <div className="w-9 h-9 rounded-full bg-rose/15 flex items-center justify-center text-rose">
+                                            <CreditCard size={18} />
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="font-medium">Razorpay</p>
-                                            <p className="text-sm text-gray-500">Cards, UPI, Net Banking, Wallets</p>
+                                        <div className="flex-1 text-xs">
+                                            <p className="font-semibold text-charcoal">Razorpay Secure Gateway</p>
+                                            <p className="text-[#6B5B55]">Credit/Debit Cards, UPI, Net Banking, Wallets</p>
                                         </div>
-                                        <div className="w-5 h-5 rounded-full border-2 border-rose flex items-center justify-center">
-                                            <div className="w-3 h-3 rounded-full bg-rose"></div>
+                                        <div className="w-4 h-4 rounded-full border-2 border-rose flex items-center justify-center">
+                                            <div className="w-2 h-2 rounded-full bg-rose"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -367,14 +367,14 @@ const CheckoutPage = () => {
 
                     {/* Order Summary */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-lg p-6 sticky top-24">
-                            <h3 className="font-heading text-xl mb-6">Order Summary</h3>
+                        <div className="bg-white rounded-md border border-[#EADFD6] p-6 sticky top-24 shadow-xs">
+                            <h3 className="font-heading text-lg uppercase tracking-wider text-charcoal font-semibold mb-4 border-b border-[#EADFD6] pb-3">Order Summary</h3>
 
                             {/* Items */}
-                            <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                            <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                                 {cart.items.map((item) => (
-                                    <div key={item.id} className="flex gap-3">
-                                        <div className="w-16 h-20 bg-gray-100 flex-shrink-0">
+                                    <div key={item.id} className="flex gap-3 text-xs">
+                                        <div className="w-14 h-16 bg-[#FAF0EA] rounded-sm overflow-hidden border border-[#EADFD6] flex-shrink-0">
                                             <img 
                                                 src={item.product_image}
                                                 alt={item.product_name}
@@ -382,11 +382,11 @@ const CheckoutPage = () => {
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate">{item.product_name}</p>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="font-medium text-charcoal truncate">{item.product_name}</p>
+                                            <p className="text-[11px] text-[#6B5B55]">
                                                 Size: {item.size} | Qty: {item.quantity}
                                             </p>
-                                            <p className="text-sm font-semibold mt-1">
+                                            <p className="text-xs font-semibold text-charcoal mt-0.5">
                                                 {formatPrice(item.product_price * item.quantity)}
                                             </p>
                                         </div>
@@ -394,16 +394,16 @@ const CheckoutPage = () => {
                                 ))}
                             </div>
 
-                            <div className="border-t pt-4 space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Subtotal</span>
-                                    <span>{formatPrice(cart.total)}</span>
+                            <div className="border-t border-[#EADFD6] pt-3 space-y-2 text-xs text-[#6B5B55]">
+                                <div className="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span className="text-charcoal font-medium">{formatPrice(cart.total)}</span>
                                 </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Shipping</span>
-                                    <span>{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
+                                <div className="flex justify-between">
+                                    <span>Shipping</span>
+                                    <span className="text-charcoal font-medium">{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
                                 </div>
-                                <div className="flex justify-between font-heading text-lg pt-3 border-t">
+                                <div className="flex justify-between font-heading text-lg text-charcoal font-bold pt-3 border-t border-[#EADFD6]">
                                     <span>Total</span>
                                     <span>{formatPrice(grandTotal)}</span>
                                 </div>

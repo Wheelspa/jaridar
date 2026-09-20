@@ -160,7 +160,7 @@ const HomePage = () => {
                                     {heroSlides[currentSlide].titlePart1} <br />
                                     <span className="text-rose font-semibold">{heroSlides[currentSlide].titleHighlight}</span>
                                 </h1>
-                                <p className="text-stone-600 text-xs md:text-sm mb-6 max-w-md leading-relaxed mx-auto md:mx-0">
+                                <p className="text-[#6B5B55] text-xs md:text-sm mb-6 max-w-md leading-relaxed mx-auto md:mx-0">
                                     {heroSlides[currentSlide].description}
                                 </p>
                                 <div className="flex flex-wrap gap-3 items-center justify-center md:justify-start">
@@ -174,7 +174,7 @@ const HomePage = () => {
                                     {heroSlides[currentSlide].secondaryBtnText && (
                                         <Link 
                                             to={heroSlides[currentSlide].secondaryBtnLink} 
-                                            className="px-6 py-3 border border-stone-300 text-stone-700 text-xs uppercase tracking-[0.2em] font-medium rounded-md hover:border-rose hover:text-rose transition-colors"
+                                            className="px-6 py-3 border border-[#EADFD6] text-charcoal text-xs uppercase tracking-[0.2em] font-medium rounded-md hover:border-rose hover:text-rose transition-colors bg-white"
                                         >
                                             {heroSlides[currentSlide].secondaryBtnText}
                                         </Link>
@@ -196,8 +196,8 @@ const HomePage = () => {
                                 />
 
                                 {/* Smaller Chip at bottom-left of image panel (hidden on mobile) */}
-                                <div className="absolute bottom-4 left-4 z-20 hidden sm:block bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-md shadow-xs border border-stone-200/60">
-                                    <p className="text-[9px] uppercase tracking-wider text-stone-500 font-medium">
+                                <div className="absolute bottom-4 left-4 z-20 hidden sm:block bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-md shadow-xs border border-[#EADFD6]">
+                                    <p className="text-[9px] uppercase tracking-wider text-[#6B5B55] font-medium">
                                         {heroSlides[currentSlide].badgeLabel}
                                     </p>
                                     <p className="font-heading text-sm text-rose font-bold">
@@ -212,14 +212,14 @@ const HomePage = () => {
                     <button 
                         onClick={prevHeroSlide}
                         aria-label="Previous Slide"
-                        className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-stone-700 hover:text-rose shadow-xs border border-stone-200 items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-30"
+                        className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-charcoal hover:text-rose shadow-xs border border-[#EADFD6] items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-30"
                     >
                         <ChevronLeft size={18} />
                     </button>
                     <button 
                         onClick={nextHeroSlide}
                         aria-label="Next Slide"
-                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-stone-700 hover:text-rose shadow-xs border border-stone-200 items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-30"
+                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-charcoal hover:text-rose shadow-xs border border-[#EADFD6] items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-30"
                     >
                         <ChevronRight size={18} />
                     </button>
@@ -243,7 +243,7 @@ const HomePage = () => {
             </section>
 
             {/* FEATURES STRIP */}
-            <section className="bg-white border-y border-stone-200/60 py-6 md:py-8" data-testid="features-strip">
+            <section className="bg-white border-y border-[#EADFD6] py-6 md:py-8" data-testid="features-strip">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                         {[
@@ -253,12 +253,12 @@ const HomePage = () => {
                             { icon: Lock, title: 'Secure Payment', desc: '100% protected checkout' }
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3 group">
-                                <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose group-hover:bg-rose group-hover:text-white transition-all flex-shrink-0 border border-rose-100">
+                                <div className="w-10 h-10 rounded-full bg-[#FAF0EA] flex items-center justify-center text-rose group-hover:bg-rose group-hover:text-white transition-all flex-shrink-0 border border-[#F6E4E6]">
                                     <item.icon size={18} />
                                 </div>
                                 <div>
                                     <h3 className="font-heading text-xs md:text-sm font-semibold text-charcoal tracking-wide">{item.title}</h3>
-                                    <p className="text-[11px] text-stone-500 mt-0.5">{item.desc}</p>
+                                    <p className="text-[11px] text-[#6B5B55] mt-0.5">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -267,7 +267,7 @@ const HomePage = () => {
             </section>
 
             {/* SHOP BY CATEGORY */}
-            <section className="py-16 md:py-20 bg-white border-b border-stone-100" data-testid="categories-section">
+            <section className="py-16 md:py-20 bg-white border-b border-[#EADFD6]" data-testid="categories-section">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="text-center mb-10">
                         <h2 className="font-heading text-2xl md:text-3xl text-charcoal uppercase tracking-widest font-normal">Shop by Category</h2>
@@ -281,7 +281,7 @@ const HomePage = () => {
                                 <Link 
                                     key={category.id}
                                     to={`/shop?category=${category.id}`}
-                                    className="block relative aspect-[3/4] overflow-hidden rounded-md group shadow-xs border border-stone-100"
+                                    className="block relative aspect-[3/4] overflow-hidden rounded-md group shadow-xs border border-[#EADFD6]"
                                     data-testid={`category-${category.id}`}
                                 >
                                     <img 
@@ -294,7 +294,7 @@ const HomePage = () => {
                                         <h3 className="font-heading text-lg md:text-xl font-normal uppercase tracking-wider text-white">
                                             {category.name}
                                         </h3>
-                                        <p className="text-[10px] text-stone-200 font-semibold uppercase tracking-[0.2em]">
+                                        <p className="text-[10px] text-white/90 font-semibold uppercase tracking-[0.2em]">
                                             SHOP NOW
                                         </p>
                                     </div>
@@ -306,7 +306,7 @@ const HomePage = () => {
             </section>
 
             {/* NEW ARRIVALS CAROUSEL */}
-            <section className="py-16 md:py-20 bg-[#FFFBF7] border-b border-stone-100" data-testid="new-arrivals-section">
+            <section className="py-16 md:py-20 bg-[#FFFBF7] border-b border-[#EADFD6]" data-testid="new-arrivals-section">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="flex items-center justify-between mb-10">
                         <div className="w-full text-center relative">
@@ -316,14 +316,14 @@ const HomePage = () => {
                             <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2">
                                 <button 
                                     onClick={prevProductSlide} 
-                                    className="p-2 rounded-full border border-stone-300 text-stone-700 hover:text-rose hover:border-rose transition-colors bg-white shadow-xs"
+                                    className="p-2 rounded-full border border-[#EADFD6] text-charcoal hover:text-rose hover:border-rose transition-colors bg-white shadow-xs"
                                     aria-label="Previous products"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
                                 <button 
                                     onClick={nextProductSlide} 
-                                    className="p-2 rounded-full border border-stone-300 text-stone-700 hover:text-rose hover:border-rose transition-colors bg-white shadow-xs"
+                                    className="p-2 rounded-full border border-[#EADFD6] text-charcoal hover:text-rose hover:border-rose transition-colors bg-white shadow-xs"
                                     aria-label="Next products"
                                 >
                                     <ChevronRight size={16} />
@@ -341,10 +341,10 @@ const HomePage = () => {
             </section>
 
             {/* BRAND STORY */}
-            <section className="py-16 md:py-20 bg-white border-b border-stone-100" data-testid="brand-story-section">
+            <section className="py-16 md:py-20 bg-white border-b border-[#EADFD6]" data-testid="brand-story-section">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                        <div className="relative aspect-[4/3] rounded-md overflow-hidden shadow-xs border border-stone-200/60">
+                        <div className="relative aspect-[4/3] rounded-md overflow-hidden shadow-xs border border-[#EADFD6]">
                             <img 
                                 src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800" 
                                 alt="Heritage Craftsmanship"
@@ -357,7 +357,7 @@ const HomePage = () => {
                                 Our Essence
                             </h2>
                             <SectionDivider />
-                            <p className="text-stone-600 text-xs md:text-sm leading-relaxed">
+                            <p className="text-[#6B5B55] text-xs md:text-sm leading-relaxed">
                                 At Jaridar, every drape weaves together centuries of Indian textile artistry with contemporary elegance. 
                                 Our master artisans meticulously hand-craft luxury ethnic wear, timeless sarees, and bridal ensembles designed to make your most cherished celebrations unforgettable.
                             </p>
@@ -373,7 +373,7 @@ const HomePage = () => {
             </section>
 
             {/* TESTIMONIALS */}
-            <section className="py-16 md:py-20 bg-[#FFFBF7] border-b border-stone-100" data-testid="testimonials-section">
+            <section className="py-16 md:py-20 bg-[#FFFBF7] border-b border-[#EADFD6]" data-testid="testimonials-section">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="text-center mb-10">
                         <h2 className="font-heading text-2xl md:text-3xl text-charcoal uppercase tracking-widest font-normal">What Our Customers Say</h2>
@@ -401,13 +401,13 @@ const HomePage = () => {
                                 rating: 5
                             }
                         ].map((testimonial, i) => (
-                            <div key={i} className="bg-white p-6 rounded-md border border-stone-200/80 shadow-xs">
-                                <div className="flex gap-1 mb-3 text-amber-400">
+                            <div key={i} className="bg-white p-6 rounded-md border border-[#EADFD6] shadow-xs">
+                                <div className="flex gap-1 mb-3 text-[#C9A961]">
                                     {[...Array(testimonial.rating)].map((_, j) => (
-                                        <Star key={j} size={15} className="fill-amber-400 text-amber-400" />
+                                        <Star key={j} size={15} className="fill-[#C9A961] text-[#C9A961]" />
                                     ))}
                                 </div>
-                                <p className="text-stone-600 mb-4 leading-relaxed text-xs italic">"{testimonial.text}"</p>
+                                <p className="text-[#6B5B55] mb-4 leading-relaxed text-xs italic">"{testimonial.text}"</p>
                                 <div>
                                     <p className="font-heading text-sm font-semibold text-charcoal">{testimonial.name}</p>
                                     <p className="text-[10px] text-rose font-medium uppercase tracking-wider">{testimonial.location}</p>

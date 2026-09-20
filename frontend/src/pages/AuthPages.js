@@ -35,7 +35,7 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-pearl flex" data-testid="login-page">
+        <div className="min-h-screen bg-[#FFFBF7] flex" data-testid="login-page">
             {/* Left Panel - Image */}
             <div className="hidden lg:block lg:w-1/2 relative">
                 <img 
@@ -60,30 +60,30 @@ const LoginPage = () => {
                     className="w-full max-w-md"
                 >
                     <Link to="/" className="flex items-center gap-2 mb-12">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose to-serenity flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose to-blush flex items-center justify-center">
                             <span className="font-heading text-xl text-white font-semibold">J</span>
                         </div>
                         <div>
                             <h1 className="font-heading text-xl text-charcoal">JARIDAR</h1>
-                            <p className="text-[10px] text-serenity-dark uppercase tracking-widest">Fashion Couture</p>
+                            <p className="text-[10px] text-[#8E6F2C] uppercase tracking-widest">Fashion Couture</p>
                         </div>
                     </Link>
 
                     <h2 className="font-heading text-3xl text-charcoal mb-2">Sign In</h2>
-                    <p className="text-gray-500 mb-8">Welcome back! Please enter your details.</p>
+                    <p className="text-[#6B5B55] mb-8">Welcome back! Please enter your details.</p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <Label htmlFor="email">Email</Label>
                             <div className="relative mt-1">
-                                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email"
-                                    className="pl-10"
+                                    className="pl-10 border-[#EADFD6]"
                                     required
                                     data-testid="login-email"
                                 />
@@ -93,21 +93,21 @@ const LoginPage = () => {
                         <div>
                             <Label htmlFor="password">Password</Label>
                             <div className="relative mt-1">
-                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
-                                    className="pl-10 pr-10"
+                                    className="pl-10 pr-10 border-[#EADFD6]"
                                     required
                                     data-testid="login-password"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B5B55]"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -115,8 +115,8 @@ const LoginPage = () => {
                         </div>
 
                         <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 text-sm">
-                                <input type="checkbox" className="rounded border-gray-300" />
+                            <label className="flex items-center gap-2 text-sm text-[#6B5B55]">
+                                <input type="checkbox" className="rounded border-[#EADFD6]" />
                                 Remember me
                             </label>
                             <a href="#" className="text-sm text-rose hover:underline">Forgot password?</a>
@@ -132,7 +132,7 @@ const LoginPage = () => {
                         </button>
                     </form>
 
-                    <p className="text-center mt-8 text-gray-600">
+                    <p className="text-center mt-8 text-[#6B5B55]">
                         Don't have an account?{' '}
                         <Link to="/register" className="text-rose font-medium hover:underline">
                             Sign up
@@ -183,7 +183,7 @@ const RegisterPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-pearl flex" data-testid="register-page">
+        <div className="min-h-screen bg-[#FFFBF7] flex" data-testid="register-page">
             {/* Left Panel - Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
                 <motion.div 
@@ -192,30 +192,30 @@ const RegisterPage = () => {
                     className="w-full max-w-md"
                 >
                     <Link to="/" className="flex items-center gap-2 mb-12">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose to-serenity flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose to-blush flex items-center justify-center">
                             <span className="font-heading text-xl text-white font-semibold">J</span>
                         </div>
                         <div>
                             <h1 className="font-heading text-xl text-charcoal">JARIDAR</h1>
-                            <p className="text-[10px] text-serenity-dark uppercase tracking-widest">Fashion Couture</p>
+                            <p className="text-[10px] text-[#8E6F2C] uppercase tracking-widest">Fashion Couture</p>
                         </div>
                     </Link>
 
                     <h2 className="font-heading text-3xl text-charcoal mb-2">Create Account</h2>
-                    <p className="text-gray-500 mb-8">Join us for exclusive access to new collections and offers.</p>
+                    <p className="text-[#6B5B55] mb-8">Join us for exclusive access to new collections and offers.</p>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
                             <Label htmlFor="name">Full Name</Label>
                             <div className="relative mt-1">
-                                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="name"
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Enter your name"
-                                    className="pl-10"
+                                    className="pl-10 border-[#EADFD6]"
                                     required
                                     data-testid="register-name"
                                 />
@@ -225,14 +225,14 @@ const RegisterPage = () => {
                         <div>
                             <Label htmlFor="email">Email</Label>
                             <div className="relative mt-1">
-                                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email"
-                                    className="pl-10"
+                                    className="pl-10 border-[#EADFD6]"
                                     required
                                     data-testid="register-email"
                                 />
@@ -242,14 +242,14 @@ const RegisterPage = () => {
                         <div>
                             <Label htmlFor="phone">Phone Number (Optional)</Label>
                             <div className="relative mt-1">
-                                <Phone size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Phone size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="phone"
                                     type="tel"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="10-digit number"
-                                    className="pl-10"
+                                    className="pl-10 border-[#EADFD6]"
                                     data-testid="register-phone"
                                 />
                             </div>
@@ -258,21 +258,21 @@ const RegisterPage = () => {
                         <div>
                             <Label htmlFor="password">Password</Label>
                             <div className="relative mt-1">
-                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Create a password"
-                                    className="pl-10 pr-10"
+                                    className="pl-10 pr-10 border-[#EADFD6]"
                                     required
                                     data-testid="register-password"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B5B55]"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -282,14 +282,14 @@ const RegisterPage = () => {
                         <div>
                             <Label htmlFor="confirmPassword">Confirm Password</Label>
                             <div className="relative mt-1">
-                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5B55]" />
                                 <Input
                                     id="confirmPassword"
                                     type={showPassword ? 'text' : 'password'}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Confirm your password"
-                                    className="pl-10"
+                                    className="pl-10 border-[#EADFD6]"
                                     required
                                     data-testid="register-confirm-password"
                                 />
@@ -306,7 +306,7 @@ const RegisterPage = () => {
                         </button>
                     </form>
 
-                    <p className="text-center mt-8 text-gray-600">
+                    <p className="text-center mt-8 text-[#6B5B55]">
                         Already have an account?{' '}
                         <Link to="/login" className="text-rose font-medium hover:underline">
                             Sign in

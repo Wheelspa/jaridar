@@ -157,32 +157,32 @@ const ProductDetailPage = () => {
         : 0;
 
     return (
-        <div className="min-h-screen bg-pearl" data-testid="product-detail-page">
+        <div className="min-h-screen bg-[#FFFBF7]" data-testid="product-detail-page">
             {/* Breadcrumb */}
-            <div className="bg-white border-b">
-                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4">
-                    <div className="flex items-center text-sm text-gray-500">
+            <div className="bg-white border-b border-[#EADFD6]">
+                <div className="max-w-7xl mx-auto px-4 md:px-8 py-3.5">
+                    <div className="flex items-center text-xs text-[#6B5B55]">
                         <Link to="/" className="hover:text-rose">Home</Link>
-                        <ChevronRight size={14} className="mx-2" />
+                        <ChevronRight size={14} className="mx-2 text-[#6B5B55]" />
                         <Link to="/shop" className="hover:text-rose">Shop</Link>
-                        <ChevronRight size={14} className="mx-2" />
+                        <ChevronRight size={14} className="mx-2 text-[#6B5B55]" />
                         <Link to={`/shop?category=${product.category}`} className="hover:text-rose capitalize">
                             {product.category}
                         </Link>
-                        <ChevronRight size={14} className="mx-2" />
-                        <span className="text-charcoal truncate max-w-[200px]">{product.name}</span>
+                        <ChevronRight size={14} className="mx-2 text-[#6B5B55]" />
+                        <span className="text-charcoal font-medium truncate max-w-[200px]">{product.name}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
-                <div className="grid lg:grid-cols-2 gap-12">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+                <div className="grid lg:grid-cols-2 gap-10 lg:gap-12">
                     {/* Image Gallery */}
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                     >
-                        <div className="aspect-[3/4] bg-white mb-4 overflow-hidden">
+                        <div className="aspect-[3/4] bg-white rounded-md border border-[#EADFD6] mb-4 overflow-hidden shadow-xs">
                             <img 
                                 src={product.images[activeImage]}
                                 alt={product.name}
@@ -196,7 +196,7 @@ const ProductDetailPage = () => {
                                     <button 
                                         key={i}
                                         onClick={() => setActiveImage(i)}
-                                        className={`w-20 h-24 overflow-hidden border-2 ${activeImage === i ? 'border-rose' : 'border-transparent'}`}
+                                        className={`w-20 h-24 rounded-md overflow-hidden border-2 transition-all ${activeImage === i ? 'border-rose' : 'border-[#EADFD6]'}`}
                                     >
                                         <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
                                     </button>
@@ -209,33 +209,33 @@ const ProductDetailPage = () => {
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="lg:py-6"
+                        className="lg:py-2"
                     >
                         {/* Category & Name */}
-                        <p className="text-xs uppercase tracking-widest text-rose mb-2 font-semibold">{product.category}</p>
-                        <h1 className="font-heading text-3xl md:text-4xl text-charcoal mb-4" data-testid="product-name">
+                        <p className="text-xs uppercase tracking-widest text-rose mb-1.5 font-semibold">{product.category}</p>
+                        <h1 className="font-heading text-3xl md:text-4xl text-charcoal mb-3" data-testid="product-name">
                             {product.name}
                         </h1>
 
                         {/* Rating */}
                         {product.rating > 0 && (
-                            <div className="flex items-center gap-3 mb-6">
+                            <div className="flex items-center gap-3 mb-5">
                                 <StarRating rating={product.rating} readonly />
-                                <span className="text-sm text-gray-500">({product.review_count} reviews)</span>
+                                <span className="text-xs text-[#6B5B55]">({product.review_count} reviews)</span>
                             </div>
                         )}
 
                         {/* Price */}
-                        <div className="flex items-center gap-4 mb-8">
-                            <span className="font-heading text-3xl text-charcoal" data-testid="product-price">
+                        <div className="flex items-center gap-4 mb-6">
+                            <span className="font-heading text-3xl text-charcoal font-semibold" data-testid="product-price">
                                 {formatPrice(product.price)}
                             </span>
                             {product.original_price && (
                                 <>
-                                    <span className="text-xl text-gray-400 line-through">
+                                    <span className="text-lg text-[#6B5B55] line-through">
                                         {formatPrice(product.original_price)}
                                     </span>
-                                    <span className="bg-rose/20 text-rose px-3 py-1 text-sm font-semibold">
+                                    <span className="bg-rose-light text-rose px-2.5 py-0.5 text-xs uppercase tracking-wider font-bold rounded">
                                         {discount}% OFF
                                     </span>
                                 </>
@@ -243,17 +243,17 @@ const ProductDetailPage = () => {
                         </div>
 
                         {/* Description */}
-                        <p className="text-gray-600 leading-relaxed mb-8">
+                        <p className="text-[#6B5B55] text-xs md:text-sm leading-relaxed mb-6">
                             {product.description}
                         </p>
 
                         {/* Size Selector */}
                         <div className="mb-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="font-medium">Size</span>
-                                <Link to="/size-guide" className="text-sm text-rose hover:underline">Size Guide</Link>
+                            <div className="flex items-center justify-between mb-2.5">
+                                <span className="text-xs uppercase tracking-wider font-semibold text-charcoal">Size</span>
+                                <Link to="/size-guide" className="text-xs text-rose hover:underline font-medium">Size Guide</Link>
                             </div>
-                            <div className="flex gap-3 flex-wrap">
+                            <div className="flex gap-2.5 flex-wrap">
                                 {product.sizes.map((size) => (
                                     <button
                                         key={size}
@@ -269,14 +269,14 @@ const ProductDetailPage = () => {
 
                         {/* Color Selector */}
                         {product.colors.length > 0 && (
-                            <div className="mb-8">
-                                <span className="font-medium block mb-3">Color: {selectedColor}</span>
-                                <div className="flex gap-3">
+                            <div className="mb-6">
+                                <span className="text-xs uppercase tracking-wider font-semibold text-charcoal block mb-2.5">Color: {selectedColor}</span>
+                                <div className="flex gap-2.5">
                                     {product.colors.map((color) => (
                                         <button
                                             key={color}
                                             onClick={() => setSelectedColor(color)}
-                                            className={`px-4 py-2 border text-sm ${selectedColor === color ? 'border-charcoal bg-charcoal text-white' : 'border-gray-300 hover:border-rose'}`}
+                                            className={`px-3.5 py-1.5 border rounded-md text-xs font-medium transition-all ${selectedColor === color ? 'border-rose bg-rose text-white' : 'border-[#EADFD6] text-charcoal bg-white hover:border-rose'}`}
                                             data-testid={`color-${color}`}
                                         >
                                             {color}
@@ -287,61 +287,60 @@ const ProductDetailPage = () => {
                         )}
 
                         {/* Quantity */}
-                        <div className="mb-8">
-                            <span className="font-medium block mb-3">Quantity</span>
-                            <div className="flex items-center gap-3">
+                        <div className="mb-6">
+                            <span className="text-xs uppercase tracking-wider font-semibold text-charcoal block mb-2.5">Quantity</span>
+                            <div className="flex items-center gap-2">
                                 <button 
                                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                                     className="qty-btn"
                                     data-testid="qty-decrease"
                                 >
-                                    <Minus size={16} />
+                                    <Minus size={14} />
                                 </button>
-                                <span className="w-12 text-center font-medium" data-testid="quantity-display">{quantity}</span>
+                                <span className="w-10 text-center text-xs font-semibold text-charcoal" data-testid="quantity-display">{quantity}</span>
                                 <button 
                                     onClick={() => setQuantity(q => q + 1)}
                                     className="qty-btn"
                                     data-testid="qty-increase"
                                 >
-                                    <Plus size={16} />
+                                    <Plus size={14} />
                                 </button>
                             </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-4 mb-8">
+                        <div className="flex gap-3 mb-6">
                             <button 
                                 onClick={handleAddToCart}
-                                className="btn-primary flex-1 flex items-center justify-center gap-2"
+                                className="btn-primary flex-1 flex items-center justify-center gap-2 shadow-sm"
                                 data-testid="add-to-cart-btn"
                             >
-                                <ShoppingBag size={18} /> Add to Cart
+                                <ShoppingBag size={16} /> Add to Cart
                             </button>
                             <button 
                                 onClick={handleWishlist}
-                                className={`w-14 h-14 border flex items-center justify-center ${inWishlist ? 'bg-rose text-white border-rose' : 'border-gray-300 hover:border-rose'}`}
-                                style={{ transition: 'background-color 0.2s, border-color 0.2s, color 0.2s' }}
+                                className={`w-12 h-12 border rounded-md flex items-center justify-center transition-all ${inWishlist ? 'bg-rose text-white border-rose' : 'border-[#EADFD6] text-charcoal bg-white hover:border-rose hover:text-rose'}`}
                                 data-testid="wishlist-btn"
                             >
-                                <Heart size={20} fill={inWishlist ? 'currentColor' : 'none'} />
+                                <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
                             </button>
                         </div>
 
                         {/* Stock Status */}
-                        <p className={`text-sm mb-6 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {product.stock > 0 ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+                        <p className={`text-xs font-medium mb-6 ${product.stock > 0 ? 'text-emerald-700' : 'text-rose'}`}>
+                            {product.stock > 0 ? `In Stock (${product.stock} items available)` : 'Out of Stock'}
                         </p>
 
                         {/* Features */}
-                        <div className="grid grid-cols-3 gap-4 py-6 border-t border-gray-200">
+                        <div className="grid grid-cols-3 gap-4 py-5 border-t border-[#EADFD6]">
                             {[
                                 { icon: Truck, text: 'Free Shipping' },
                                 { icon: RefreshCw, text: 'Easy Returns' },
                                 { icon: Shield, text: 'Secure Payment' }
                             ].map((feature, i) => (
                                 <div key={i} className="text-center">
-                                    <feature.icon size={20} className="mx-auto text-rose mb-2" />
-                                    <span className="text-xs text-gray-600">{feature.text}</span>
+                                    <feature.icon size={18} className="mx-auto text-rose mb-1.5" />
+                                    <span className="text-[11px] text-[#6B5B55] font-medium">{feature.text}</span>
                                 </div>
                             ))}
                         </div>
@@ -349,60 +348,60 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* Tabs */}
-                <div className="mt-16">
+                <div className="mt-16 bg-white p-6 md:p-8 rounded-md border border-[#EADFD6]">
                     <Tabs defaultValue="reviews" className="w-full">
-                        <TabsList className="w-full justify-start border-b bg-transparent h-auto p-0 space-x-8">
-                            <TabsTrigger value="reviews" className="tab-underline pb-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
+                        <TabsList className="w-full justify-start border-b border-[#EADFD6] bg-transparent h-auto p-0 space-x-8">
+                            <TabsTrigger value="reviews" className="tab-underline pb-3 text-xs uppercase tracking-wider font-semibold data-[state=active]:text-rose data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
                                 Reviews ({reviews.length})
                             </TabsTrigger>
-                            <TabsTrigger value="size-guide" className="tab-underline pb-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
+                            <TabsTrigger value="size-guide" className="tab-underline pb-3 text-xs uppercase tracking-wider font-semibold data-[state=active]:text-rose data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
                                 Size Guide
                             </TabsTrigger>
-                            <TabsTrigger value="shipping" className="tab-underline pb-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
+                            <TabsTrigger value="shipping" className="tab-underline pb-3 text-xs uppercase tracking-wider font-semibold data-[state=active]:text-rose data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
                                 Shipping & Returns
                             </TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="reviews" className="pt-8">
-                            <div className="grid lg:grid-cols-2 gap-12">
+                        <TabsContent value="reviews" className="pt-6">
+                            <div className="grid lg:grid-cols-2 gap-10">
                                 {/* Reviews List */}
                                 <div>
-                                    <h3 className="font-heading text-2xl mb-6">Customer Reviews</h3>
+                                    <h3 className="font-heading text-xl uppercase tracking-wider text-charcoal mb-4">Customer Reviews</h3>
                                     {reviews.length > 0 ? (
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             {reviews.map((review) => (
-                                                <div key={review.id} className="border-b border-gray-100 pb-6">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="font-medium">{review.user_name}</span>
-                                                        <StarRating rating={review.rating} readonly size={16} />
+                                                <div key={review.id} className="border-b border-[#EADFD6] pb-4">
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <span className="text-xs font-semibold text-charcoal">{review.user_name}</span>
+                                                        <StarRating rating={review.rating} readonly size={14} />
                                                     </div>
-                                                    <p className="text-gray-600 text-sm">{review.comment}</p>
-                                                    <p className="text-xs text-gray-400 mt-2">
+                                                    <p className="text-[#6B5B55] text-xs leading-relaxed">{review.comment}</p>
+                                                    <p className="text-[10px] text-[#6B5B55] mt-1.5">
                                                         {new Date(review.created_at).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+                                        <p className="text-xs text-[#6B5B55]">No reviews yet. Be the first to review this ensemble!</p>
                                     )}
                                 </div>
 
                                 {/* Write Review */}
                                 <div>
-                                    <h3 className="font-heading text-2xl mb-6">Write a Review</h3>
+                                    <h3 className="font-heading text-xl uppercase tracking-wider text-charcoal mb-4">Write a Review</h3>
                                     <form onSubmit={handleSubmitReview} className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-2">Rating</label>
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-charcoal mb-1.5">Rating</label>
                                             <StarRating rating={reviewRating} onChange={setReviewRating} />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2">Your Review</label>
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-charcoal mb-1.5">Your Review</label>
                                             <textarea
                                                 value={reviewComment}
                                                 onChange={(e) => setReviewComment(e.target.value)}
                                                 placeholder="Share your experience with this product..."
-                                                className="w-full p-4 border border-gray-200 rounded-lg focus:border-rose outline-none min-h-[120px]"
+                                                className="w-full p-3 text-xs bg-[#FFFBF7] border border-[#EADFD6] rounded-md focus:border-rose focus:outline-none min-h-[100px] text-charcoal"
                                                 required
                                                 data-testid="review-textarea"
                                             />
@@ -420,16 +419,16 @@ const ProductDetailPage = () => {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="size-guide" className="pt-8">
-                            <h3 className="font-heading text-2xl mb-6">Size Guide</h3>
+                        <TabsContent value="size-guide" className="pt-6">
+                            <h3 className="font-heading text-xl uppercase tracking-wider text-charcoal mb-4">Size Guide</h3>
                             <div className="overflow-x-auto">
-                                <table className="w-full border-collapse">
+                                <table className="w-full border-collapse text-xs">
                                     <thead>
-                                        <tr className="bg-gray-50">
-                                            <th className="border p-3 text-left">Size</th>
-                                            <th className="border p-3 text-left">Bust (inches)</th>
-                                            <th className="border p-3 text-left">Waist (inches)</th>
-                                            <th className="border p-3 text-left">Hip (inches)</th>
+                                        <tr className="bg-[#FAF0EA]">
+                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Size</th>
+                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Bust (inches)</th>
+                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Waist (inches)</th>
+                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Hip (inches)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -441,11 +440,11 @@ const ProductDetailPage = () => {
                                             { size: 'XL', bust: '40-41', waist: '32-33', hip: '42-43' },
                                             { size: 'XXL', bust: '42-43', waist: '34-35', hip: '44-45' },
                                         ].map((row, i) => (
-                                            <tr key={i} className="hover:bg-gray-50">
-                                                <td className="border p-3 font-medium">{row.size}</td>
-                                                <td className="border p-3">{row.bust}</td>
-                                                <td className="border p-3">{row.waist}</td>
-                                                <td className="border p-3">{row.hip}</td>
+                                            <tr key={i} className="hover:bg-[#FAF0EA]/50 text-[#6B5B55]">
+                                                <td className="border border-[#EADFD6] p-2.5 font-semibold text-charcoal">{row.size}</td>
+                                                <td className="border border-[#EADFD6] p-2.5">{row.bust}</td>
+                                                <td className="border border-[#EADFD6] p-2.5">{row.waist}</td>
+                                                <td className="border border-[#EADFD6] p-2.5">{row.hip}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -453,25 +452,23 @@ const ProductDetailPage = () => {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="shipping" className="pt-8">
-                            <h3 className="font-heading text-2xl mb-6">Shipping & Returns</h3>
-                            <div className="space-y-6 max-w-2xl">
+                        <TabsContent value="shipping" className="pt-6">
+                            <h3 className="font-heading text-xl uppercase tracking-wider text-charcoal mb-4">Shipping & Returns</h3>
+                            <div className="space-y-4 max-w-2xl text-xs text-[#6B5B55]">
                                 <div>
-                                    <h4 className="font-medium mb-2">Shipping</h4>
-                                    <ul className="text-gray-600 space-y-2 text-sm">
+                                    <h4 className="font-semibold text-charcoal mb-1">Shipping Policy</h4>
+                                    <ul className="space-y-1">
                                         <li>• Free shipping on orders above ₹2,999</li>
                                         <li>• Standard delivery: 5-7 business days</li>
-                                        <li>• Express delivery: 2-3 business days (additional charges apply)</li>
-                                        <li>• We ship across India</li>
+                                        <li>• Express delivery: 2-3 business days</li>
                                     </ul>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium mb-2">Returns & Exchanges</h4>
-                                    <ul className="text-gray-600 space-y-2 text-sm">
+                                    <h4 className="font-semibold text-charcoal mb-1">Returns & Exchanges</h4>
+                                    <ul className="space-y-1">
                                         <li>• Easy 7-day return policy</li>
-                                        <li>• Items must be unused with original tags</li>
+                                        <li>• Items must be unused with original tags attached</li>
                                         <li>• Refund processed within 5-7 business days</li>
-                                        <li>• Exchange available for different sizes</li>
                                     </ul>
                                 </div>
                             </div>
@@ -481,9 +478,9 @@ const ProductDetailPage = () => {
 
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
-                    <div className="mt-20">
-                        <h2 className="font-heading text-3xl mb-8">You May Also Like</h2>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="mt-16">
+                        <h2 className="font-heading text-2xl uppercase tracking-widest text-charcoal mb-6">You May Also Like</h2>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                             {relatedProducts.slice(0, 4).map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
