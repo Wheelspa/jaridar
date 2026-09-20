@@ -52,15 +52,17 @@ const heroSlides = [
     }
 ];
 
+const brandStoryImage = '/images/story/story-1.jpg';
+
 const categoryEditorialImages = {
-    ethnic: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&auto=format&fit=crop&q=80',
-    traditional: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=900&auto=format&fit=crop&q=80',
-    western: 'https://images.unsplash.com/photo-1612364557094-98a4b47200f6?w=900&auto=format&fit=crop&q=80',
-    bridal: 'https://images.unsplash.com/photo-1759906766380-7a5849e6fb13?w=900&auto=format&fit=crop&q=80'
+    ethnic: '/images/categories/ethnic.jpg',
+    traditional: '/images/categories/traditional.jpg',
+    western: '/images/categories/western.jpg',
+    bridal: '/images/categories/bridal.jpg'
 };
 
-const SectionDivider = () => (
-    <div className="flex items-center justify-center gap-2 my-3">
+const SectionDivider = ({ align = "center" }) => (
+    <div className={`flex items-center gap-2 my-3 ${align === "left" ? "justify-center md:justify-start" : "justify-center"}`}>
         <div className="w-8 h-[1px] bg-rose/40"></div>
         <span className="text-rose text-xs">♥</span>
         <div className="w-8 h-[1px] bg-rose/40"></div>
@@ -287,7 +289,7 @@ const HomePage = () => {
                                     <img 
                                         src={editorialImg}
                                         alt={category.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/20 to-transparent"></div>
                                     <div className="absolute bottom-5 left-4 right-4 text-center text-white space-y-1">
@@ -344,19 +346,19 @@ const HomePage = () => {
             <section className="py-16 md:py-20 bg-white border-b border-[#EADFD6]" data-testid="brand-story-section">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                        <div className="relative aspect-[4/3] rounded-md overflow-hidden shadow-xs border border-[#EADFD6]">
+                        <div className="relative aspect-[4/5] rounded-md overflow-hidden shadow-xs border border-[#EADFD6]">
                             <img 
-                                src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800" 
+                                src={brandStoryImage} 
                                 alt="Heritage Craftsmanship"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-top"
                             />
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 text-center md:text-left">
                             <h2 className="font-heading text-2xl md:text-3xl text-charcoal uppercase tracking-widest font-normal">
                                 Our Essence
                             </h2>
-                            <SectionDivider />
+                            <SectionDivider align="left" />
                             <p className="text-[#6B5B55] text-xs md:text-sm leading-relaxed">
                                 At Jaridar, every drape weaves together centuries of Indian textile artistry with contemporary elegance. 
                                 Our master artisans meticulously hand-craft luxury ethnic wear, timeless sarees, and bridal ensembles designed to make your most cherished celebrations unforgettable.
