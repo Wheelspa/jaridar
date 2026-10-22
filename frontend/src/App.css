@@ -1,13 +1,13 @@
 /* Jaridar Fashion Couture - Custom Styles */
 
-/* Hero section background gradient - warm luxury gradient */
+/* Hero section background gradient - clean luxury gradient */
 .hero-gradient {
-    background: linear-gradient(135deg, #FFFBF7 0%, #FAF0EA 50%, #FAF0EA 100%);
+    background: #FFFFFF;
 }
 
 /* Button styles */
 .btn-primary {
-    @apply rounded-md px-7 py-3 text-xs uppercase tracking-[0.2em] font-semibold bg-rose text-white shadow-xs;
+    @apply rounded-md px-7 py-3 text-sm uppercase tracking-[0.2em] font-semibold bg-rose text-white shadow-xs;
     transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
@@ -17,7 +17,7 @@
 }
 
 .btn-secondary {
-    @apply rounded-md px-7 py-3 text-xs uppercase tracking-[0.2em] font-semibold bg-transparent border border-rose text-rose;
+    @apply rounded-md px-7 py-3 text-sm uppercase tracking-[0.2em] font-semibold bg-transparent border border-rose text-rose;
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
@@ -26,12 +26,12 @@
 }
 
 .btn-tertiary {
-    @apply text-xs uppercase tracking-[0.18em] font-semibold text-rose hover:underline inline-flex items-center gap-1;
+    @apply text-sm uppercase tracking-[0.18em] font-semibold text-rose hover:underline inline-flex items-center gap-1;
 }
 
 /* Input styles */
 .input-underline {
-    @apply border-0 border-b border-[#EADFD6] bg-transparent px-0 py-2 rounded-none text-charcoal;
+    @apply border-0 border-b border-[#E5E7EB] bg-transparent px-0 py-2 rounded-none text-charcoal;
     transition: border-color 0.3s ease;
 }
 
@@ -40,12 +40,12 @@
 }
 
 input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], select, textarea {
-    @apply border-[#EADFD6] focus:border-rose focus:ring-2 focus:ring-rose focus:ring-offset-2 transition-all;
+    @apply border-[#E5E7EB] focus:border-rose focus:ring-2 focus:ring-rose focus:ring-offset-2 transition-all;
 }
 
 /* Product card */
 .product-card {
-    @apply relative overflow-hidden bg-white border border-[#EADFD6] rounded-md p-3;
+    @apply relative overflow-hidden bg-white border border-[#E5E7EB] rounded-md p-3;
 }
 
 .product-card .quick-actions {
@@ -76,15 +76,15 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Header glass effect */
 .header-glass {
-    background: rgba(255, 251, 247, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid #EADFD6;
+    border-bottom: 1px solid #E5E7EB;
 }
 
 /* Size selector */
 .size-option {
-    @apply w-10 h-10 border border-[#EADFD6] rounded-md flex items-center justify-center text-xs font-medium cursor-pointer text-charcoal bg-white;
+    @apply w-10 h-10 border border-[#E5E7EB] rounded-md flex items-center justify-center text-xs font-medium cursor-pointer text-charcoal bg-white;
     transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -112,16 +112,16 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Rating stars */
 .star-filled {
-    color: #C9A961;
+    color: #3B6FA0;
 }
 
 .star-empty {
-    color: #EADFD6;
+    color: #E5E7EB;
 }
 
 /* Quantity selector */
 .qty-btn {
-    @apply w-8 h-8 border border-[#EADFD6] rounded-md flex items-center justify-center cursor-pointer text-charcoal bg-white;
+    @apply w-8 h-8 border border-[#E5E7EB] rounded-md flex items-center justify-center cursor-pointer text-charcoal bg-white;
     transition: background-color 0.2s ease;
 }
 
@@ -131,29 +131,29 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Cart item */
 .cart-item {
-    @apply border-b border-[#EADFD6] py-4;
+    @apply border-b border-[#E5E7EB] py-4;
 }
 
 /* Order status badge */
 .status-pending {
-    @apply bg-[#F6E4E6] text-rose font-medium;
+    @apply bg-[#FBF0EC] text-rose font-medium;
 }
 
 .status-confirmed {
-    @apply bg-[#FAF0EA] text-[#8E6F2C] font-medium;
+    @apply bg-[#E8F0F8] text-[#3B6FA0] font-medium;
 }
 
 .status-shipped {
-    @apply bg-[#FAF0EA] text-charcoal font-medium;
+    @apply bg-white text-charcoal font-medium;
 }
 
 .status-delivered {
-    @apply bg-[#F6E4E6] text-rose font-semibold;
+    @apply bg-[#FBF0EC] text-rose font-semibold;
 }
 
 /* Loading skeleton */
 .skeleton {
-    @apply bg-[#FAF0EA] animate-pulse rounded-md;
+    @apply bg-[#E5E7EB] animate-pulse rounded-md;
 }
 
 /* Modal overlay */
@@ -182,7 +182,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Newsletter section */
 .newsletter-section {
-    background: linear-gradient(135deg, #F6E4E6 0%, #FAF0EA 50%, #FFFBF7 100%);
+    background: #FFFFFF;
 }
 
 /* Footer */
@@ -197,7 +197,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Breadcrumb */
 .breadcrumb-separator {
-    @apply mx-2 text-[#6B5B55];
+    @apply mx-2 text-[#4B5563];
 }
 
 /* Tab underline */
@@ -218,7 +218,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Mobile menu */
 .mobile-menu {
-    @apply fixed inset-0 bg-[#FFFBF7] z-50;
+    @apply fixed inset-0 bg-white z-50;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
 }
@@ -229,7 +229,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Price tag */
 .price-original {
-    @apply text-[#6B5B55] line-through text-xs font-normal;
+    @apply text-[#4B5563] line-through text-sm font-normal;
 }
 
 .price-sale {
@@ -238,9 +238,9 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 
 /* Badge */
 .badge-new {
-    @apply absolute top-3 left-3 bg-charcoal text-white text-[10px] uppercase tracking-wider px-2 py-0.5 font-bold rounded-sm;
+    @apply absolute top-3 left-3 bg-[#3B6FA0] text-white text-xs uppercase tracking-wider px-2 py-0.5 font-bold rounded-sm;
 }
 
 .badge-sale {
-    @apply absolute top-3 right-3 bg-rose text-white text-[10px] uppercase tracking-wider px-2 py-0.5 font-bold rounded-sm;
+    @apply absolute top-3 right-3 bg-rose text-white text-xs uppercase tracking-wider px-2 py-0.5 font-bold rounded-sm;
 }

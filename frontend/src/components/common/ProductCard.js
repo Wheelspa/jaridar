@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
+import { formatAttributeLabel } from '../../lib/utils';
 
 export const ProductCard = ({ product }) => {
     const { isAuthenticated } = useAuth();
@@ -53,9 +54,9 @@ export const ProductCard = ({ product }) => {
                 product.sizes?.[0] || 'M',
                 product.colors?.[0] || 'Default'
             );
-            toast.success(`${product.name} added to cart!`);
+            toast.success(`${product.name} added to bag!`);
         } catch (error) {
-            toast.error('Failed to add item to cart');
+            toast.error('Failed to add item to bag');
         }
     };
 
@@ -68,9 +69,10 @@ export const ProductCard = ({ product }) => {
     };
 
     return (
-        <div className="bg-white rounded-md p-3 border border-[#EADFD6] hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full group" data-testid={`product-card-${product.id}`}>
+        <div className="bg-white rounded-sm border border-[#E5E7EB] hover:border-[#C2255C] hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full group overflow-hidden" data-testid={`product-card-${product.id}`}>
             <Link to={`/product/${product.id}`} className="block flex-1">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-[#FAF0EA] mb-3">
+                {/* Edge-to-edge Image at top */}
+                <div className="relative aspect-[3/4] overflow-hidden bg-white">
                     <img 
                         src={product.images[0]} 
                         alt={product.name}
@@ -81,10 +83,10 @@ export const ProductCard = ({ product }) => {
                     {/* Top Badges */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
                         {product.is_new && (
-                            <span className="bg-charcoal text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm">New</span>
+                            <span className="bg-[#3B6FA0] text-white text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm">New</span>
                         )}
                         {discount > 0 && (
-                            <span className="bg-rose text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm">{discount}% Off</span>
+                            <span className="bg-[#C2255C] text-white text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm">{discount}% Off</span>
                         )}
                     </div>
 
@@ -92,7 +94,7 @@ export const ProductCard = ({ product }) => {
                     <button 
                         onClick={handleWishlist}
                         className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all ${
-                            inWishlist ? 'bg-rose text-white' : 'bg-white/90 text-charcoal hover:bg-rose hover:text-white'
+                            inWishlist ? 'bg-[#C2255C] text-white' : 'bg-white/90 text-[#1F2937] hover:bg-[#C2255C] hover:text-white'
                         }`}
                         aria-label="Wishlist"
                         data-testid={`wishlist-btn-${product.id}`}
@@ -101,36 +103,39 @@ export const ProductCard = ({ product }) => {
                     </button>
                 </div>
 
-                <div className="space-y-1">
+                {/* Padded Area Below Image */}
+                <div className="p-3 space-y-1">
                     {/* Category */}
-                    <p className="text-[10px] uppercase tracking-widest text-[#6B5B55] font-medium">
-                        {product.category}
+                    <p className="text-xs uppercase tracking-widest text-[#4B5563] font-medium">
+                        {formatAttributeLabel(product.category)}
                     </p>
                     
                     {/* Name */}
-                    <h3 className="font-heading text-sm text-charcoal font-medium line-clamp-1 group-hover:text-rose transition-colors">
+                    <h3 className="font-heading text-sm md:text-base text-[#1F2937] font-medium line-clamp-1 group-hover:text-[#C2255C] transition-colors">
                         {product.name}
                     </h3>
 
                     {/* Price */}
                     <div className="flex items-center gap-2 pt-1">
-                        <span className="font-semibold text-xs md:text-sm text-charcoal">{formatPrice(product.price)}</span>
+                        <span className="font-bold text-base text-[#1F2937]">{formatPrice(product.price)}</span>
                         {product.original_price && (
-                            <span className="text-xs text-[#6B5B55] line-through font-normal">{formatPrice(product.original_price)}</span>
+                            <span className="text-sm text-[#9CA3AF] line-through font-normal">{formatPrice(product.original_price)}</span>
                         )}
                     </div>
                 </div>
             </Link>
 
-            {/* Full-width small ADD TO CART button */}
-            <button
-                onClick={handleAddToCart}
-                className="w-full mt-3 py-2 bg-rose hover:bg-rose-dark text-white text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                data-testid={`add-to-cart-btn-${product.id}`}
-            >
-                <ShoppingBag size={14} />
-                <span>Add to Cart</span>
-            </button>
+            {/* Full-width outlined ADD TO BAG button */}
+            <div className="px-3 pb-3">
+                <button
+                    onClick={handleAddToCart}
+                    className="w-full h-9 bg-transparent border border-[#C2255C] text-[#C2255C] hover:bg-[#C2255C] hover:text-white text-sm font-semibold uppercase tracking-wide rounded-sm transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                    data-testid={`add-to-cart-btn-${product.id}`}
+                >
+                    <ShoppingBag size={14} />
+                    <span>Add to Bag</span>
+                </button>
+            </div>
         </div>
     );
 };

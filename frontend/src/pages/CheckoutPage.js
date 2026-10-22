@@ -161,20 +161,20 @@ const CheckoutPage = () => {
     const grandTotal = cart.total + shippingCost;
 
     return (
-        <div className="min-h-screen bg-[#FFFBF7]" data-testid="checkout-page">
+        <div className="min-h-screen bg-white" data-testid="checkout-page">
             {/* Progress Bar */}
-            <div className="bg-white border-b border-[#EADFD6]">
+            <div className="bg-white border-b border-[#E5E7EB]">
                 <div className="max-w-3xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-center gap-4 text-xs font-semibold uppercase tracking-wider">
-                        <div className={`flex items-center gap-2 ${step >= 1 ? 'text-rose' : 'text-[#6B5B55]'}`}>
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-rose text-white' : 'bg-[#FAF0EA] text-[#6B5B55] border border-[#EADFD6]'}`}>
+                        <div className={`flex items-center gap-2 ${step >= 1 ? 'text-rose' : 'text-[#4B5563]'}`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-rose text-white' : 'bg-white text-[#4B5563] border border-[#E5E7EB]'}`}>
                                 {step > 1 ? <Check size={14} /> : '1'}
                             </div>
                             <span className="hidden sm:inline">Shipping</span>
                         </div>
-                        <ChevronRight size={16} className="text-[#6B5B55]" />
-                        <div className={`flex items-center gap-2 ${step >= 2 ? 'text-rose' : 'text-[#6B5B55]'}`}>
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-rose text-white' : 'bg-[#FAF0EA] text-[#6B5B55] border border-[#EADFD6]'}`}>
+                        <ChevronRight size={16} className="text-[#4B5563]" />
+                        <div className={`flex items-center gap-2 ${step >= 2 ? 'text-rose' : 'text-[#4B5563]'}`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-rose text-white' : 'bg-white text-[#4B5563] border border-[#E5E7EB]'}`}>
                                 2
                             </div>
                             <span className="hidden sm:inline">Payment</span>
@@ -183,7 +183,7 @@ const CheckoutPage = () => {
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
+            <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] py-10">
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2">
@@ -191,9 +191,9 @@ const CheckoutPage = () => {
                             <motion.div
                                 initial={{ opacity: 0, x: -15 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-white rounded-md border border-[#EADFD6] p-6 md:p-8 shadow-xs"
+                                className="bg-white rounded-xl border border-[#E5E7EB] p-6 md:p-8 shadow-xs"
                             >
-                                <h2 className="font-heading text-xl uppercase tracking-wider text-charcoal font-semibold mb-6 border-b border-[#EADFD6] pb-3">Shipping Address</h2>
+                                <h2 className="font-heading text-xl uppercase tracking-wider text-charcoal font-semibold mb-6 border-b border-[#E5E7EB] pb-3">Shipping Address</h2>
                                 
                                 <div className="grid md:grid-cols-2 gap-5 text-xs">
                                     <div>
@@ -203,7 +203,7 @@ const CheckoutPage = () => {
                                             name="fullName"
                                             value={shippingAddress.fullName}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             data-testid="input-fullName"
                                         />
                                     </div>
@@ -214,7 +214,7 @@ const CheckoutPage = () => {
                                             name="phone"
                                             value={shippingAddress.phone}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             placeholder="10-digit number"
                                             data-testid="input-phone"
                                         />
@@ -227,7 +227,7 @@ const CheckoutPage = () => {
                                             type="email"
                                             value={shippingAddress.email}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             data-testid="input-email"
                                         />
                                     </div>
@@ -238,7 +238,7 @@ const CheckoutPage = () => {
                                             name="addressLine1"
                                             value={shippingAddress.addressLine1}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             placeholder="House No, Building, Street"
                                             data-testid="input-address1"
                                         />
@@ -250,7 +250,7 @@ const CheckoutPage = () => {
                                             name="addressLine2"
                                             value={shippingAddress.addressLine2}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             placeholder="Landmark (Optional)"
                                         />
                                     </div>
@@ -261,7 +261,7 @@ const CheckoutPage = () => {
                                             name="city"
                                             value={shippingAddress.city}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             data-testid="input-city"
                                         />
                                     </div>
@@ -272,7 +272,7 @@ const CheckoutPage = () => {
                                             name="state"
                                             value={shippingAddress.state}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             data-testid="input-state"
                                         />
                                     </div>
@@ -283,7 +283,7 @@ const CheckoutPage = () => {
                                             name="pincode"
                                             value={shippingAddress.pincode}
                                             onChange={handleAddressChange}
-                                            className="mt-1 border-[#EADFD6] text-xs"
+                                            className="mt-1 border-[#E5E7EB] text-xs"
                                             placeholder="6-digit pincode"
                                             data-testid="input-pincode"
                                         />
@@ -304,21 +304,21 @@ const CheckoutPage = () => {
                             <motion.div
                                 initial={{ opacity: 0, x: 15 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-white rounded-md border border-[#EADFD6] p-6 md:p-8 shadow-xs"
+                                className="bg-white rounded-xl border border-[#E5E7EB] p-6 md:p-8 shadow-xs"
                             >
-                                <h2 className="font-heading text-xl uppercase tracking-wider text-charcoal font-semibold mb-6 border-b border-[#EADFD6] pb-3">Payment Method</h2>
+                                <h2 className="font-heading text-xl uppercase tracking-wider text-charcoal font-semibold mb-6 border-b border-[#E5E7EB] pb-3">Payment Method</h2>
 
-                                {/* Shipping Address Summary */}
-                                <div className="bg-[#FAF0EA] rounded-md p-4 mb-6 border border-[#EADFD6]">
+                                {/* Shipping Address Summary (White Panel) */}
+                                <div className="bg-white rounded-xl p-4 mb-6 border border-[#E5E7EB]">
                                     <div className="flex justify-between items-start text-xs">
                                         <div>
                                             <p className="font-semibold text-charcoal">{shippingAddress.fullName}</p>
-                                            <p className="text-[#6B5B55] mt-1 leading-relaxed">
+                                            <p className="text-[#4B5563] mt-1 leading-relaxed">
                                                 {shippingAddress.addressLine1}<br />
                                                 {shippingAddress.addressLine2 && <>{shippingAddress.addressLine2}<br /></>}
                                                 {shippingAddress.city}, {shippingAddress.state} - {shippingAddress.pincode}
                                             </p>
-                                            <p className="text-[#6B5B55] mt-1 font-medium">{shippingAddress.phone}</p>
+                                            <p className="text-[#4B5563] mt-1 font-medium">{shippingAddress.phone}</p>
                                         </div>
                                         <button 
                                             onClick={() => setStep(1)}
@@ -331,13 +331,13 @@ const CheckoutPage = () => {
 
                                 {/* Payment Options */}
                                 <div className="space-y-4">
-                                    <div className="border border-rose rounded-md p-4 flex items-center gap-4 bg-[#F6E4E6]/50">
+                                    <div className="border border-rose rounded-md p-4 flex items-center gap-4 bg-[#FBF0EC]/50">
                                         <div className="w-9 h-9 rounded-full bg-rose/15 flex items-center justify-center text-rose">
                                             <CreditCard size={18} />
                                         </div>
                                         <div className="flex-1 text-xs">
                                             <p className="font-semibold text-charcoal">Razorpay Secure Gateway</p>
-                                            <p className="text-[#6B5B55]">Credit/Debit Cards, UPI, Net Banking, Wallets</p>
+                                            <p className="text-[#4B5563]">Credit/Debit Cards, UPI, Net Banking, Wallets</p>
                                         </div>
                                         <div className="w-4 h-4 rounded-full border-2 border-rose flex items-center justify-center">
                                             <div className="w-2 h-2 rounded-full bg-rose"></div>
@@ -365,16 +365,16 @@ const CheckoutPage = () => {
                         )}
                     </div>
 
-                    {/* Order Summary */}
+                    {/* Order Summary (White Panel) */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-md border border-[#EADFD6] p-6 sticky top-24 shadow-xs">
-                            <h3 className="font-heading text-lg uppercase tracking-wider text-charcoal font-semibold mb-4 border-b border-[#EADFD6] pb-3">Order Summary</h3>
+                        <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 sticky top-24 shadow-xs">
+                            <h3 className="font-heading text-lg uppercase tracking-wider text-charcoal font-semibold mb-4 border-b border-[#E5E7EB] pb-3">Order Summary</h3>
 
                             {/* Items */}
                             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                                 {cart.items.map((item) => (
                                     <div key={item.id} className="flex gap-3 text-xs">
-                                        <div className="w-14 h-16 bg-[#FAF0EA] rounded-sm overflow-hidden border border-[#EADFD6] flex-shrink-0">
+                                        <div className="w-14 h-16 bg-white rounded-sm overflow-hidden border border-[#E5E7EB] flex-shrink-0">
                                             <img 
                                                 src={item.product_image}
                                                 alt={item.product_name}
@@ -383,7 +383,7 @@ const CheckoutPage = () => {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-charcoal truncate">{item.product_name}</p>
-                                            <p className="text-[11px] text-[#6B5B55]">
+                                            <p className="text-xs text-[#4B5563]">
                                                 Size: {item.size} | Qty: {item.quantity}
                                             </p>
                                             <p className="text-xs font-semibold text-charcoal mt-0.5">
@@ -394,7 +394,7 @@ const CheckoutPage = () => {
                                 ))}
                             </div>
 
-                            <div className="border-t border-[#EADFD6] pt-3 space-y-2 text-xs text-[#6B5B55]">
+                            <div className="border-t border-[#E5E7EB] pt-3 space-y-2 text-xs text-[#4B5563]">
                                 <div className="flex justify-between">
                                     <span>Subtotal</span>
                                     <span className="text-charcoal font-medium">{formatPrice(cart.total)}</span>
@@ -403,7 +403,7 @@ const CheckoutPage = () => {
                                     <span>Shipping</span>
                                     <span className="text-charcoal font-medium">{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
                                 </div>
-                                <div className="flex justify-between font-heading text-lg text-charcoal font-bold pt-3 border-t border-[#EADFD6]">
+                                <div className="flex justify-between font-heading text-lg text-charcoal font-bold pt-3 border-t border-[#E5E7EB]">
                                     <span>Total</span>
                                     <span>{formatPrice(grandTotal)}</span>
                                 </div>

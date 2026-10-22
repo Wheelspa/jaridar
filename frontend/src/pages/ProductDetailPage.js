@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingBag, Minus, Plus, Truck, RefreshCw, Shield, ChevronRight, Star } from 'lucide-react';
+import { Heart, ShoppingBag, Minus, Plus, Truck, RefreshCw, Shield, ChevronRight, Star, X, ChevronLeft, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -10,6 +10,7 @@ import { StarRating } from '../components/common/StarRating';
 import { ProductCard } from '../components/common/ProductCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
+import { formatAttributeLabel } from '../lib/utils';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -31,6 +32,12 @@ const ProductDetailPage = () => {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState('');
     const [submittingReview, setSubmittingReview] = useState(false);
+
+    // Image Zoom & Lightbox State
+    const [isHovered, setIsHovered] = useState(false);
+    const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     const inWishlist = product ? isInWishlist(product.id) : false;
 
@@ -67,6 +74,58 @@ const ProductDetailPage = () => {
             setLoading(false);
         }
     };
+
+    const handleMouseMove = (e) => {
+        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - left) / width) * 100;
+        const y = ((e.clientY - top) / height) * 100;
+        setZoomPos({ x, y });
+    };
+
+    const openLightbox = (index = activeImage) => {
+        setLightboxIndex(index);
+        setIsLightboxOpen(true);
+    };
+
+    const closeLightbox = () => {
+        setIsLightboxOpen(false);
+    };
+
+    const prevLightboxImage = (e) => {
+        e?.stopPropagation();
+        if (!product?.images?.length) return;
+        setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+    };
+
+    const nextLightboxImage = (e) => {
+        e?.stopPropagation();
+        if (!product?.images?.length) return;
+        setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+    };
+
+    // Lock body scroll when lightbox is open
+    useEffect(() => {
+        if (isLightboxOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isLightboxOpen]);
+
+    // Keyboard shortcut support (Esc, ArrowLeft, ArrowRight)
+    useEffect(() => {
+        if (!isLightboxOpen) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') prevLightboxImage();
+            if (e.key === 'ArrowRight') nextLightboxImage();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isLightboxOpen, product]);
 
     const handleAddToCart = async () => {
         if (!isAuthenticated) {
@@ -157,38 +216,52 @@ const ProductDetailPage = () => {
         : 0;
 
     return (
-        <div className="min-h-screen bg-[#FFFBF7]" data-testid="product-detail-page">
+        <div className="min-h-screen bg-white" data-testid="product-detail-page">
             {/* Breadcrumb */}
-            <div className="bg-white border-b border-[#EADFD6]">
-                <div className="max-w-7xl mx-auto px-4 md:px-8 py-3.5">
-                    <div className="flex items-center text-xs text-[#6B5B55]">
+            <div className="bg-white border-b border-[#E5E7EB]">
+                <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] py-3.5">
+                    <div className="flex items-center text-xs text-[#4B5563]">
                         <Link to="/" className="hover:text-rose">Home</Link>
-                        <ChevronRight size={14} className="mx-2 text-[#6B5B55]" />
+                        <ChevronRight size={14} className="mx-2 text-[#4B5563]" />
                         <Link to="/shop" className="hover:text-rose">Shop</Link>
-                        <ChevronRight size={14} className="mx-2 text-[#6B5B55]" />
+                        <ChevronRight size={14} className="mx-2 text-[#4B5563]" />
                         <Link to={`/shop?category=${product.category}`} className="hover:text-rose capitalize">
-                            {product.category}
+                            {formatAttributeLabel(product.category)}
                         </Link>
-                        <ChevronRight size={14} className="mx-2 text-[#6B5B55]" />
+                        <ChevronRight size={14} className="mx-2 text-[#4B5563]" />
                         <span className="text-charcoal font-medium truncate max-w-[200px]">{product.name}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+            <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] py-10">
                 <div className="grid lg:grid-cols-2 gap-10 lg:gap-12">
                     {/* Image Gallery */}
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                     >
-                        <div className="aspect-[3/4] bg-white rounded-md border border-[#EADFD6] mb-4 overflow-hidden shadow-xs">
+                        <div 
+                            className="aspect-[3/4] bg-white rounded-md border border-[#E5E7EB] mb-4 overflow-hidden shadow-xs relative cursor-zoom-in group"
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
+                            onMouseMove={handleMouseMove}
+                            onClick={() => openLightbox(activeImage)}
+                            data-testid="product-main-image-container"
+                        >
                             <img 
                                 src={product.images[activeImage]}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-150 ease-out pointer-events-none"
+                                style={{
+                                    transform: isHovered ? 'scale(2)' : 'scale(1)',
+                                    transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`
+                                }}
                                 data-testid="product-main-image"
                             />
+                            <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-xs p-2 rounded-full text-charcoal shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <Search size={16} />
+                            </div>
                         </div>
                         {product.images.length > 1 && (
                             <div className="flex gap-3">
@@ -196,7 +269,7 @@ const ProductDetailPage = () => {
                                     <button 
                                         key={i}
                                         onClick={() => setActiveImage(i)}
-                                        className={`w-20 h-24 rounded-md overflow-hidden border-2 transition-all ${activeImage === i ? 'border-rose' : 'border-[#EADFD6]'}`}
+                                        className={`w-20 h-24 rounded-md overflow-hidden border-2 transition-all ${activeImage === i ? 'border-rose' : 'border-[#E5E7EB] bg-white'}`}
                                     >
                                         <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
                                     </button>
@@ -205,14 +278,14 @@ const ProductDetailPage = () => {
                         )}
                     </motion.div>
 
-                    {/* Product Info */}
+                    {/* Product Info (White Background) */}
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="lg:py-2"
                     >
                         {/* Category & Name */}
-                        <p className="text-xs uppercase tracking-widest text-rose mb-1.5 font-semibold">{product.category}</p>
+                        <p className="text-xs uppercase tracking-widest text-rose mb-1.5 font-semibold">{formatAttributeLabel(product.category)}</p>
                         <h1 className="font-heading text-3xl md:text-4xl text-charcoal mb-3" data-testid="product-name">
                             {product.name}
                         </h1>
@@ -221,7 +294,7 @@ const ProductDetailPage = () => {
                         {product.rating > 0 && (
                             <div className="flex items-center gap-3 mb-5">
                                 <StarRating rating={product.rating} readonly />
-                                <span className="text-xs text-[#6B5B55]">({product.review_count} reviews)</span>
+                                <span className="text-xs text-[#4B5563]">({product.review_count} reviews)</span>
                             </div>
                         )}
 
@@ -232,7 +305,7 @@ const ProductDetailPage = () => {
                             </span>
                             {product.original_price && (
                                 <>
-                                    <span className="text-lg text-[#6B5B55] line-through">
+                                    <span className="text-lg text-[#4B5563] line-through">
                                         {formatPrice(product.original_price)}
                                     </span>
                                     <span className="bg-rose-light text-rose px-2.5 py-0.5 text-xs uppercase tracking-wider font-bold rounded">
@@ -243,7 +316,7 @@ const ProductDetailPage = () => {
                         </div>
 
                         {/* Description */}
-                        <p className="text-[#6B5B55] text-xs md:text-sm leading-relaxed mb-6">
+                        <p className="text-[#4B5563] text-xs md:text-sm leading-relaxed mb-6">
                             {product.description}
                         </p>
 
@@ -276,7 +349,7 @@ const ProductDetailPage = () => {
                                         <button
                                             key={color}
                                             onClick={() => setSelectedColor(color)}
-                                            className={`px-3.5 py-1.5 border rounded-md text-xs font-medium transition-all ${selectedColor === color ? 'border-rose bg-rose text-white' : 'border-[#EADFD6] text-charcoal bg-white hover:border-rose'}`}
+                                            className={`px-3.5 py-1.5 border rounded-md text-xs font-medium transition-all ${selectedColor === color ? 'border-rose bg-rose text-white' : 'border-[#E5E7EB] text-charcoal bg-white hover:border-rose'}`}
                                             data-testid={`color-${color}`}
                                         >
                                             {color}
@@ -319,7 +392,7 @@ const ProductDetailPage = () => {
                             </button>
                             <button 
                                 onClick={handleWishlist}
-                                className={`w-12 h-12 border rounded-md flex items-center justify-center transition-all ${inWishlist ? 'bg-rose text-white border-rose' : 'border-[#EADFD6] text-charcoal bg-white hover:border-rose hover:text-rose'}`}
+                                className={`w-12 h-12 border rounded-md flex items-center justify-center transition-all ${inWishlist ? 'bg-rose text-white border-rose' : 'border-[#E5E7EB] text-charcoal bg-white hover:border-rose hover:text-rose'}`}
                                 data-testid="wishlist-btn"
                             >
                                 <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
@@ -331,8 +404,8 @@ const ProductDetailPage = () => {
                             {product.stock > 0 ? `In Stock (${product.stock} items available)` : 'Out of Stock'}
                         </p>
 
-                        {/* Features */}
-                        <div className="grid grid-cols-3 gap-4 py-5 border-t border-[#EADFD6]">
+                        {/* Features Block (White Panel) */}
+                        <div className="grid grid-cols-3 gap-4 py-5 px-4 bg-white border border-[#E5E7EB] rounded-xl shadow-xs">
                             {[
                                 { icon: Truck, text: 'Free Shipping' },
                                 { icon: RefreshCw, text: 'Easy Returns' },
@@ -340,17 +413,17 @@ const ProductDetailPage = () => {
                             ].map((feature, i) => (
                                 <div key={i} className="text-center">
                                     <feature.icon size={18} className="mx-auto text-rose mb-1.5" />
-                                    <span className="text-[11px] text-[#6B5B55] font-medium">{feature.text}</span>
+                                    <span className="text-xs text-[#4B5563] font-medium">{feature.text}</span>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
                 </div>
 
-                {/* Tabs */}
-                <div className="mt-16 bg-white p-6 md:p-8 rounded-md border border-[#EADFD6]">
+                {/* Tabs Panel (White Panel) */}
+                <div className="mt-16 bg-white p-6 md:p-8 rounded-xl border border-[#E5E7EB] shadow-xs">
                     <Tabs defaultValue="reviews" className="w-full">
-                        <TabsList className="w-full justify-start border-b border-[#EADFD6] bg-transparent h-auto p-0 space-x-8">
+                        <TabsList className="w-full justify-start border-b border-[#E5E7EB] bg-transparent h-auto p-0 space-x-8">
                             <TabsTrigger value="reviews" className="tab-underline pb-3 text-xs uppercase tracking-wider font-semibold data-[state=active]:text-rose data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none">
                                 Reviews ({reviews.length})
                             </TabsTrigger>
@@ -370,20 +443,20 @@ const ProductDetailPage = () => {
                                     {reviews.length > 0 ? (
                                         <div className="space-y-4">
                                             {reviews.map((review) => (
-                                                <div key={review.id} className="border-b border-[#EADFD6] pb-4">
+                                                <div key={review.id} className="border-b border-[#E5E7EB] pb-4">
                                                     <div className="flex items-center justify-between mb-1.5">
                                                         <span className="text-xs font-semibold text-charcoal">{review.user_name}</span>
                                                         <StarRating rating={review.rating} readonly size={14} />
                                                     </div>
-                                                    <p className="text-[#6B5B55] text-xs leading-relaxed">{review.comment}</p>
-                                                    <p className="text-[10px] text-[#6B5B55] mt-1.5">
+                                                    <p className="text-[#4B5563] text-xs leading-relaxed">{review.comment}</p>
+                                                    <p className="text-xs text-[#4B5563] mt-1.5">
                                                         {new Date(review.created_at).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-xs text-[#6B5B55]">No reviews yet. Be the first to review this ensemble!</p>
+                                        <p className="text-xs text-[#4B5563]">No reviews yet. Be the first to review this ensemble!</p>
                                     )}
                                 </div>
 
@@ -401,7 +474,7 @@ const ProductDetailPage = () => {
                                                 value={reviewComment}
                                                 onChange={(e) => setReviewComment(e.target.value)}
                                                 placeholder="Share your experience with this product..."
-                                                className="w-full p-3 text-xs bg-[#FFFBF7] border border-[#EADFD6] rounded-md focus:border-rose focus:outline-none min-h-[100px] text-charcoal"
+                                                className="w-full p-3 text-base bg-white border border-[#E5E7EB] rounded-md focus:border-rose focus:outline-none min-h-[100px] text-charcoal"
                                                 required
                                                 data-testid="review-textarea"
                                             />
@@ -424,11 +497,11 @@ const ProductDetailPage = () => {
                             <div className="overflow-x-auto">
                                 <table className="w-full border-collapse text-xs">
                                     <thead>
-                                        <tr className="bg-[#FAF0EA]">
-                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Size</th>
-                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Bust (inches)</th>
-                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Waist (inches)</th>
-                                            <th className="border border-[#EADFD6] p-2.5 text-left font-semibold text-charcoal">Hip (inches)</th>
+                                        <tr className="bg-white">
+                                            <th className="border border-[#E5E7EB] p-2.5 text-left font-semibold text-charcoal">Size</th>
+                                            <th className="border border-[#E5E7EB] p-2.5 text-left font-semibold text-charcoal">Bust (inches)</th>
+                                            <th className="border border-[#E5E7EB] p-2.5 text-left font-semibold text-charcoal">Waist (inches)</th>
+                                            <th className="border border-[#E5E7EB] p-2.5 text-left font-semibold text-charcoal">Hip (inches)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -440,11 +513,11 @@ const ProductDetailPage = () => {
                                             { size: 'XL', bust: '40-41', waist: '32-33', hip: '42-43' },
                                             { size: 'XXL', bust: '42-43', waist: '34-35', hip: '44-45' },
                                         ].map((row, i) => (
-                                            <tr key={i} className="hover:bg-[#FAF0EA]/50 text-[#6B5B55]">
-                                                <td className="border border-[#EADFD6] p-2.5 font-semibold text-charcoal">{row.size}</td>
-                                                <td className="border border-[#EADFD6] p-2.5">{row.bust}</td>
-                                                <td className="border border-[#EADFD6] p-2.5">{row.waist}</td>
-                                                <td className="border border-[#EADFD6] p-2.5">{row.hip}</td>
+                                            <tr key={i} className="hover:bg-gray-50 text-[#4B5563]">
+                                                <td className="border border-[#E5E7EB] p-2.5 font-semibold text-charcoal">{row.size}</td>
+                                                <td className="border border-[#E5E7EB] p-2.5">{row.bust}</td>
+                                                <td className="border border-[#E5E7EB] p-2.5">{row.waist}</td>
+                                                <td className="border border-[#E5E7EB] p-2.5">{row.hip}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -454,7 +527,7 @@ const ProductDetailPage = () => {
 
                         <TabsContent value="shipping" className="pt-6">
                             <h3 className="font-heading text-xl uppercase tracking-wider text-charcoal mb-4">Shipping & Returns</h3>
-                            <div className="space-y-4 max-w-2xl text-xs text-[#6B5B55]">
+                            <div className="space-y-4 max-w-2xl text-xs text-[#4B5563]">
                                 <div>
                                     <h4 className="font-semibold text-charcoal mb-1">Shipping Policy</h4>
                                     <ul className="space-y-1">
@@ -488,6 +561,69 @@ const ProductDetailPage = () => {
                     </div>
                 )}
             </div>
+
+            {/* Lightbox Modal */}
+            {isLightboxOpen && (
+                <div 
+                    className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 select-none"
+                    onClick={closeLightbox}
+                    data-testid="lightbox-modal"
+                >
+                    {/* Close Button */}
+                    <button 
+                        onClick={closeLightbox}
+                        className="absolute top-4 right-4 text-white hover:text-rose p-2 rounded-full bg-black/50 hover:bg-black/80 transition-colors z-50 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        aria-label="Close Lightbox"
+                        data-testid="lightbox-close-btn"
+                    >
+                        <X size={24} />
+                    </button>
+
+                    {/* Counter */}
+                    {product.images.length > 1 && (
+                        <div className="absolute top-4 left-4 text-white/80 text-xs font-semibold bg-black/50 px-3 py-1.5 rounded-full">
+                            {lightboxIndex + 1} / {product.images.length}
+                        </div>
+                    )}
+
+                    {/* Left Nav Button */}
+                    {product.images.length > 1 && (
+                        <button
+                            onClick={prevLightboxImage}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-rose p-3 rounded-full bg-black/50 hover:bg-black/80 transition-colors z-50 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+                            aria-label="Previous Image"
+                            data-testid="lightbox-prev-btn"
+                        >
+                            <ChevronLeft size={28} />
+                        </button>
+                    )}
+
+                    {/* Modal Image */}
+                    <div 
+                        className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img 
+                            src={product.images[lightboxIndex]} 
+                            alt={`${product.name} zoom ${lightboxIndex + 1}`}
+                            className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl"
+                            data-testid="lightbox-image"
+                        />
+                    </div>
+
+                    {/* Right Nav Button */}
+                    {product.images.length > 1 && (
+                        <button
+                            onClick={nextLightboxImage}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-rose p-3 rounded-full bg-black/50 hover:bg-black/80 transition-colors z-50 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+                            aria-label="Next Image"
+                            data-testid="lightbox-next-btn"
+                        >
+                            <ChevronRight size={28} />
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

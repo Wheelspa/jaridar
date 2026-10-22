@@ -38,19 +38,19 @@ const AccountLayout = () => {
     if (!isAuthenticated) return null;
 
     return (
-        <div className="min-h-screen bg-[#FFFBF7]" data-testid="account-page">
-            <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
+        <div className="min-h-screen bg-white" data-testid="account-page">
+            <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] py-12">
                 <div className="grid lg:grid-cols-4 gap-8">
-                    {/* Sidebar */}
+                    {/* Sidebar (White Panel) */}
                     <aside className="lg:col-span-1">
-                        <div className="bg-white rounded-lg p-6 border border-[#EADFD6]">
-                            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#EADFD6]">
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose to-blush flex items-center justify-center">
-                                    <span className="font-heading text-2xl text-white">{user?.name?.[0]?.toUpperCase()}</span>
+                        <div className="bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-xs">
+                            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#E5E7EB]">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose to-blush flex items-center justify-center shadow-xs">
+                                    <span className="font-heading text-2xl text-white font-bold">{user?.name?.[0]?.toUpperCase()}</span>
                                 </div>
                                 <div>
-                                    <p className="font-heading text-lg text-charcoal">{user?.name}</p>
-                                    <p className="text-sm text-[#6B5B55]">{user?.email}</p>
+                                    <p className="font-heading text-lg text-charcoal font-bold">{user?.name}</p>
+                                    <p className="text-xs text-[#4B5563]">{user?.email}</p>
                                 </div>
                             </div>
 
@@ -59,23 +59,23 @@ const AccountLayout = () => {
                                     <Link
                                         key={item.path}
                                         to={item.path}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold ${
                                             location.pathname === item.path 
-                                                ? 'bg-[#F6E4E6] text-rose font-medium' 
-                                                : 'hover:bg-[#FAF0EA] text-[#6B5B55]'
+                                                ? 'bg-white text-rose border border-[#E5E7EB] shadow-xs' 
+                                                : 'hover:bg-white/60 text-[#4B5563]'
                                         }`}
                                         style={{ transition: 'background-color 0.2s' }}
                                     >
-                                        <item.icon size={20} />
+                                        <item.icon size={18} />
                                         {item.label}
                                     </Link>
                                 ))}
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-left hover:bg-[#F6E4E6] text-rose"
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold w-full text-left hover:bg-rose/10 text-rose"
                                     style={{ transition: 'background-color 0.2s' }}
                                 >
-                                    <LogOut size={20} />
+                                    <LogOut size={18} />
                                     Logout
                                 </button>
                             </nav>
@@ -125,16 +125,16 @@ const OrdersPage = () => {
             case 'confirmed': return 'status-confirmed';
             case 'shipped': return 'status-shipped';
             case 'delivered': return 'status-delivered';
-            default: return 'bg-[#FAF0EA] text-[#2D2420]';
+            default: return 'bg-white text-[#1F2937] border border-[#E5E7EB]';
         }
     };
 
     if (loading) {
         return (
-            <div className="bg-white rounded-lg p-8 border border-[#EADFD6]">
+            <div className="bg-white rounded-lg p-8 border border-[#E5E7EB]">
                 <div className="animate-pulse space-y-4">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="h-24 bg-[#FAF0EA] rounded"></div>
+                        <div key={i} className="h-24 bg-gray-100 rounded"></div>
                     ))}
                 </div>
             </div>
@@ -142,25 +142,25 @@ const OrdersPage = () => {
     }
 
     return (
-        <div className="bg-white rounded-lg border border-[#EADFD6]" data-testid="orders-page">
-            <div className="p-6 border-b border-[#EADFD6]">
+        <div className="bg-white rounded-lg border border-[#E5E7EB]" data-testid="orders-page">
+            <div className="p-6 border-b border-[#E5E7EB]">
                 <h1 className="font-heading text-2xl text-charcoal">My Orders</h1>
             </div>
 
             {orders.length === 0 ? (
                 <div className="p-12 text-center">
-                    <Package size={48} className="mx-auto text-[#6B5B55] mb-4" />
-                    <p className="text-[#6B5B55] mb-4">No orders yet</p>
+                    <Package size={48} className="mx-auto text-[#4B5563] mb-4" />
+                    <p className="text-[#4B5563] mb-4">No orders yet</p>
                     <Link to="/shop" className="btn-primary">Start Shopping</Link>
                 </div>
             ) : (
-                <div className="divide-y divide-[#EADFD6]">
+                <div className="divide-y divide-[#E5E7EB]">
                     {orders.map((order) => (
                         <div key={order.id} className="p-6">
                             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                                 <div>
-                                    <p className="text-sm text-[#6B5B55]">Order #{order.id.slice(0, 8)}</p>
-                                    <p className="text-sm text-[#6B5B55]">
+                                    <p className="text-sm text-[#4B5563]">Order #{order.id.slice(0, 8)}</p>
+                                    <p className="text-sm text-[#4B5563]">
                                         {new Date(order.created_at).toLocaleDateString('en-IN', {
                                             day: 'numeric',
                                             month: 'short',
@@ -184,24 +184,24 @@ const OrdersPage = () => {
                             <div className="flex flex-wrap gap-4">
                                 {order.items.slice(0, 3).map((item, i) => (
                                     <div key={i} className="flex gap-3">
-                                        <div className="w-16 h-20 bg-[#FAF0EA] rounded overflow-hidden">
+                                        <div className="w-16 h-20 bg-white border border-[#E5E7EB] rounded overflow-hidden">
                                             <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium text-charcoal truncate max-w-[150px]">{item.product_name}</p>
-                                            <p className="text-xs text-[#6B5B55]">Qty: {item.quantity}</p>
+                                            <p className="text-xs text-[#4B5563]">Qty: {item.quantity}</p>
                                         </div>
                                     </div>
                                 ))}
                                 {order.items.length > 3 && (
-                                    <div className="flex items-center text-sm text-[#6B5B55]">
+                                    <div className="flex items-center text-sm text-[#4B5563]">
                                         +{order.items.length - 3} more
                                     </div>
                                 )}
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-[#EADFD6] flex justify-between">
-                                <span className="text-sm text-[#6B5B55]">Total Amount</span>
+                            <div className="mt-4 pt-4 border-t border-[#E5E7EB] flex justify-between">
+                                <span className="text-sm text-[#4B5563]">Total Amount</span>
                                 <span className="font-semibold text-charcoal">{formatPrice(order.total_amount)}</span>
                             </div>
                         </div>
@@ -213,17 +213,20 @@ const OrdersPage = () => {
 };
 
 const OrderDetailPage = () => {
-    const { orderId } = useParams();
+    const { id, orderId } = useParams();
+    const effectiveId = id || orderId;
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchOrder();
-    }, [orderId]);
+        if (effectiveId) {
+            fetchOrder();
+        }
+    }, [effectiveId]);
 
     const fetchOrder = async () => {
         try {
-            const response = await axios.get(`${API}/orders/${orderId}`);
+            const response = await axios.get(`${API}/orders/${effectiveId}`);
             setOrder(response.data);
         } catch (error) {
             console.error('Failed to fetch order:', error);
@@ -241,11 +244,11 @@ const OrderDetailPage = () => {
     };
 
     if (loading) {
-        return <div className="bg-white rounded-lg p-8 text-center text-[#6B5B55] border border-[#EADFD6]">Loading...</div>;
+        return <div className="bg-white rounded-lg p-8 text-center text-[#4B5563] border border-[#E5E7EB]">Loading...</div>;
     }
 
     if (!order) {
-        return <div className="bg-white rounded-lg p-8 text-center text-[#6B5B55] border border-[#EADFD6]">Order not found</div>;
+        return <div className="bg-white rounded-lg p-8 text-center text-[#4B5563] border border-[#E5E7EB]">Order not found</div>;
     }
 
     const statusSteps = ['pending', 'confirmed', 'shipped', 'delivered'];
@@ -254,11 +257,11 @@ const OrderDetailPage = () => {
     return (
         <div className="space-y-6" data-testid="order-detail-page">
             {/* Order Header */}
-            <div className="bg-white rounded-lg p-6 border border-[#EADFD6]">
+            <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="font-heading text-2xl text-charcoal">Order Details</h1>
-                        <p className="text-[#6B5B55] text-sm">Order #{order.id.slice(0, 8)}</p>
+                        <p className="text-[#4B5563] text-sm">Order #{order.id.slice(0, 8)}</p>
                     </div>
                     <Link to="/account/orders" className="text-rose hover:underline text-sm font-medium">
                         Back to Orders
@@ -267,11 +270,11 @@ const OrderDetailPage = () => {
 
                 {/* Order Timeline */}
                 <div className="flex items-center justify-between relative">
-                    <div className="absolute top-4 left-0 right-0 h-0.5 bg-[#EADFD6]"></div>
+                    <div className="absolute top-4 left-0 right-0 h-0.5 bg-[#E5E7EB]"></div>
                     {statusSteps.map((step, index) => (
                         <div key={step} className="relative z-10 flex flex-col items-center">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                index <= currentStepIndex ? 'bg-rose text-white' : 'bg-[#FAF0EA] text-[#6B5B55] border border-[#EADFD6]'
+                                index <= currentStepIndex ? 'bg-rose text-white' : 'bg-white text-[#4B5563] border border-[#E5E7EB]'
                             }`}>
                                 {index < currentStepIndex ? <Check size={16} /> : 
                                  index === currentStepIndex ? <Clock size={16} /> : 
@@ -284,37 +287,37 @@ const OrderDetailPage = () => {
             </div>
 
             {/* Order Items */}
-            <div className="bg-white rounded-lg p-6 border border-[#EADFD6]">
+            <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <h2 className="font-heading text-xl text-charcoal mb-4">Items</h2>
-                <div className="divide-y divide-[#EADFD6]">
+                <div className="divide-y divide-[#E5E7EB]">
                     {order.items.map((item, i) => (
                         <div key={i} className="py-4 flex gap-4">
-                            <div className="w-20 h-24 bg-[#FAF0EA] rounded overflow-hidden flex-shrink-0">
+                            <div className="w-20 h-24 bg-white border border-[#E5E7EB] rounded overflow-hidden flex-shrink-0">
                                 <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1">
                                 <p className="font-medium text-charcoal">{item.product_name}</p>
-                                <p className="text-sm text-[#6B5B55]">Size: {item.size} | Color: {item.color}</p>
-                                <p className="text-sm text-[#6B5B55]">Qty: {item.quantity}</p>
+                                <p className="text-sm text-[#4B5563]">Size: {item.size} | Color: {item.color}</p>
+                                <p className="text-sm text-[#4B5563]">Qty: {item.quantity}</p>
                             </div>
                             <div className="text-right">
                                 <p className="font-semibold text-charcoal">{formatPrice(item.subtotal)}</p>
-                                <p className="text-xs text-[#6B5B55]">{formatPrice(item.price)} each</p>
+                                <p className="text-xs text-[#4B5563]">{formatPrice(item.price)} each</p>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="border-t border-[#EADFD6] mt-4 pt-4 space-y-2">
+                <div className="border-t border-[#E5E7EB] mt-4 pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                        <span className="text-[#6B5B55]">Subtotal</span>
+                        <span className="text-[#4B5563]">Subtotal</span>
                         <span className="text-charcoal">{formatPrice(order.total_amount)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                        <span className="text-[#6B5B55]">Shipping</span>
+                        <span className="text-[#4B5563]">Shipping</span>
                         <span className="text-rose font-medium">Free</span>
                     </div>
-                    <div className="flex justify-between font-heading text-lg text-charcoal pt-2 border-t border-[#EADFD6]">
+                    <div className="flex justify-between font-heading text-lg text-charcoal pt-2 border-t border-[#E5E7EB]">
                         <span>Total</span>
                         <span>{formatPrice(order.total_amount)}</span>
                     </div>
@@ -322,9 +325,9 @@ const OrderDetailPage = () => {
             </div>
 
             {/* Shipping Address */}
-            <div className="bg-white rounded-lg p-6 border border-[#EADFD6]">
+            <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <h2 className="font-heading text-xl text-charcoal mb-4">Shipping Address</h2>
-                <div className="text-[#6B5B55]">
+                <div className="text-[#4B5563]">
                     <p className="font-medium text-charcoal">{order.shipping_address.fullName}</p>
                     <p>{order.shipping_address.addressLine1}</p>
                     {order.shipping_address.addressLine2 && <p>{order.shipping_address.addressLine2}</p>}
@@ -341,13 +344,13 @@ const WishlistPage = () => {
 
     if (loading) {
         return (
-            <div className="bg-white rounded-lg p-8 border border-[#EADFD6]">
+            <div className="bg-white rounded-lg p-8 border border-[#E5E7EB]">
                 <div className="animate-pulse grid grid-cols-2 gap-6">
                     {[1, 2, 3, 4].map(i => (
                         <div key={i}>
-                            <div className="aspect-[3/4] bg-[#FAF0EA] rounded mb-4"></div>
-                            <div className="h-4 bg-[#FAF0EA] rounded mb-2"></div>
-                            <div className="h-4 bg-[#FAF0EA] rounded w-1/2"></div>
+                            <div className="aspect-[3/4] bg-gray-100 rounded mb-4"></div>
+                            <div className="h-4 bg-gray-100 rounded mb-2"></div>
+                            <div className="h-4 bg-gray-100 rounded w-1/2"></div>
                         </div>
                     ))}
                 </div>
@@ -356,15 +359,15 @@ const WishlistPage = () => {
     }
 
     return (
-        <div className="bg-white rounded-lg border border-[#EADFD6]" data-testid="wishlist-page">
-            <div className="p-6 border-b border-[#EADFD6]">
-                <h1 className="font-heading text-2xl text-charcoal">My Wishlist</h1>
+        <div className="bg-white rounded-lg border border-[#E5E7EB]" data-testid="wishlist-page">
+            <div className="p-6 border-b border-[#E5E7EB]">
+                <h1 className="font-heading text-2xl text-charcoal font-bold">My Wishlist</h1>
             </div>
 
             {wishlist.length === 0 ? (
                 <div className="p-12 text-center">
-                    <Heart size={48} className="mx-auto text-[#6B5B55] mb-4" />
-                    <p className="text-[#6B5B55] mb-4">Your wishlist is empty</p>
+                    <Heart size={48} className="mx-auto text-[#4B5563] mb-4" />
+                    <p className="text-[#4B5563] mb-4">Your wishlist is empty</p>
                     <Link to="/shop" className="btn-primary">Explore Products</Link>
                 </div>
             ) : (
@@ -408,9 +411,9 @@ const ProfilePage = () => {
     };
 
     return (
-        <div className="bg-white rounded-lg border border-[#EADFD6]" data-testid="profile-page">
-            <div className="p-6 border-b border-[#EADFD6]">
-                <h1 className="font-heading text-2xl text-charcoal">Profile Settings</h1>
+        <div className="bg-white rounded-lg border border-[#E5E7EB]" data-testid="profile-page">
+            <div className="p-6 border-b border-[#E5E7EB]">
+                <h1 className="font-heading text-2xl text-charcoal font-bold">Profile Settings</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6 max-w-md">
@@ -420,9 +423,9 @@ const ProfilePage = () => {
                         id="email"
                         value={user?.email || ''}
                         disabled
-                        className="mt-1 bg-[#FAF0EA] border-[#EADFD6] text-[#6B5B55]"
+                        className="mt-1 bg-white border-[#E5E7EB] text-[#4B5563]"
                     />
-                    <p className="text-xs text-[#6B5B55] mt-1">Email cannot be changed</p>
+                    <p className="text-xs text-[#4B5563] mt-1">Email cannot be changed</p>
                 </div>
 
                 <div>
@@ -432,7 +435,7 @@ const ProfilePage = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className="mt-1 border-[#EADFD6]"
+                        className="mt-1 border-[#E5E7EB]"
                     />
                 </div>
 
@@ -444,7 +447,7 @@ const ProfilePage = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="10-digit number"
-                        className="mt-1 border-[#EADFD6]"
+                        className="mt-1 border-[#E5E7EB]"
                     />
                 </div>
 

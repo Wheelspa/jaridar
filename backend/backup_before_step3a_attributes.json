@@ -1,0 +1,226 @@
+[
+  {
+    "id": "efbeb3c0-2369-4262-aa5b-61ab55b92758",
+    "type": "category",
+    "value": "ethnic",
+    "label": "Ethnic Wear",
+    "display_order": 1,
+    "is_active": true
+  },
+  {
+    "id": "c122260c-ed03-40e9-8cd2-18e1ecacd54a",
+    "type": "category",
+    "value": "traditional",
+    "label": "Traditional Wear",
+    "display_order": 2,
+    "is_active": true
+  },
+  {
+    "id": "8a141f07-ae7b-4e57-98f1-b4478f76ce0e",
+    "type": "category",
+    "value": "western",
+    "label": "Western Wear",
+    "display_order": 3,
+    "is_active": true
+  },
+  {
+    "id": "75be6be1-b163-4ca6-ae03-2435cff37b01",
+    "type": "category",
+    "value": "bridal",
+    "label": "Bridal Collection",
+    "display_order": 4,
+    "is_active": true
+  },
+  {
+    "id": "013c8856-0a96-4c62-b5dd-11e2c6fbbe9c",
+    "type": "style",
+    "value": "new-collection",
+    "label": "New Collection",
+    "display_order": 1,
+    "is_active": true
+  },
+  {
+    "id": "309b8754-31a4-4110-8d9b-963d21b71590",
+    "type": "style",
+    "value": "western",
+    "label": "Western Wear",
+    "display_order": 2,
+    "is_active": true
+  },
+  {
+    "id": "26f6fce5-a74f-45ba-9d7c-0aa4e2e250b4",
+    "type": "style",
+    "value": "casual",
+    "label": "Casual",
+    "display_order": 3,
+    "is_active": true
+  },
+  {
+    "id": "c4664e3e-ed83-4c31-9f8a-afc16dd17145",
+    "type": "style",
+    "value": "party-wear",
+    "label": "Party Wear",
+    "display_order": 4,
+    "is_active": true
+  },
+  {
+    "id": "ab7e2c47-5b7c-44de-a2dc-73745f452cbe",
+    "type": "style",
+    "value": "formal",
+    "label": "Formal",
+    "display_order": 5,
+    "is_active": true
+  },
+  {
+    "id": "c0d340fc-b0cf-42e3-aeff-3c6500d0824f",
+    "type": "style",
+    "value": "ethnic",
+    "label": "Ethnic Wear",
+    "display_order": 6,
+    "is_active": true
+  },
+  {
+    "id": "6fa555d0-bf31-491e-aa13-af8bc16b799a",
+    "type": "style",
+    "value": "festive-wear",
+    "label": "Festive Wear",
+    "display_order": 7,
+    "is_active": true
+  },
+  {
+    "id": "e3f0882f-c765-4099-9e35-fe5742c0f9f5",
+    "type": "region",
+    "value": "banarasi",
+    "label": "Banarasi",
+    "display_order": 1,
+    "is_active": true
+  },
+  {
+    "id": "56c8063e-5adb-4502-945e-03fdf9b6642e",
+    "type": "region",
+    "value": "kanjivaram",
+    "label": "Kanjivaram",
+    "display_order": 2,
+    "is_active": true
+  },
+  {
+    "id": "15cfca2d-eac1-4399-ac0a-6999c4506a14",
+    "type": "region",
+    "value": "rajasthani",
+    "label": "Rajasthani",
+    "display_order": 3,
+    "is_active": true
+  },
+  {
+    "id": "0472ca58-a7fc-4c84-b89e-ac26369b40b7",
+    "type": "region",
+    "value": "gujarati",
+    "label": "Gujarati",
+    "display_order": 4,
+    "is_active": true
+  },
+  {
+    "id": "ab85d289-27b1-486d-9d78-fe1eb34de530",
+    "type": "region",
+    "value": "bengali",
+    "label": "Bengali",
+    "display_order": 5,
+    "is_active": true
+  },
+  {
+    "id": "e987a906-801c-45df-a278-784244d77b41",
+    "type": "fabric",
+    "value": "silk",
+    "label": "Silk",
+    "display_order": 1,
+    "is_active": true
+  },
+  {
+    "id": "e94fe525-9b4a-43e0-90b4-ac31731a3c96",
+    "type": "fabric",
+    "value": "cotton",
+    "label": "Cotton",
+    "display_order": 2,
+    "is_active": true
+  },
+  {
+    "id": "e0c40725-70f2-4716-9d11-dc7f053b294e",
+    "type": "fabric",
+    "value": "georgette",
+    "label": "Georgette",
+    "display_order": 3,
+    "is_active": true
+  },
+  {
+    "id": "e9306914-c48d-4ff4-b925-051521994e26",
+    "type": "fabric",
+    "value": "velvet",
+    "label": "Velvet",
+    "display_order": 4,
+    "is_active": true
+  },
+  {
+    "id": "cc8bd8e3-8ee8-434e-b1d0-e602380b252d",
+    "type": "fabric",
+    "value": "chiffon",
+    "label": "Chiffon",
+    "display_order": 5,
+    "is_active": true
+  },
+  {
+    "id": "797698e9-08da-410e-bca0-ced8ce0b4a27",
+    "type": "fabric",
+    "value": "net",
+    "label": "Net",
+    "display_order": 6,
+    "is_active": true
+  },
+  {
+    "id": "97443dd0-cf5c-45b7-99d7-4099b3d046a6",
+    "type": "print_type",
+    "value": "printed",
+    "label": "Printed",
+    "display_order": 1,
+    "is_active": true
+  },
+  {
+    "id": "2fa6a39b-dcb6-423c-a9a6-1597ec225ba8",
+    "type": "print_type",
+    "value": "embroidered",
+    "label": "Embroidered",
+    "display_order": 2,
+    "is_active": true
+  },
+  {
+    "id": "ab87e926-b64b-48ce-ba0c-1bb69d2e7258",
+    "type": "print_type",
+    "value": "plain",
+    "label": "Plain / Solid",
+    "display_order": 3,
+    "is_active": true
+  },
+  {
+    "id": "7082d985-74e6-4db5-9eae-fc36de0ad347",
+    "type": "print_type",
+    "value": "block_print",
+    "label": "Block Print",
+    "display_order": 4,
+    "is_active": true
+  },
+  {
+    "id": "64086029-747a-4797-8687-a1936e15661c",
+    "type": "print_type",
+    "value": "zari_work",
+    "label": "Zari Work",
+    "display_order": 5,
+    "is_active": true
+  },
+  {
+    "id": "bfd3aa59-1601-4972-876a-058a8df55031",
+    "type": "category",
+    "value": "hifi",
+    "label": "hifi",
+    "display_order": 5,
+    "is_active": true
+  }
+]

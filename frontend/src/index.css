@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@400;500;600&family=Mulish:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,15 +6,15 @@
 
 body {
     margin: 0;
-    font-family: 'Mulish', sans-serif;
+    font-family: 'Lato', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #FFFBF7;
-    color: #2D2420;
+    background-color: #FFFFFF;
+    color: #1F2937;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Lato', sans-serif;
 }
 
 code {
@@ -23,32 +23,43 @@ code {
 
 @layer base {
     :root {
-        --background: 30 100% 98.6%;
-        --foreground: 20 17% 15%;
+        --wine: #C2255C;
+        --wine-dark: #9C1D49;
+        --blue: #3B6FA0;
+        --blue-light: #E8F0F8;
+        --cream: #FFFFFF;
+        --ivory: #FFFFFF;
+        --rose-tint: #FBF0EC;
+        --border: #E5E7EB;
+        --text-primary: #1F2937;
+        --text-secondary: #4B5563;
+        --text-light: #9CA3AF;
+        --footer-dark: #FFFFFF;
+        --background: 0 0% 100%;
+        --foreground: 215 28% 17%;
         --card: 0 0% 100%;
-        --card-foreground: 20 17% 15%;
+        --card-foreground: 215 28% 17%;
         --popover: 0 0% 100%;
-        --popover-foreground: 20 17% 15%;
-        --primary: 351 38% 51%;
+        --popover-foreground: 215 28% 17%;
+        --primary: 340 68% 45%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 42 50% 58%;
-        --secondary-foreground: 20 17% 15%;
-        --accent: 42 50% 58%;
+        --secondary: 208 46% 43%;
+        --secondary-foreground: 0 0% 100%;
+        --accent: 208 46% 43%;
         --accent-foreground: 0 0% 100%;
-        --muted: 22 47% 95%;
-        --muted-foreground: 18 11% 38%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 24 31% 88%;
-        --input: 24 31% 88%;
-        --ring: 351 38% 51%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 340 68% 45%;
         --radius: 0.375rem;
     }
 }
 
 @layer base {
     * {
-        border-color: #EADFD6;
+        border-color: #E5E7EB;
     }
     body {
         @apply bg-background text-foreground;
@@ -62,24 +73,24 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-    background: #FAF0EA;
+    background: #FFFFFF;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #C9A961;
+    background: #3B6FA0;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #8E6F2C;
+    background: #2C547A;
 }
 
 /* Glass morphism utility */
 .glass {
-    background: rgba(255, 251, 247, 0.90);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid #EADFD6;
+    border: 1px solid #E5E7EB;
 }
 
 /* Animation classes */
@@ -129,8 +140,8 @@ code {
 
 /* Selection style */
 ::selection {
-    background: #C87D87;
-    color: #FFFBF7;
+    background: #C2255C;
+    color: #FFFFFF;
 }
 
 /* Link hover effect */
@@ -145,7 +156,7 @@ code {
     left: 0;
     width: 0;
     height: 1.5px;
-    background: #C9A961;
+    background: #C2255C;
     transition: width 0.3s ease;
 }
 
@@ -156,5 +167,23 @@ code {
 @layer base {
     [data-debug-wrapper="true"] {
         display: contents !important;
+    }
+}
+
+@layer utilities {
+    .text-h2 {
+        @apply text-2xl md:text-4xl font-bold tracking-wide;
+    }
+    .text-subheading {
+        @apply text-lg font-semibold;
+    }
+    .text-body {
+        @apply text-base leading-relaxed;
+    }
+    .text-secondary {
+        @apply text-sm;
+    }
+    .text-small {
+        @apply text-xs;
     }
 }

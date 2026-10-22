@@ -7,7 +7,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Dict, Union, Any
 import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
@@ -15,6 +15,7 @@ import jwt
 import razorpay
 import hmac
 import hashlib
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -51,7 +52,6 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     phone: Optional[str] = None
-    is_admin: bool = False
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -71,6 +71,7 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     address: Optional[dict] = None
 
+
 class ProductBase(BaseModel):
     name: str
     description: str
@@ -78,6 +79,11 @@ class ProductBase(BaseModel):
     original_price: Optional[float] = None
     category: str
     subcategory: Optional[str] = None
+    product_type: Optional[str] = None
+    region: Optional[str] = None
+    fabric: Optional[str] = None
+    print_type: Optional[str] = None
+    style: Optional[str] = None
     images: List[str]
     sizes: List[str]
     colors: List[str]
@@ -98,6 +104,11 @@ class ProductUpdate(BaseModel):
     original_price: Optional[float] = None
     category: Optional[str] = None
     subcategory: Optional[str] = None
+    product_type: Optional[str] = None
+    region: Optional[str] = None
+    fabric: Optional[str] = None
+    print_type: Optional[str] = None
+    style: Optional[str] = None
     images: Optional[List[str]] = None
     sizes: Optional[List[str]] = None
     colors: Optional[List[str]] = None
@@ -161,6 +172,41 @@ class PaymentVerify(BaseModel):
     razorpay_payment_id: str
     razorpay_signature: str
 
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+# ==================== ATTRIBUTE MODELS ====================
+
+ALLOWED_ATTRIBUTE_TYPES = {'category', 'product_type', 'style', 'region', 'fabric', 'print_type'}
+ATTRIBUTE_FIELDS = ['category', 'product_type', 'style', 'region', 'fabric', 'print_type']
+
+class AttributeCreate(BaseModel):
+    type: str
+    value: str
+    label: str
+    display_order: Optional[int] = 0
+    sort_order: Optional[int] = None
+    is_active: Optional[bool] = True
+    active: Optional[bool] = None
+
+class AttributeUpdate(BaseModel):
+    label: Optional[str] = None
+    display_order: Optional[int] = None
+    sort_order: Optional[int] = None
+    is_active: Optional[bool] = None
+    active: Optional[bool] = None
+
+class AttributeResponse(BaseModel):
+    id: str
+    type: str
+    value: str
+    label: str
+    display_order: int
+    sort_order: Optional[int] = None
+    is_active: bool
+    active: Optional[bool] = None
+    count: Optional[int] = None
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
@@ -211,6 +257,91 @@ async def ensure_admin_user():
         await db.users.insert_one(admin_doc)
         logger.info("Default admin account created: admin@jaridar.com")
 
+async def ensure_seed_attributes():
+    seed_attributes = [
+        # Categories (without fusion)
+        {"type": "category", "value": "ethnic", "label": "Ethnic Wear", "display_order": 1, "is_active": True},
+        {"type": "category", "value": "traditional", "label": "Traditional Wear", "display_order": 2, "is_active": True},
+        {"type": "category", "value": "western", "label": "Western Wear", "display_order": 3, "is_active": True},
+        {"type": "category", "value": "bridal", "label": "Bridal Collection", "display_order": 4, "is_active": True},
+
+        # Product Types
+        {"type": "product_type", "value": "saree", "label": "Saree", "display_order": 1, "is_active": True},
+        {"type": "product_type", "value": "lehenga", "label": "Lehenga / Ghagra", "display_order": 2, "is_active": True},
+        {"type": "product_type", "value": "kurta-set", "label": "Kurta Set / Kurti", "display_order": 3, "is_active": True},
+        {"type": "product_type", "value": "salwar-suit", "label": "Salwar Suit / Anarkali", "display_order": 4, "is_active": True},
+        {"type": "product_type", "value": "gown", "label": "Gown", "display_order": 5, "is_active": True},
+        {"type": "product_type", "value": "co-ord-set", "label": "Co-ord Set", "display_order": 6, "is_active": True},
+        {"type": "product_type", "value": "dress", "label": "Dress", "display_order": 7, "is_active": True},
+        {"type": "product_type", "value": "top-shirt", "label": "Top / Shirt", "display_order": 8, "is_active": True},
+        {"type": "product_type", "value": "jumpsuit", "label": "Jumpsuit", "display_order": 9, "is_active": True},
+        {"type": "product_type", "value": "dupatta", "label": "Dupatta / Stole", "display_order": 10, "is_active": True},
+        {"type": "product_type", "value": "other", "label": "Other", "display_order": 11, "is_active": True},
+
+        # Styles
+        {"type": "style", "value": "new-collection", "label": "New Collection", "display_order": 1, "is_active": True},
+        {"type": "style", "value": "western", "label": "Western Wear", "display_order": 2, "is_active": True},
+        {"type": "style", "value": "casual", "label": "Casual", "display_order": 3, "is_active": True},
+        {"type": "style", "value": "party-wear", "label": "Party Wear", "display_order": 4, "is_active": True},
+        {"type": "style", "value": "formal", "label": "Formal", "display_order": 5, "is_active": True},
+        {"type": "style", "value": "ethnic", "label": "Ethnic Wear", "display_order": 6, "is_active": True},
+        {"type": "style", "value": "festive-wear", "label": "Festive Wear", "display_order": 7, "is_active": True},
+
+        # Regions
+        {"type": "region", "value": "banarasi", "label": "Banarasi", "display_order": 1, "is_active": True},
+        {"type": "region", "value": "kanjivaram", "label": "Kanjivaram", "display_order": 2, "is_active": True},
+        {"type": "region", "value": "rajasthani", "label": "Rajasthani", "display_order": 3, "is_active": True},
+        {"type": "region", "value": "gujarati", "label": "Gujarati", "display_order": 4, "is_active": True},
+        {"type": "region", "value": "bengali", "label": "Bengali", "display_order": 5, "is_active": True},
+
+        # Fabrics
+        {"type": "fabric", "value": "silk", "label": "Silk", "display_order": 1, "is_active": True},
+        {"type": "fabric", "value": "cotton", "label": "Cotton", "display_order": 2, "is_active": True},
+        {"type": "fabric", "value": "georgette", "label": "Georgette", "display_order": 3, "is_active": True},
+        {"type": "fabric", "value": "velvet", "label": "Velvet", "display_order": 4, "is_active": True},
+        {"type": "fabric", "value": "chiffon", "label": "Chiffon", "display_order": 5, "is_active": True},
+        {"type": "fabric", "value": "net", "label": "Net", "display_order": 6, "is_active": True},
+
+        # Print Types
+        {"type": "print_type", "value": "printed", "label": "Printed", "display_order": 1, "is_active": True},
+        {"type": "print_type", "value": "embroidered", "label": "Embroidered", "display_order": 2, "is_active": True},
+        {"type": "print_type", "value": "plain", "label": "Plain / Solid", "display_order": 3, "is_active": True},
+        {"type": "print_type", "value": "block_print", "label": "Block Print", "display_order": 4, "is_active": True},
+        {"type": "print_type", "value": "zari_work", "label": "Zari Work", "display_order": 5, "is_active": True},
+    ]
+
+    # Group seed items by type
+    types = []
+    items_by_type = {}
+    for item in seed_attributes:
+        t = item["type"]
+        if t not in items_by_type:
+            types.append(t)
+            items_by_type[t] = []
+        items_by_type[t].append(item)
+
+    inserted_count = 0
+    for attr_type in types:
+        count = await db.attributes.count_documents({"type": attr_type})
+        if count == 0:
+            for item in items_by_type[attr_type]:
+                doc = {
+                    "id": str(uuid.uuid4()),
+                    "type": item["type"],
+                    "value": item["value"],
+                    "label": item["label"],
+                    "display_order": item["display_order"],
+                    "sort_order": item["display_order"],
+                    "is_active": item.get("is_active", True),
+                    "active": item.get("is_active", True)
+                }
+                await db.attributes.insert_one(doc)
+                inserted_count += 1
+            logger.info(f"Seeded {len(items_by_type[attr_type])} default attributes for empty type '{attr_type}'.")
+
+    if inserted_count > 0:
+        logger.info(f"Total seeded attributes: {inserted_count}.")
+
 # ==================== AUTH ROUTES ====================
 
 @api_router.post("/auth/register")
@@ -226,13 +357,12 @@ async def register(user: UserCreate):
         'password': hash_password(user.password),
         'phone': user.phone,
         'address': None,
-        'is_admin': user.is_admin,
+        'is_admin': False,
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
     
     token = create_token(user_doc['id'])
-    is_admin = user_doc.get('is_admin', False)
     return {
         'token': token,
         'user': {
@@ -240,8 +370,8 @@ async def register(user: UserCreate):
             'name': user_doc['name'],
             'email': user_doc['email'],
             'phone': user_doc['phone'],
-            'is_admin': is_admin,
-            'isAdmin': is_admin
+            'is_admin': False,
+            'isAdmin': False
         }
     }
 
@@ -292,6 +422,11 @@ async def update_profile(update: UserUpdate, user: dict = Depends(get_current_us
 async def get_products(
     category: Optional[str] = None,
     subcategory: Optional[str] = None,
+    product_type: Optional[str] = None,
+    region: Optional[str] = None,
+    fabric: Optional[str] = None,
+    print_type: Optional[str] = None,
+    style: Optional[str] = None,
     featured: Optional[bool] = None,
     is_new: Optional[bool] = None,
     min_price: Optional[float] = None,
@@ -302,9 +437,42 @@ async def get_products(
 ):
     query = {}
     if category:
-        query['category'] = category
+        cats = [c.strip() for c in category.split(',') if c.strip()]
+        query['category'] = {'$in': cats} if len(cats) > 1 else cats[0]
     if subcategory:
-        query['subcategory'] = subcategory
+        subs = [s.strip() for s in subcategory.split(',') if s.strip()]
+        query['subcategory'] = {'$in': subs} if len(subs) > 1 else subs[0]
+    if product_type:
+        pts = [p.strip() for p in product_type.split(',') if p.strip()]
+        query['product_type'] = {'$in': pts} if len(pts) > 1 else pts[0]
+    if region:
+        regs = [r.strip() for r in region.split(',') if r.strip()]
+        query['region'] = {'$in': regs} if len(regs) > 1 else regs[0]
+    if fabric:
+        fabs = [f.strip() for f in fabric.split(',') if f.strip()]
+        query['fabric'] = {'$in': fabs} if len(fabs) > 1 else fabs[0]
+    if print_type:
+        pts = [p.strip() for p in print_type.split(',') if p.strip()]
+        query['print_type'] = {'$in': pts} if len(pts) > 1 else pts[0]
+    if style:
+        sts = [st.strip() for st in style.split(',') if st.strip()]
+        or_conditions = []
+        for s in sts:
+            if s == 'new-collection':
+                or_conditions.extend([{'style': 'new-collection'}, {'is_new': True}])
+            elif s in ('party-wear', 'partywear'):
+                or_conditions.extend([{'style': 'party-wear'}, {'style': 'partywear'}])
+            elif s in ('festive-wear', 'festivalwear'):
+                or_conditions.extend([{'style': 'festive-wear'}, {'style': 'festivalwear'}, {'category': 'festive-wear'}, {'category': 'festivalwear'}])
+            elif s == 'ethnic':
+                or_conditions.extend([{'style': 'ethnic'}, {'category': 'ethnic'}])
+            elif s == 'western':
+                or_conditions.extend([{'style': 'western'}, {'category': 'western'}])
+            else:
+                or_conditions.extend([{'style': s}, {'category': s}])
+        if or_conditions:
+            query['$or'] = or_conditions
+
     if featured is not None:
         query['featured'] = featured
     if is_new is not None:
@@ -314,10 +482,15 @@ async def get_products(
     if max_price is not None:
         query['price'] = {**query.get('price', {}), '$lte': max_price}
     if search:
-        query['$or'] = [
+        search_or = [
             {'name': {'$regex': search, '$options': 'i'}},
             {'description': {'$regex': search, '$options': 'i'}}
         ]
+        if '$or' in query:
+            existing_or = query.pop('$or')
+            query['$and'] = [{'$or': existing_or}, {'$or': search_or}]
+        else:
+            query['$or'] = search_or
     
     products = await db.products.find(query, {'_id': 0}).skip(skip).limit(limit).to_list(limit)
     return products
@@ -329,35 +502,80 @@ async def get_product(product_id: str):
         raise HTTPException(status_code=404, detail='Product not found')
     return product
 
+CATEGORY_EDITORIAL_IMAGES = {
+    'ethnic': '/images/products/rust-ajrakh-shirt-kurta.jpg',
+    'traditional': '/images/categories/category-traditional.jpg',
+    'western': '/images/products/purple-floral-coord-set.jpg',
+    'bridal': '/images/categories/category-bridal.jpg'
+}
+
+CATEGORY_DEFAULT_SUBCATS = {
+    'ethnic': ['Sarees', 'Lehengas', 'Salwar Suits', 'Kurtis'],
+    'traditional': ['Anarkalis', 'Sharara Sets', 'Palazzo Sets', 'Gharara Sets'],
+    'western': ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jumpsuits'],
+    'bridal': ['Bridal Lehengas', 'Reception Gowns', 'Sangeet Outfits', 'Mehendi Outfits']
+}
+
 @api_router.get("/categories")
 async def get_categories():
-    categories = [
-        {
-            'id': 'ethnic',
-            'name': 'Ethnic Wear',
-            'subcategories': ['Sarees', 'Lehengas', 'Salwar Suits', 'Kurtis'],
-            'image': 'https://images.unsplash.com/photo-1763971922538-5802acdd48b8?w=600'
-        },
-        {
-            'id': 'traditional',
-            'name': 'Traditional Wear',
-            'subcategories': ['Anarkalis', 'Sharara Sets', 'Palazzo Sets', 'Gharara Sets'],
-            'image': 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600'
-        },
-        {
-            'id': 'western',
-            'name': 'Western Wear',
-            'subcategories': ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jumpsuits'],
-            'image': 'https://images.unsplash.com/photo-1612364557094-98a4b47200f6?w=600'
-        },
-        {
-            'id': 'bridal',
-            'name': 'Bridal Collection',
-            'subcategories': ['Bridal Lehengas', 'Reception Gowns', 'Sangeet Outfits', 'Mehendi Outfits'],
-            'image': 'https://images.unsplash.com/photo-1759906766380-7a5849e6fb13?w=600'
-        }
-    ]
+    active_cats = await db.attributes.find(
+        {"type": "category", "$or": [{"is_active": True}, {"active": True}]},
+        {"_id": 0}
+    ).sort([("display_order", 1), ("sort_order", 1)]).to_list(100)
+    
+    categories = []
+    for cat in active_cats:
+        val = cat.get("value")
+        label = cat.get("label")
+        subcats = await db.products.distinct("subcategory", {"category": val})
+        clean_subcats = [s for s in subcats if s and str(s).strip()]
+        if not clean_subcats:
+            clean_subcats = CATEGORY_DEFAULT_SUBCATS.get(val, [])
+        img = CATEGORY_EDITORIAL_IMAGES.get(val, 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600')
+        categories.append({
+            'id': val,
+            'name': label,
+            'subcategories': clean_subcats,
+            'image': img
+        })
     return categories
+
+async def validate_product_attributes(data: dict, existing_product: Optional[dict] = None, is_new: bool = False):
+    if is_new:
+        if not data.get('category') or not str(data['category']).strip():
+            raise HTTPException(status_code=400, detail="Category is required")
+        if not data.get('product_type') or not str(data['product_type']).strip():
+            raise HTTPException(status_code=400, detail="Product Type is required")
+    else:
+        if 'category' in data and data['category'] is not None and not str(data['category']).strip():
+            raise HTTPException(status_code=400, detail="Category cannot be empty")
+        if 'product_type' in data and data['product_type'] is not None and not str(data['product_type']).strip():
+            raise HTTPException(status_code=400, detail="Product Type cannot be empty")
+
+    for field in ATTRIBUTE_FIELDS:
+        if field in data and data[field] is not None:
+            val = str(data[field]).strip()
+            if not val:
+                data[field] = None
+                continue
+            val_lower = val.lower()
+            data[field] = val_lower
+            
+            # If editing and value has not changed, it is allowed even if inactive
+            if existing_product and existing_product.get(field) == val_lower:
+                continue
+            
+            # Otherwise, must be a known ACTIVE attribute of that type
+            attr = await db.attributes.find_one({
+                "type": field,
+                "value": val_lower,
+                "$or": [{"is_active": True}, {"active": True}]
+            })
+            if not attr:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid {field} '{val}'. Value must be an active {field} attribute."
+                )
 
 # ==================== ADMIN PRODUCTS ROUTES ====================
 
@@ -369,6 +587,8 @@ async def admin_get_products(admin: dict = Depends(get_current_admin)):
 @api_router.post("/admin/products", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def admin_create_product(product: ProductBase, admin: dict = Depends(get_current_admin)):
     product_doc = product.model_dump()
+    await validate_product_attributes(product_doc, is_new=True)
+
     product_doc['id'] = str(uuid.uuid4())
     product_doc['rating'] = 0.0
     product_doc['review_count'] = 0
@@ -385,6 +605,8 @@ async def admin_update_product(product_id: str, product_update: ProductUpdate, a
         raise HTTPException(status_code=404, detail='Product not found')
     
     update_data = {k: v for k, v in product_update.model_dump().items() if v is not None}
+    await validate_product_attributes(update_data, existing_product=existing, is_new=False)
+
     if update_data:
         await db.products.update_one({'id': product_id}, {'$set': update_data})
     
@@ -399,6 +621,259 @@ async def admin_delete_product(product_id: str, admin: dict = Depends(get_curren
     
     await db.products.delete_one({'id': product_id})
     return {'message': 'Product deleted successfully', 'id': product_id}
+
+# ==================== ADMIN ORDERS ROUTES ====================
+
+@api_router.get("/admin/orders")
+async def admin_get_orders(status: Optional[str] = None, admin: dict = Depends(get_current_admin)):
+    query = {}
+    if status and status.strip().lower() != 'all':
+        query['order_status'] = status.strip().lower()
+    
+    orders = await db.orders.find(query, {'_id': 0}).sort('created_at', -1).to_list(1000)
+    
+    enriched_orders = []
+    for order in orders:
+        user = await db.users.find_one({'id': order.get('user_id')}, {'_id': 0, 'password': 0})
+        shipping = order.get('shipping_address', {})
+        customer_name = (user.get('name') if user else None) or shipping.get('name') or 'Guest Customer'
+        customer_email = (user.get('email') if user else None) or shipping.get('email') or 'N/A'
+        customer_phone = (user.get('phone') if user else None) or shipping.get('phone') or 'N/A'
+        
+        enriched = {
+            **order,
+            'customer_name': customer_name,
+            'customer_email': customer_email,
+            'customer_phone': customer_phone
+        }
+        enriched_orders.append(enriched)
+        
+    return enriched_orders
+
+@api_router.get("/admin/orders/{order_id}")
+async def admin_get_order(order_id: str, admin: dict = Depends(get_current_admin)):
+    order = await db.orders.find_one({'id': order_id}, {'_id': 0})
+    if not order:
+        raise HTTPException(status_code=404, detail='Order not found')
+    
+    user = await db.users.find_one({'id': order.get('user_id')}, {'_id': 0, 'password': 0})
+    shipping = order.get('shipping_address', {})
+    order['customer_name'] = (user.get('name') if user else None) or shipping.get('name') or 'Guest Customer'
+    order['customer_email'] = (user.get('email') if user else None) or shipping.get('email') or 'N/A'
+    order['customer_phone'] = (user.get('phone') if user else None) or shipping.get('phone') or 'N/A'
+    
+    return order
+
+@api_router.put("/admin/orders/{order_id}/status")
+async def admin_update_order_status(order_id: str, update: OrderStatusUpdate, admin: dict = Depends(get_current_admin)):
+    allowed_statuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
+    new_status = update.status.strip().lower()
+    
+    if new_status not in allowed_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Allowed values: {', '.join(allowed_statuses)}")
+    
+    existing = await db.orders.find_one({'id': order_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail='Order not found')
+    
+    await db.orders.update_one({'id': order_id}, {'$set': {'order_status': new_status}})
+    
+    updated_order = await db.orders.find_one({'id': order_id}, {'_id': 0})
+    user = await db.users.find_one({'id': updated_order.get('user_id')}, {'_id': 0, 'password': 0})
+    shipping = updated_order.get('shipping_address', {})
+    updated_order['customer_name'] = (user.get('name') if user else None) or shipping.get('name') or 'Guest Customer'
+    updated_order['customer_email'] = (user.get('email') if user else None) or shipping.get('email') or 'N/A'
+    updated_order['customer_phone'] = (user.get('phone') if user else None) or shipping.get('phone') or 'N/A'
+    
+    return updated_order
+
+# Helper to attach counts and normalize fields
+async def attach_product_counts(attributes_list: List[dict]) -> List[dict]:
+    for attr in attributes_list:
+        attr_type = attr.get("type")
+        attr_val = attr.get("value")
+        if attr_type and attr_val:
+            c = await db.products.count_documents({
+                attr_type: {"$regex": f"^{re.escape(attr_val)}$", "$options": "i"}
+            })
+            attr["count"] = c
+        else:
+            attr["count"] = 0
+        if "sort_order" not in attr or attr["sort_order"] is None:
+            attr["sort_order"] = attr.get("display_order", 0)
+        if "display_order" not in attr or attr["display_order"] is None:
+            attr["display_order"] = attr.get("sort_order", 0)
+        if "active" not in attr or attr["active"] is None:
+            attr["active"] = attr.get("is_active", True)
+        if "is_active" not in attr or attr["is_active"] is None:
+            attr["is_active"] = attr.get("active", True)
+    return attributes_list
+
+def normalize_attribute_doc(attr: dict) -> dict:
+    if "sort_order" not in attr or attr["sort_order"] is None:
+        attr["sort_order"] = attr.get("display_order", 0)
+    if "display_order" not in attr or attr["display_order"] is None:
+        attr["display_order"] = attr.get("sort_order", 0)
+    if "active" not in attr or attr["active"] is None:
+        attr["active"] = attr.get("is_active", True)
+    if "is_active" not in attr or attr["is_active"] is None:
+        attr["is_active"] = attr.get("active", True)
+    return attr
+
+# ==================== ATTRIBUTES ROUTES ====================
+
+@api_router.get("/attributes")
+async def get_attributes(type: Optional[str] = None, with_counts: Optional[str] = None):
+    want_counts = str(with_counts).lower() in ("true", "1", "yes") if with_counts is not None else False
+    if type:
+        clean_type = type.strip().lower()
+        query = {"type": clean_type, "$or": [{"is_active": True}, {"active": True}]}
+        attributes = await db.attributes.find(query, {"_id": 0}).sort([("display_order", 1), ("sort_order", 1), ("label", 1)]).to_list(1000)
+        if want_counts:
+            await attach_product_counts(attributes)
+        else:
+            for attr in attributes:
+                normalize_attribute_doc(attr)
+        return attributes
+    else:
+        # Grouped by type
+        grouped = {t: [] for t in ["category", "product_type", "style", "region", "fabric", "print_type"]}
+        all_active = await db.attributes.find({"$or": [{"is_active": True}, {"active": True}]}, {"_id": 0}).sort([("display_order", 1), ("sort_order", 1), ("label", 1)]).to_list(1000)
+        if want_counts:
+            await attach_product_counts(all_active)
+        else:
+            for attr in all_active:
+                normalize_attribute_doc(attr)
+        for attr in all_active:
+            t = attr.get("type")
+            if t in grouped:
+                grouped[t].append(attr)
+            else:
+                grouped.setdefault(t, []).append(attr)
+        return grouped
+
+@api_router.get("/admin/attributes")
+async def admin_get_attributes(type: Optional[str] = None, admin: dict = Depends(get_current_admin)):
+    query = {}
+    if type:
+        query["type"] = type.strip().lower()
+    attributes = await db.attributes.find(query, {"_id": 0}).sort([("display_order", 1), ("sort_order", 1), ("label", 1)]).to_list(1000)
+    await attach_product_counts(attributes)
+    return attributes
+
+@api_router.post("/admin/attributes", response_model=AttributeResponse, status_code=status.HTTP_201_CREATED)
+async def admin_create_attribute(attr: AttributeCreate, admin: dict = Depends(get_current_admin)):
+    clean_type = attr.type.strip().lower()
+    if clean_type not in ALLOWED_ATTRIBUTE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid attribute type '{attr.type}'. Allowed types: {', '.join(sorted(ALLOWED_ATTRIBUTE_TYPES))}"
+        )
+    clean_value = attr.value.strip().lower()
+    if not clean_value:
+        raise HTTPException(status_code=400, detail="Attribute value cannot be empty")
+    clean_label = attr.label.strip()
+    if not clean_label:
+        raise HTTPException(status_code=400, detail="Attribute label cannot be empty")
+    
+    existing = await db.attributes.find_one({"type": clean_type, "value": clean_value})
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Attribute of type '{clean_type}' with value '{clean_value}' already exists"
+        )
+    
+    order = attr.sort_order if attr.sort_order is not None else (attr.display_order if attr.display_order is not None else 0)
+    is_act = attr.active if attr.active is not None else (attr.is_active if attr.is_active is not None else True)
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "type": clean_type,
+        "value": clean_value,
+        "label": clean_label,
+        "display_order": order,
+        "sort_order": order,
+        "is_active": is_act,
+        "active": is_act
+    }
+    await db.attributes.insert_one(doc)
+    created = await db.attributes.find_one({"id": doc["id"]}, {"_id": 0})
+    created["count"] = 0
+    return created
+
+@api_router.put("/admin/attributes/{id}", response_model=AttributeResponse)
+async def admin_update_attribute(id: str, update: AttributeUpdate, admin: dict = Depends(get_current_admin)):
+    existing = await db.attributes.find_one({"id": id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Attribute not found")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    
+    # value cannot change after creation
+    if "value" in update_data:
+        del update_data["value"]
+
+    if "label" in update_data:
+        clean_label = str(update_data["label"]).strip()
+        if not clean_label:
+            raise HTTPException(status_code=400, detail="Label cannot be empty")
+        update_data["label"] = clean_label
+    
+    if "display_order" in update_data and "sort_order" not in update_data:
+        update_data["sort_order"] = update_data["display_order"]
+    elif "sort_order" in update_data and "display_order" not in update_data:
+        update_data["display_order"] = update_data["sort_order"]
+        
+    if "is_active" in update_data and "active" not in update_data:
+        update_data["active"] = update_data["is_active"]
+    elif "active" in update_data and "is_active" not in update_data:
+        update_data["is_active"] = update_data["active"]
+
+    if update_data:
+        await db.attributes.update_one({"id": id}, {"$set": update_data})
+    
+    updated = await db.attributes.find_one({"id": id}, {"_id": 0})
+    normalize_attribute_doc(updated)
+    c = await db.products.count_documents({
+        updated["type"]: {"$regex": f"^{re.escape(updated['value'])}$", "$options": "i"}
+    })
+    updated["count"] = c
+    return updated
+
+@api_router.post("/admin/attributes/reorder")
+async def admin_reorder_attributes(data: dict, admin: dict = Depends(get_current_admin)):
+    items = data.get("items", [])
+    for item in items:
+        attr_id = item.get("id")
+        order = item.get("sort_order", item.get("display_order", 0))
+        if attr_id:
+            await db.attributes.update_one(
+                {"id": attr_id},
+                {"$set": {"display_order": order, "sort_order": order}}
+            )
+    return {"message": "Attributes reordered successfully"}
+
+@api_router.delete("/admin/attributes/{id}")
+async def admin_delete_attribute(id: str, admin: dict = Depends(get_current_admin)):
+    existing = await db.attributes.find_one({"id": id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Attribute not found")
+    
+    attr_type = existing.get("type")
+    attr_value = existing.get("value")
+    
+    # Check if any product currently uses that value
+    count = await db.products.count_documents({
+        attr_type: {"$regex": f"^{re.escape(attr_value)}$", "$options": "i"}
+    })
+    if count > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete attribute '{existing.get('label', attr_value)}': It is currently used by {count} product(s)."
+        )
+    
+    await db.attributes.delete_one({"id": id})
+    return {"message": "Attribute deleted successfully", "id": id}
 
 # ==================== CART ROUTES ====================
 
@@ -684,9 +1159,10 @@ async def subscribe_newsletter(data: NewsletterSubscribe):
 # ==================== SEED DATA ====================
 
 @api_router.post("/seed")
-async def seed_data():
+async def seed_data(admin: dict = Depends(get_current_admin)):
     """Seed initial product data and default admin account"""
     await ensure_admin_user()
+    await ensure_seed_attributes()
     existing = await db.products.find_one()
     if existing:
         return {'message': 'Data already seeded'}
@@ -702,8 +1178,7 @@ async def seed_data():
             'category': 'ethnic',
             'subcategory': 'Sarees',
             'images': [
-                'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-                'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?w=600'
+                '/images/products/pastel-pink-embroidered-saree.jpg'
             ],
             'sizes': ['Free Size'],
             'colors': ['Pink', 'Rose Gold'],
@@ -723,8 +1198,7 @@ async def seed_data():
             'category': 'ethnic',
             'subcategory': 'Lehengas',
             'images': [
-                'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
-                'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?w=600'
+                '/images/products/royal-blue-banarasi-lehenga.jpg'
             ],
             'sizes': ['XS', 'S', 'M', 'L', 'XL'],
             'colors': ['Royal Blue', 'Navy'],
@@ -744,8 +1218,7 @@ async def seed_data():
             'category': 'ethnic',
             'subcategory': 'Salwar Suits',
             'images': [
-                'https://images.unsplash.com/photo-1594463750939-ebb28c3f7f75?w=600',
-                'https://images.pexels.com/photos/8285167/pexels-photo-8285167.jpeg?w=600'
+                '/images/products/mint-green-anarkali-suit.jpg'
             ],
             'sizes': ['S', 'M', 'L', 'XL', 'XXL'],
             'colors': ['Mint Green', 'Sea Green'],
@@ -766,8 +1239,7 @@ async def seed_data():
             'category': 'traditional',
             'subcategory': 'Sharara Sets',
             'images': [
-                'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=600',
-                'https://images.pexels.com/photos/7679863/pexels-photo-7679863.jpeg?w=600'
+                '/images/products/maroon-velvet-sharara-set.jpg'
             ],
             'sizes': ['S', 'M', 'L', 'XL'],
             'colors': ['Maroon', 'Wine'],
@@ -787,8 +1259,7 @@ async def seed_data():
             'category': 'traditional',
             'subcategory': 'Palazzo Sets',
             'images': [
-                'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600',
-                'https://images.pexels.com/photos/6069185/pexels-photo-6069185.jpeg?w=600'
+                '/images/products/ivory-palazzo-set-with-jacket.jpg'
             ],
             'sizes': ['XS', 'S', 'M', 'L', 'XL'],
             'colors': ['Ivory', 'Off White'],
@@ -809,8 +1280,7 @@ async def seed_data():
             'category': 'western',
             'subcategory': 'Dresses',
             'images': [
-                'https://images.unsplash.com/photo-1612364557094-98a4b47200f6?w=600',
-                'https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg?w=600'
+                '/images/products/blush-pink-cocktail-dress.jpg'
             ],
             'sizes': ['XS', 'S', 'M', 'L'],
             'colors': ['Blush Pink', 'Dusty Rose'],
@@ -830,8 +1300,7 @@ async def seed_data():
             'category': 'western',
             'subcategory': 'Jumpsuits',
             'images': [
-                'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600',
-                'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?w=600'
+                '/images/products/navy-blue-jumpsuit.jpg'
             ],
             'sizes': ['S', 'M', 'L', 'XL'],
             'colors': ['Navy Blue', 'Black'],
@@ -851,8 +1320,7 @@ async def seed_data():
             'category': 'western',
             'subcategory': 'Dresses',
             'images': [
-                'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600',
-                'https://images.pexels.com/photos/1462637/pexels-photo-1462637.jpeg?w=600'
+                '/images/products/floral-maxi-dress.jpg'
             ],
             'sizes': ['XS', 'S', 'M', 'L', 'XL'],
             'colors': ['Floral Print', 'Multi'],
@@ -873,8 +1341,7 @@ async def seed_data():
             'category': 'bridal',
             'subcategory': 'Bridal Lehengas',
             'images': [
-                'https://images.unsplash.com/photo-1760613129745-418b15f91d56?w=600',
-                'https://images.unsplash.com/photo-1759906766380-7a5849e6fb13?w=600'
+                '/images/products/red-bridal-lehenga-with-gold-work.jpg'
             ],
             'sizes': ['S', 'M', 'L', 'XL'],
             'colors': ['Red', 'Maroon'],
@@ -894,8 +1361,7 @@ async def seed_data():
             'category': 'bridal',
             'subcategory': 'Reception Gowns',
             'images': [
-                'https://images.unsplash.com/photo-1519657337289-077653f724ed?w=600',
-                'https://images.pexels.com/photos/291759/pexels-photo-291759.jpeg?w=600'
+                '/images/products/champagne-reception-gown.jpg'
             ],
             'sizes': ['XS', 'S', 'M', 'L'],
             'colors': ['Champagne', 'Gold'],
@@ -915,8 +1381,7 @@ async def seed_data():
             'category': 'bridal',
             'subcategory': 'Sangeet Outfits',
             'images': [
-                'https://images.unsplash.com/photo-1594463750939-ebb28c3f7f75?w=600',
-                'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?w=600'
+                '/images/products/peach-sangeet-lehenga.jpg'
             ],
             'sizes': ['S', 'M', 'L', 'XL'],
             'colors': ['Peach', 'Coral'],
@@ -936,8 +1401,7 @@ async def seed_data():
             'category': 'bridal',
             'subcategory': 'Mehendi Outfits',
             'images': [
-                'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
-                'https://images.pexels.com/photos/6069185/pexels-photo-6069185.jpeg?w=600'
+                '/images/products/yellow-mehendi-outfit.jpg'
             ],
             'sizes': ['XS', 'S', 'M', 'L', 'XL'],
             'colors': ['Yellow', 'Mustard'],
@@ -952,6 +1416,29 @@ async def seed_data():
     
     await db.products.insert_many(products)
     return {'message': f'Seeded {len(products)} products'}
+
+@api_router.post("/update-product-images")
+async def update_product_images(admin: dict = Depends(get_current_admin)):
+    """Safely update existing products' image URLs in MongoDB by product name without wiping users, orders, or admin accounts."""
+    mapping = {
+        'Pastel Pink Embroidered Saree': ['/images/products/pastel-pink-embroidered-saree.jpg'],
+        'Royal Blue Banarasi Lehenga': ['/images/products/royal-blue-banarasi-lehenga.jpg'],
+        'Mint Green Anarkali Suit': ['/images/products/mint-green-anarkali-suit.jpg'],
+        'Maroon Velvet Sharara Set': ['/images/products/maroon-velvet-sharara-set.jpg'],
+        'Ivory Palazzo Set with Jacket': ['/images/products/ivory-palazzo-set-with-jacket.jpg'],
+        'Blush Pink Cocktail Dress': ['/images/products/blush-pink-cocktail-dress.jpg'],
+        'Navy Blue Jumpsuit': ['/images/products/navy-blue-jumpsuit.jpg'],
+        'Floral Maxi Dress': ['/images/products/floral-maxi-dress.jpg'],
+        'Red Bridal Lehenga with Gold Work': ['/images/products/red-bridal-lehenga-with-gold-work.jpg'],
+        'Champagne Reception Gown': ['/images/products/champagne-reception-gown.jpg'],
+        'Peach Sangeet Lehenga': ['/images/products/peach-sangeet-lehenga.jpg'],
+        'Yellow Mehendi Outfit': ['/images/products/yellow-mehendi-outfit.jpg']
+    }
+    updated_count = 0
+    for name, imgs in mapping.items():
+        res = await db.products.update_many({'name': name}, {'$set': {'images': imgs}})
+        updated_count += res.modified_count
+    return {'message': f'Updated image paths for {updated_count} products safely'}
 
 @api_router.get("/")
 async def root():
@@ -971,6 +1458,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     await ensure_admin_user()
+    await ensure_seed_attributes()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

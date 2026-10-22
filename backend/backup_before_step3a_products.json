@@ -1,0 +1,568 @@
+[
+  {
+    "id": "ff10367e-b0c1-4991-af4e-e95daaa6e2f8",
+    "name": "Pastel Pink Embroidered Saree",
+    "description": "Elegant pastel pink saree with intricate zari embroidery, perfect for festive occasions. Features a beautiful border with traditional motifs.",
+    "price": 8999,
+    "original_price": 12999,
+    "category": "ethnic",
+    "subcategory": "Sarees",
+    "images": [
+      "/images/products/product-pastel-pink-embroidered-saree.jpg"
+    ],
+    "sizes": [
+      "Free Size"
+    ],
+    "colors": [
+      "Pink",
+      "Rose Gold"
+    ],
+    "stock": 25,
+    "featured": true,
+    "is_new": true,
+    "rating": 4.8,
+    "review_count": 45,
+    "created_at": "2026-09-11T10:08:12.172864+00:00",
+    "product_type": "saree"
+  },
+  {
+    "id": "90ed425e-e18d-43b5-9286-d1af528e6ea3",
+    "name": "Royal Blue Banarasi Lehenga",
+    "description": "Stunning royal blue Banarasi silk lehenga with gold zari work. Includes matching blouse and dupatta with intricate weaving.",
+    "price": 24999,
+    "original_price": 34999,
+    "category": "ethnic",
+    "subcategory": "Lehengas",
+    "images": [
+      "/images/products/product-royal-blue-banarasi-lehenga.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Royal Blue",
+      "Navy"
+    ],
+    "stock": 15,
+    "featured": true,
+    "is_new": false,
+    "rating": 4.9,
+    "review_count": 78,
+    "created_at": "2026-09-11T10:08:12.172926+00:00",
+    "product_type": "lehenga"
+  },
+  {
+    "id": "28def579-3b9e-4548-bbac-996687b5b0b3",
+    "name": "Mint Green Anarkali Suit",
+    "description": "Flowy mint green Anarkali suit with delicate thread embroidery. Perfect for casual festive gatherings.",
+    "price": 5999,
+    "original_price": 7999,
+    "category": "ethnic",
+    "subcategory": "Salwar Suits",
+    "images": [
+      "/images/products/product-mint-green-anarkali-suit.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "colors": [
+      "Mint Green",
+      "Sea Green"
+    ],
+    "stock": 30,
+    "featured": false,
+    "is_new": true,
+    "rating": 4.5,
+    "review_count": 32,
+    "created_at": "2026-09-11T10:08:12.172955+00:00",
+    "product_type": "salwar-suit"
+  },
+  {
+    "id": "238a6b27-d2a7-4cb1-8371-e7fa34a55e4c",
+    "name": "Maroon Velvet Sharara Set",
+    "description": "Luxurious maroon velvet sharara set with gold embellishments. Includes kurta, sharara, and matching dupatta.",
+    "price": 15999,
+    "original_price": 19999,
+    "category": "traditional",
+    "subcategory": "Sharara Sets",
+    "images": [
+      "/images/products/product-maroon-velvet-sharara-set.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Maroon",
+      "Wine"
+    ],
+    "stock": 18,
+    "featured": true,
+    "is_new": false,
+    "rating": 4.7,
+    "review_count": 56,
+    "created_at": "2026-09-11T10:08:12.172981+00:00",
+    "product_type": "salwar-suit"
+  },
+  {
+    "id": "491ab7b7-322f-4728-8d3b-8b4357a57e79",
+    "name": "Ivory Palazzo Set with Jacket",
+    "description": "Elegant ivory palazzo set with embroidered long jacket. Perfect for sangeet or mehendi ceremonies.",
+    "price": 11999,
+    "original_price": 15999,
+    "category": "traditional",
+    "subcategory": "Palazzo Sets",
+    "images": [
+      "/images/products/product-ivory-palazzo-set-with-jacket.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Ivory",
+      "Off White"
+    ],
+    "stock": 22,
+    "featured": false,
+    "is_new": true,
+    "rating": 4.6,
+    "review_count": 41,
+    "created_at": "2026-09-11T10:08:12.173007+00:00",
+    "product_type": "co-ord-set"
+  },
+  {
+    "id": "c6bb811e-2c17-46ac-a51f-ca6987bcd08d",
+    "name": "Blush Pink Cocktail Dress",
+    "description": "Stunning blush pink cocktail dress with sequin detailing. Features a flattering A-line silhouette.",
+    "price": 4999,
+    "original_price": 6999,
+    "category": "western",
+    "subcategory": "Dresses",
+    "images": [
+      "/images/products/product-blush-pink-cocktail-dress.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "colors": [
+      "Blush Pink",
+      "Dusty Rose"
+    ],
+    "stock": 35,
+    "featured": true,
+    "is_new": true,
+    "rating": 4.4,
+    "review_count": 28,
+    "created_at": "2026-09-11T10:08:12.173071+00:00",
+    "product_type": "dress"
+  },
+  {
+    "id": "9185c0e0-8288-40bb-a45a-5bfd3b41282a",
+    "name": "Navy Blue Jumpsuit",
+    "description": "Chic navy blue jumpsuit with wide leg pants and belt detail. Perfect for formal occasions.",
+    "price": 3999,
+    "original_price": 5499,
+    "category": "western",
+    "subcategory": "Jumpsuits",
+    "images": [
+      "/images/products/product-navy-blue-jumpsuit.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Navy Blue",
+      "Black"
+    ],
+    "stock": 28,
+    "featured": false,
+    "is_new": false,
+    "rating": 4.3,
+    "review_count": 19,
+    "created_at": "2026-09-11T10:08:12.173095+00:00",
+    "product_type": "jumpsuit"
+  },
+  {
+    "id": "bded3557-b00e-4b38-a4c5-682e78fdfe58",
+    "name": "Floral Maxi Dress",
+    "description": "Beautiful floral print maxi dress with flowy silhouette. Ideal for summer occasions.",
+    "price": 2999,
+    "original_price": 4499,
+    "category": "western",
+    "subcategory": "Dresses",
+    "images": [
+      "/images/products/product-floral-maxi-dress.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Floral Print",
+      "Multi"
+    ],
+    "stock": 40,
+    "featured": false,
+    "is_new": true,
+    "rating": 4.5,
+    "review_count": 35,
+    "created_at": "2026-09-11T10:08:12.173119+00:00",
+    "product_type": "dress"
+  },
+  {
+    "id": "605a2218-7601-4622-b3a9-24a743329feb",
+    "name": "Red Bridal Lehenga with Gold Work",
+    "description": "Exquisite red bridal lehenga with heavy gold zardozi work. Complete bridal ensemble with lehenga, blouse, and two dupattas.",
+    "price": 89999,
+    "original_price": 125000,
+    "category": "bridal",
+    "subcategory": "Bridal Lehengas",
+    "images": [
+      "/images/products/product-red-bridal-lehenga-with-gold-work.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Red",
+      "Maroon"
+    ],
+    "stock": 8,
+    "featured": true,
+    "is_new": false,
+    "rating": 5.0,
+    "review_count": 124,
+    "created_at": "2026-09-11T10:08:12.173142+00:00",
+    "product_type": "lehenga"
+  },
+  {
+    "id": "0d280758-b3e9-4564-ac21-065ef3a2a698",
+    "name": "Champagne Reception Gown",
+    "description": "Elegant champagne reception gown with crystal embellishments and cathedral train.",
+    "price": 45999,
+    "original_price": 65000,
+    "category": "bridal",
+    "subcategory": "Reception Gowns",
+    "images": [
+      "/images/products/product-champagne-reception-gown.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "colors": [
+      "Champagne",
+      "Gold"
+    ],
+    "stock": 5,
+    "featured": true,
+    "is_new": true,
+    "rating": 4.9,
+    "review_count": 67,
+    "created_at": "2026-09-11T10:08:12.173174+00:00",
+    "product_type": "gown"
+  },
+  {
+    "id": "b0c66fc5-9994-42b2-ab79-1791e3479df7",
+    "name": "Peach Sangeet Lehenga",
+    "description": "Light and vibrant peach lehenga perfect for sangeet night. Features mirror work and sequin embellishments.",
+    "price": 35999,
+    "original_price": 48000,
+    "category": "bridal",
+    "subcategory": "Sangeet Outfits",
+    "images": [
+      "/images/products/product-peach-sangeet-lehenga.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Peach",
+      "Coral"
+    ],
+    "stock": 12,
+    "featured": false,
+    "is_new": true,
+    "rating": 4.8,
+    "review_count": 52,
+    "created_at": "2026-09-11T10:08:12.173197+00:00",
+    "product_type": "lehenga"
+  },
+  {
+    "id": "9231eb6c-c2ca-4e5f-8354-987877649295",
+    "name": "Yellow Mehendi Outfit",
+    "description": "Bright yellow mehendi outfit with gota patti work. Includes crop top, skirt, and dupatta.",
+    "price": 18999,
+    "original_price": 25000,
+    "category": "bridal",
+    "subcategory": "Mehendi Outfits",
+    "images": [
+      "/images/products/product-yellow-mehendi-outfit.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Yellow",
+      "Mustard"
+    ],
+    "stock": 20,
+    "featured": false,
+    "is_new": false,
+    "rating": 4.6,
+    "review_count": 38,
+    "created_at": "2026-09-11T10:08:12.173229+00:00",
+    "product_type": "other"
+  },
+  {
+    "name": "ghagra",
+    "description": "ejqnjede",
+    "price": 4000.0,
+    "original_price": 5000.0,
+    "category": "ethnic",
+    "subcategory": "Lehnagas",
+    "images": [
+      "/images/products/product-ghagra.jpg"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Black",
+      "White"
+    ],
+    "stock": 10,
+    "featured": false,
+    "is_new": false,
+    "id": "920d5af9-7049-429f-b69d-d4fdcaa3b154",
+    "rating": 0.0,
+    "review_count": 0,
+    "created_at": "2026-09-18T06:40:14.355581+00:00",
+    "product_type": "lehenga"
+  },
+  {
+    "id": "a1b732b5-72f0-4233-9d69-bcb75557ff6f",
+    "name": "Purple Floral Co-ord Set",
+    "description": "Chic and comfortable purple floral printed co-ord set in georgette, ideal for casual and party outings.",
+    "price": 3499,
+    "original_price": 4999,
+    "category": "western",
+    "style": "party-wear",
+    "fabric": "georgette",
+    "print_type": "printed",
+    "images": [
+      "/images/products/purple-floral-coord-set.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Purple"
+    ],
+    "stock": 20,
+    "featured": true,
+    "is_new": true,
+    "rating": 5.0,
+    "review_count": 0,
+    "created_at": "2026-10-08T11:30:09.468216+00:00",
+    "product_type": "co-ord-set"
+  },
+  {
+    "id": "a2d4a03c-aeee-4c1e-8745-eb5633e448d0",
+    "name": "Blue Plaid Co-ord Set",
+    "description": "Stylish blue plaid co-ord set with fine embroidered details on premium cotton fabric.",
+    "price": 3299,
+    "original_price": 4499,
+    "category": "western",
+    "style": "casual",
+    "fabric": "cotton",
+    "print_type": "embroidered",
+    "images": [
+      "/images/products/blue-plaid-coord-set.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Blue"
+    ],
+    "stock": 20,
+    "featured": true,
+    "is_new": true,
+    "rating": 5.0,
+    "review_count": 0,
+    "created_at": "2026-10-08T11:30:09.468253+00:00",
+    "product_type": "co-ord-set"
+  },
+  {
+    "id": "93de2cc2-efc5-4183-9880-da6670e6b4b5",
+    "name": "Blue Block Print Dress",
+    "description": "Elegant blue block print cotton dress, combining traditional craftsmanship with a contemporary silhouette.",
+    "price": 2499,
+    "original_price": 3499,
+    "category": "ethnic",
+    "style": "casual",
+    "fabric": "cotton",
+    "print_type": "block_print",
+    "images": [
+      "/images/products/blue-blockprint-dress.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Blue"
+    ],
+    "stock": 20,
+    "featured": true,
+    "is_new": true,
+    "rating": 5.0,
+    "review_count": 0,
+    "created_at": "2026-10-08T11:30:09.468269+00:00",
+    "product_type": "dress"
+  },
+  {
+    "id": "d2c6f5c5-c5fc-42eb-a0b6-dd1440e9c9a8",
+    "name": "Pink Kurta",
+    "description": "Graceful pink cotton kurta with subtle accents, suitable for festive and daily wear.",
+    "price": 1999,
+    "original_price": 2799,
+    "category": "ethnic",
+    "style": "festive-wear",
+    "fabric": "cotton",
+    "print_type": "plain",
+    "images": [
+      "/images/products/pink-kurta-1.jpg",
+      "/images/products/pink-kurta-2.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Pink"
+    ],
+    "stock": 20,
+    "featured": true,
+    "is_new": true,
+    "rating": 5.0,
+    "review_count": 0,
+    "created_at": "2026-10-08T11:30:09.468282+00:00",
+    "product_type": "kurta-set"
+  },
+  {
+    "id": "502fba79-216f-46f4-b678-c4a9a687c0e5",
+    "name": "Rust Ajrakh Shirt Kurta",
+    "description": "Handcrafted rust Ajrakh block printed shirt kurta from Rajasthan on fine breathable cotton.",
+    "price": 2799,
+    "original_price": 3799,
+    "category": "ethnic",
+    "style": "casual",
+    "fabric": "cotton",
+    "print_type": "block_print",
+    "region": "rajasthani",
+    "images": [
+      "/images/products/rust-ajrakh-shirt-kurta.jpg"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Rust"
+    ],
+    "stock": 20,
+    "featured": true,
+    "is_new": true,
+    "rating": 5.0,
+    "review_count": 0,
+    "created_at": "2026-10-08T11:30:09.468297+00:00",
+    "product_type": "kurta-set"
+  },
+  {
+    "name": "Western",
+    "description": "Western Wear",
+    "price": 4000.0,
+    "original_price": 5000.0,
+    "category": "western",
+    "subcategory": null,
+    "product_type": "gown",
+    "region": null,
+    "fabric": "cotton",
+    "print_type": "printed",
+    "style": "western",
+    "images": [
+      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Black",
+      "White"
+    ],
+    "stock": 10,
+    "featured": false,
+    "is_new": false,
+    "id": "ee95bcdb-a9b2-44c6-82f5-c03fe00f9392",
+    "rating": 0.0,
+    "review_count": 0,
+    "created_at": "2026-10-18T07:07:09.993770+00:00"
+  }
+]

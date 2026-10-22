@@ -14,7 +14,7 @@ export const StarRating = ({ rating, onChange, readonly = false, size = 20 }) =>
                 >
                     <Star
                         size={size}
-                        className={star <= rating ? 'text-gold fill-gold' : 'text-[#EADFD6]'}
+                        className={star <= rating ? 'text-[#3B6FA0] fill-[#3B6FA0]' : 'text-[#E5E7EB]'}
                     />
                 </button>
             ))}
