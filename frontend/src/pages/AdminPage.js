@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Package, Search, RefreshCw, X, Eye, ShoppingBag, Truck, CheckCircle, Clock, Tags, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, Search, RefreshCw, X, Eye, ShoppingBag, Truck, CheckCircle, Clock, Tags, ChevronUp, ChevronDown, Upload, Loader2, Image as ImageIcon, Users, Star, MessageSquare, Mail, Download, LayoutDashboard, AlertTriangle, TrendingUp, IndianRupee, Sliders } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { HomeContentTab } from '@/components/admin/HomeContentTab';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -60,8 +61,12 @@ export default function AdminPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
-    // Active tab: 'products' | 'orders' | 'categories'
-    const [activeTab, setActiveTab] = useState('products');
+    // Active tab: 'dashboard' | 'products' | 'orders' | 'categories' | 'customers' | 'reviews' | 'newsletter'
+    const [activeTab, setActiveTab] = useState('dashboard');
+
+    // Dashboard state
+    const [dashboardStats, setDashboardStats] = useState(null);
+    const [dashboardLoading, setDashboardLoading] = useState(false);
 
     // Products state
     const [products, setProducts] = useState([]);
@@ -72,6 +77,9 @@ export default function AdminPage() {
     const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
     const [errors, setErrors] = useState({});
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const fileInputRef = useRef(null);
 
     // Orders state
     const [orders, setOrders] = useState([]);
@@ -104,19 +112,55 @@ export default function AdminPage() {
     const [attributeOptionsError, setAttributeOptionsError] = useState(null);
     const [allAttributesList, setAllAttributesList] = useState([]);
 
+    // Customers state
+    const [customers, setCustomers] = useState([]);
+    const [customersLoading, setCustomersLoading] = useState(false);
+    const [customerSearch, setCustomerSearch] = useState('');
+
+    // Reviews state
+    const [reviews, setReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+    const [reviewSearch, setReviewSearch] = useState('');
+    const [deletingReviewId, setDeletingReviewId] = useState(null);
+
+    // Newsletter state
+    const [subscribers, setSubscribers] = useState([]);
+    const [subscribersLoading, setSubscribersLoading] = useState(false);
+    const [subscriberSearch, setSubscriberSearch] = useState('');
+
     useEffect(() => {
         if (!authLoading) {
             if (!isAdmin) {
                 toast.error('Admin access required');
                 navigate('/');
             } else {
+                fetchDashboardStats();
                 fetchProducts();
                 fetchOrders();
                 fetchAttributes('category');
                 fetchAttributeOptions();
+                fetchCustomers();
+                fetchReviews();
+                fetchSubscribers();
             }
         }
     }, [authLoading, isAdmin, navigate]);
+
+    const fetchDashboardStats = async () => {
+        setDashboardLoading(true);
+        try {
+            const token = localStorage.getItem('jaridar_token');
+            const response = await axios.get(`${API}/admin/dashboard-stats`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            setDashboardStats(response.data);
+        } catch (error) {
+            console.error('Failed to fetch dashboard stats:', error);
+            toast.error('Failed to load dashboard metrics');
+        } finally {
+            setDashboardLoading(false);
+        }
+    };
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -142,6 +186,105 @@ export default function AdminPage() {
         } finally {
             setOrdersLoading(false);
         }
+    };
+
+    const fetchCustomers = async () => {
+        setCustomersLoading(true);
+        try {
+            const token = localStorage.getItem('jaridar_token');
+            const response = await axios.get(`${API}/admin/customers`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            setCustomers(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Failed to fetch admin customers:', error);
+            toast.error('Failed to load customers');
+        } finally {
+            setCustomersLoading(false);
+        }
+    };
+
+    const fetchReviews = async () => {
+        setReviewsLoading(true);
+        try {
+            const token = localStorage.getItem('jaridar_token');
+            const response = await axios.get(`${API}/admin/reviews`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            setReviews(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Failed to fetch admin reviews:', error);
+            toast.error('Failed to load reviews');
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
+    const handleDeleteReview = async (review) => {
+        const targetDesc = `review by "${review.customer_name || 'Customer'}" for "${review.product_name || 'Product'}"`;
+        if (!window.confirm(`Are you sure you want to delete this ${targetDesc}?`)) {
+            return;
+        }
+
+        setDeletingReviewId(review.id);
+        try {
+            const token = localStorage.getItem('jaridar_token');
+            await axios.delete(`${API}/admin/reviews/${review.id}`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            toast.success('Review deleted successfully');
+            setReviews((prev) => prev.filter((r) => r.id !== review.id));
+            fetchProducts();
+        } catch (error) {
+            console.error('Failed to delete review:', error);
+            const errorMsg = error.response?.data?.detail || 'Failed to delete review';
+            toast.error(errorMsg);
+        } finally {
+            setDeletingReviewId(null);
+        }
+    };
+
+    const fetchSubscribers = async () => {
+        setSubscribersLoading(true);
+        try {
+            const token = localStorage.getItem('jaridar_token');
+            const response = await axios.get(`${API}/admin/newsletter`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            setSubscribers(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Failed to fetch newsletter subscribers:', error);
+            toast.error('Failed to load newsletter subscribers');
+        } finally {
+            setSubscribersLoading(false);
+        }
+    };
+
+    const downloadNewsletterCSV = () => {
+        if (subscribers.length === 0) {
+            toast.error('No newsletter subscribers to export');
+            return;
+        }
+
+        const headers = ['Email', 'Subscribed Date'];
+        const rows = subscribers.map((s) => {
+            const date = s.subscribed_at || s.created_at || '';
+            const formattedDate = date ? new Date(date).toISOString().replace('T', ' ').slice(0, 19) : '';
+            return `"${(s.email || '').replace(/"/g, '""')}","${formattedDate}"`;
+        });
+
+        const csvContent = [headers.join(','), ...rows].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 10);
+        link.href = url;
+        link.setAttribute('download', `jaridar-newsletter-subscribers-${timestamp}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success('Newsletter subscribers exported to CSV');
     };
 
     const fetchAttributeOptions = async () => {
@@ -445,6 +588,92 @@ export default function AdminPage() {
         }));
     };
 
+    const uploadImageFile = async (file) => {
+        if (!file) return;
+
+        const validExtensions = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (!validExtensions.includes(file.type.toLowerCase()) && !file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
+            toast.error('Invalid file type. Please upload a JPG, PNG, or WebP image.');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size exceeds 5MB limit.');
+            return;
+        }
+
+        setUploadingImage(true);
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+
+        try {
+            const token = localStorage.getItem('jaridar_token');
+            const res = await axios.post(`${API}/admin/products/upload-image`, uploadFormData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                }
+            });
+
+            const uploadedUrl = res.data?.url || res.data?.image_url;
+            if (uploadedUrl) {
+                setFormData((prev) => {
+                    const currentImgs = prev.images
+                        ? prev.images.split(',').map((s) => s.trim()).filter(Boolean)
+                        : [];
+                    const updatedImgs = [...currentImgs, uploadedUrl].join(', ');
+                    return { ...prev, images: updatedImgs };
+                });
+                toast.success('Image uploaded successfully');
+            }
+        } catch (err) {
+            console.error('Failed to upload image:', err);
+            const errorMsg = err.response?.data?.detail || 'Failed to upload image. Please try again.';
+            toast.error(errorMsg);
+        } finally {
+            setUploadingImage(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleFileInputChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            uploadImageFile(file);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+            uploadImageFile(file);
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+    };
+
+    const handleRemoveImage = (indexToRemove) => {
+        setFormData((prev) => {
+            const currentImgs = prev.images
+                ? prev.images.split(',').map((s) => s.trim()).filter(Boolean)
+                : [];
+            const updatedImgs = currentImgs.filter((_, idx) => idx !== indexToRemove).join(', ');
+            return { ...prev, images: updatedImgs };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -585,6 +814,30 @@ export default function AdminPage() {
         );
     });
 
+    const filteredCustomers = customers.filter((c) => {
+        if (!customerSearch.trim()) return true;
+        const query = customerSearch.toLowerCase().trim();
+        const name = (c.name || '').toLowerCase();
+        const email = (c.email || '').toLowerCase();
+        const phone = (c.phone || '').toLowerCase();
+        return name.includes(query) || email.includes(query) || phone.includes(query);
+    });
+
+    const filteredReviews = reviews.filter((r) => {
+        if (!reviewSearch.trim()) return true;
+        const query = reviewSearch.toLowerCase().trim();
+        const prodName = (r.product_name || '').toLowerCase();
+        const custName = (r.customer_name || r.user_name || '').toLowerCase();
+        const comment = (r.comment || '').toLowerCase();
+        return prodName.includes(query) || custName.includes(query) || comment.includes(query);
+    });
+
+    const filteredSubscribers = subscribers.filter((s) => {
+        if (!subscriberSearch.trim()) return true;
+        const query = subscriberSearch.toLowerCase().trim();
+        return (s.email || '').toLowerCase().includes(query);
+    });
+
     const currentTypeInfo = ATTRIBUTE_TYPES.find((t) => t.key === selectedAttributeType) || ATTRIBUTE_TYPES[0];
 
     const getOrderStatusBadge = (status) => {
@@ -635,13 +888,37 @@ export default function AdminPage() {
                 <div>
                     <h1 className="text-3xl font-heading font-bold text-charcoal">Admin Dashboard</h1>
                     <p className="text-[#4B5563] text-sm mt-1">
-                        {activeTab === 'products'
+                        {activeTab === 'dashboard'
+                            ? 'Overview of store performance, revenue, orders, and inventory alerts.'
+                            : activeTab === 'products'
                             ? 'Manage store inventory, add, update or delete products.'
                             : activeTab === 'orders'
                             ? 'Manage customer orders and update shipping statuses.'
-                            : 'Manage dynamic store attributes (categories, styles, regions, fabrics, and print types).'}
+                            : activeTab === 'categories'
+                            ? 'Manage dynamic store attributes (categories, styles, regions, fabrics, and print types).'
+                            : activeTab === 'customers'
+                            ? 'View registered customers, their contact details, and order activity.'
+                            : activeTab === 'reviews'
+                            ? 'Moderate customer product reviews and ratings.'
+                            : activeTab === 'newsletter'
+                            ? 'View and export newsletter subscriber email addresses.'
+                            : activeTab === 'homeContent'
+                            ? 'Manage top announcement bar and hero banner slides without touching code.'
+                            : 'Admin settings and configuration.'}
                     </p>
                 </div>
+                {activeTab === 'dashboard' && (
+                    <Button
+                        variant="outline"
+                        onClick={fetchDashboardStats}
+                        disabled={dashboardLoading}
+                        className="border-[#E5E7EB] text-charcoal hover:bg-neutral-50 gap-2"
+                        title="Refresh metrics"
+                    >
+                        <RefreshCw size={15} className={dashboardLoading ? 'animate-spin' : ''} />
+                        Refresh Metrics
+                    </Button>
+                )}
                 {activeTab === 'products' && (
                     <Button
                         onClick={openAddModal}
@@ -664,6 +941,21 @@ export default function AdminPage() {
 
             {/* Tab Navigation */}
             <div className="flex border-b border-[#E5E7EB] gap-6" data-testid="admin-tabs">
+                <button
+                    onClick={() => {
+                        setActiveTab('dashboard');
+                        fetchDashboardStats();
+                    }}
+                    className={`pb-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+                        activeTab === 'dashboard'
+                            ? 'border-rose text-rose'
+                            : 'border-transparent text-[#4B5563] hover:text-charcoal'
+                    }`}
+                    data-testid="admin-tab-dashboard"
+                >
+                    <LayoutDashboard size={18} />
+                    Dashboard
+                </button>
                 <button
                     onClick={() => setActiveTab('products')}
                     className={`pb-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-colors ${
@@ -704,7 +996,280 @@ export default function AdminPage() {
                     <Tags size={18} />
                     Categories & Filters
                 </button>
+                <button
+                    onClick={() => {
+                        setActiveTab('customers');
+                        fetchCustomers();
+                    }}
+                    className={`pb-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+                        activeTab === 'customers'
+                            ? 'border-rose text-rose'
+                            : 'border-transparent text-[#4B5563] hover:text-charcoal'
+                    }`}
+                    data-testid="admin-tab-customers"
+                >
+                    <Users size={18} />
+                    Customers ({customers.length})
+                </button>
+                <button
+                    onClick={() => {
+                        setActiveTab('reviews');
+                        fetchReviews();
+                    }}
+                    className={`pb-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+                        activeTab === 'reviews'
+                            ? 'border-rose text-rose'
+                            : 'border-transparent text-[#4B5563] hover:text-charcoal'
+                    }`}
+                    data-testid="admin-tab-reviews"
+                >
+                    <Star size={18} />
+                    Reviews ({reviews.length})
+                </button>
+                <button
+                    onClick={() => {
+                        setActiveTab('newsletter');
+                        fetchSubscribers();
+                    }}
+                    className={`pb-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+                        activeTab === 'newsletter'
+                            ? 'border-rose text-rose'
+                            : 'border-transparent text-[#4B5563] hover:text-charcoal'
+                    }`}
+                    data-testid="admin-tab-newsletter"
+                >
+                    <Mail size={18} />
+                    Newsletter ({subscribers.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('homeContent')}
+                    className={`pb-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+                        activeTab === 'homeContent'
+                            ? 'border-rose text-rose'
+                            : 'border-transparent text-[#4B5563] hover:text-charcoal'
+                    }`}
+                    data-testid="admin-tab-home-content"
+                >
+                    <Sliders size={18} />
+                    Home Content
+                </button>
             </div>
+
+            {/* DASHBOARD TAB CONTENT */}
+            {activeTab === 'dashboard' && (
+                <div className="space-y-6">
+                    {/* Top 4 Metric Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* 1. Total Revenue */}
+                        <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs flex items-center justify-between">
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-[#6B7280] font-semibold">Total Revenue</p>
+                                <h3 className="text-2xl font-bold font-heading text-charcoal mt-1">
+                                    ₹{Number(dashboardStats?.total_revenue || 0).toLocaleString('en-IN')}
+                                </h3>
+                                <p className="text-[11px] text-[#6B7280] mt-0.5">Delivered & Confirmed</p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                                <IndianRupee size={22} />
+                            </div>
+                        </div>
+
+                        {/* 2. Total Orders */}
+                        <div 
+                            onClick={() => { setActiveTab('orders'); fetchOrders(); }}
+                            className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs flex items-center justify-between cursor-pointer hover:border-rose/40 hover:shadow-sm transition-all"
+                            title="Click to view all orders"
+                        >
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-[#6B7280] font-semibold">Total Orders</p>
+                                <h3 className="text-2xl font-bold font-heading text-charcoal mt-1">
+                                    {dashboardStats?.total_orders ?? orders.length}
+                                </h3>
+                                <p className="text-[11px] text-rose font-medium mt-0.5 hover:underline">
+                                    View orders &rarr;
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100">
+                                <ShoppingBag size={22} />
+                            </div>
+                        </div>
+
+                        {/* 3. Total Products */}
+                        <div 
+                            onClick={() => { setActiveTab('products'); }}
+                            className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs flex items-center justify-between cursor-pointer hover:border-rose/40 hover:shadow-sm transition-all"
+                            title="Click to view product inventory"
+                        >
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-[#6B7280] font-semibold">Total Products</p>
+                                <h3 className="text-2xl font-bold font-heading text-charcoal mt-1">
+                                    {dashboardStats?.total_products ?? products.length}
+                                </h3>
+                                <p className="text-[11px] text-rose font-medium mt-0.5 hover:underline">
+                                    Manage catalog &rarr;
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0 border border-purple-100">
+                                <Package size={22} />
+                            </div>
+                        </div>
+
+                        {/* 4. Total Customers */}
+                        <div 
+                            onClick={() => { setActiveTab('customers'); fetchCustomers(); }}
+                            className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs flex items-center justify-between cursor-pointer hover:border-rose/40 hover:shadow-sm transition-all"
+                            title="Click to view customers"
+                        >
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-[#6B7280] font-semibold">Total Customers</p>
+                                <h3 className="text-2xl font-bold font-heading text-charcoal mt-1">
+                                    {dashboardStats?.total_customers ?? customers.length}
+                                </h3>
+                                <p className="text-[11px] text-rose font-medium mt-0.5 hover:underline">
+                                    View customers &rarr;
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-100">
+                                <Users size={22} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Orders by Status Summary Strip */}
+                    <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h4 className="font-heading font-semibold text-sm text-charcoal uppercase tracking-wider">
+                                Order Status Breakdown
+                            </h4>
+                            <span className="text-xs text-[#6B7280]">
+                                Total: {dashboardStats?.total_orders ?? orders.length} orders
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                            {[
+                                { key: 'pending', label: 'Pending', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+                                { key: 'confirmed', label: 'Confirmed', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+                                { key: 'shipped', label: 'Shipped', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+                                { key: 'delivered', label: 'Delivered', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                                { key: 'cancelled', label: 'Cancelled', color: 'bg-rose-50 text-rose-700 border-rose-200' }
+                            ].map((statusItem) => {
+                                const count = dashboardStats?.orders_by_status?.[statusItem.key] ?? 0;
+                                return (
+                                    <div 
+                                        key={statusItem.key}
+                                        onClick={() => {
+                                            setOrderStatusFilter(statusItem.key);
+                                            setActiveTab('orders');
+                                            fetchOrders();
+                                        }}
+                                        className={`p-3 rounded-lg border flex flex-col items-center justify-center cursor-pointer hover:shadow-xs transition-all ${statusItem.color}`}
+                                    >
+                                        <span className="text-xl font-bold">{count}</span>
+                                        <span className="text-xs font-medium uppercase tracking-wider mt-0.5">{statusItem.label}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Low Stock Warning Section */}
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-xs">
+                        <div className="p-4 border-b border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
+                            <div className="flex items-center gap-2">
+                                <AlertTriangle size={18} className="text-amber-500" />
+                                <h4 className="font-heading font-semibold text-sm text-charcoal uppercase tracking-wider">
+                                    Low Stock Alert (Stock &lt; 5 Units)
+                                </h4>
+                            </div>
+                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-neutral-200 text-charcoal">
+                                {dashboardStats?.low_stock_products?.length || 0} Products
+                            </span>
+                        </div>
+
+                        {dashboardStats?.low_stock_products?.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="border-b border-[#E5E7EB]">
+                                            <TableHead className="font-bold text-charcoal">Product</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Category</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Price</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Current Stock</TableHead>
+                                            <TableHead className="font-bold text-charcoal text-right">Action</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {dashboardStats.low_stock_products.map((p) => {
+                                            const firstImg = p.images && p.images[0] ? p.images[0] : null;
+                                            return (
+                                                <TableRow key={p.id} className="border-b border-[#E5E7EB] hover:bg-neutral-50/60 transition-colors">
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            {firstImg ? (
+                                                                <img
+                                                                    src={firstImg}
+                                                                    alt={p.name}
+                                                                    className="w-10 h-10 object-cover rounded-md border border-[#E5E7EB] flex-shrink-0"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-md bg-neutral-100 border border-[#E5E7EB] flex items-center justify-center text-xs text-[#9CA3AF] flex-shrink-0">
+                                                                    <Package size={16} />
+                                                                </div>
+                                                            )}
+                                                            <div>
+                                                                <div className="font-medium text-charcoal">{p.name}</div>
+                                                                <div className="text-xs text-[#6B7280] font-mono">ID: {p.id.slice(0, 8)}</div>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-xs uppercase tracking-wider font-semibold text-[#4B5563]">
+                                                            {p.category || 'General'}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm font-semibold text-charcoal">
+                                                            ₹{Number(p.price || 0).toLocaleString('en-IN')}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose border border-rose-200">
+                                                            {p.stock === 0 ? 'Out of stock (0)' : `Only ${p.stock} left`}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const fullProduct = products.find(prod => prod.id === p.id) || p;
+                                                                openEditModal(fullProduct);
+                                                            }}
+                                                            className="text-xs border-[#E5E7EB] hover:border-rose hover:text-rose h-8"
+                                                        >
+                                                            Restock / Edit
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : (
+                            <div className="py-8 px-4 text-center">
+                                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2 border border-emerald-100">
+                                    <CheckCircle size={20} />
+                                </div>
+                                <p className="text-sm font-semibold text-charcoal">All inventory levels are healthy</p>
+                                <p className="text-xs text-[#6B7280] mt-0.5">
+                                    No products currently have stock below 5 units.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* PRODUCTS TAB CONTENT */}
             {activeTab === 'products' && (
@@ -1152,6 +1717,388 @@ export default function AdminPage() {
                 </div>
             )}
 
+            {/* CUSTOMERS TAB CONTENT */}
+            {activeTab === 'customers' && (
+                <div className="space-y-6">
+                    {/* Controls Bar */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-xs">
+                        <div className="relative w-full sm:w-80">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" size={18} />
+                            <Input
+                                placeholder="Search by name, email, or phone..."
+                                value={customerSearch}
+                                onChange={(e) => setCustomerSearch(e.target.value)}
+                                className="pl-9 border-[#E5E7EB]"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <span className="text-xs font-medium text-[#4B5563]">
+                                Showing {filteredCustomers.length} of {customers.length} Customers
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={fetchCustomers}
+                                disabled={customersLoading}
+                                className="border-[#E5E7EB] gap-2"
+                                title="Refresh customers"
+                            >
+                                <RefreshCw size={14} className={customersLoading ? 'animate-spin' : ''} />
+                                Refresh
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Customers Table */}
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-xs">
+                        {customersLoading && customers.length === 0 ? (
+                            <div className="py-20 text-center text-[#4B5563] flex flex-col items-center gap-2">
+                                <Loader2 size={32} className="animate-spin text-rose" />
+                                <span>Loading customers...</span>
+                            </div>
+                        ) : filteredCustomers.length === 0 ? (
+                            <div className="py-16 text-center text-[#4B5563]">
+                                <Users size={40} className="mx-auto mb-2 text-[#9CA3AF] opacity-60" />
+                                <p className="font-medium">No customers found</p>
+                                <p className="text-xs text-[#6B7280] mt-1">
+                                    {customerSearch ? 'Try a different search term.' : 'Registered customer accounts will appear here.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
+                                            <TableHead className="font-bold text-charcoal">Customer</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Email</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Phone</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Join Date</TableHead>
+                                            <TableHead className="font-bold text-charcoal text-center">Orders Placed</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredCustomers.map((c) => {
+                                            const formattedDate = c.created_at
+                                                ? new Date(c.created_at).toLocaleDateString('en-IN', {
+                                                      day: 'numeric',
+                                                      month: 'short',
+                                                      year: 'numeric',
+                                                  })
+                                                : '—';
+
+                                            return (
+                                                <TableRow key={c.id || c.email} className="border-b border-[#E5E7EB] hover:bg-neutral-50/60 transition-colors">
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-9 h-9 rounded-full bg-rose/10 text-rose flex items-center justify-center font-bold text-sm uppercase flex-shrink-0">
+                                                                {c.name ? c.name.charAt(0) : 'U'}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-medium text-charcoal flex items-center gap-2">
+                                                                    <span>{c.name || 'Unnamed Customer'}</span>
+                                                                    {c.is_admin && (
+                                                                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/30">
+                                                                            Admin
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-xs text-[#6B7280] font-mono">ID: {c.id ? c.id.slice(0, 8) : '—'}</div>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm text-charcoal">{c.email || '—'}</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm text-[#4B5563]">{c.phone || '—'}</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm text-[#4B5563]">{formattedDate}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                                            c.order_count > 0 
+                                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                                                : 'bg-neutral-100 text-[#4B5563] border border-[#E5E7EB]'
+                                                        }`}>
+                                                            {c.order_count ?? 0} {c.order_count === 1 ? 'order' : 'orders'}
+                                                        </span>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* REVIEWS TAB CONTENT */}
+            {activeTab === 'reviews' && (
+                <div className="space-y-6">
+                    {/* Controls Bar */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-xs">
+                        <div className="relative w-full sm:w-80">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" size={18} />
+                            <Input
+                                placeholder="Search by product, customer, or comment..."
+                                value={reviewSearch}
+                                onChange={(e) => setReviewSearch(e.target.value)}
+                                className="pl-9 border-[#E5E7EB]"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <span className="text-xs font-medium text-[#4B5563]">
+                                Showing {filteredReviews.length} of {reviews.length} Reviews
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={fetchReviews}
+                                disabled={reviewsLoading}
+                                className="border-[#E5E7EB] gap-2"
+                                title="Refresh reviews"
+                            >
+                                <RefreshCw size={14} className={reviewsLoading ? 'animate-spin' : ''} />
+                                Refresh
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Reviews Table */}
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-xs">
+                        {reviewsLoading && reviews.length === 0 ? (
+                            <div className="py-20 text-center text-[#4B5563] flex flex-col items-center gap-2">
+                                <Loader2 size={32} className="animate-spin text-rose" />
+                                <span>Loading reviews...</span>
+                            </div>
+                        ) : filteredReviews.length === 0 ? (
+                            <div className="py-16 text-center text-[#4B5563]">
+                                <MessageSquare size={40} className="mx-auto mb-2 text-[#9CA3AF] opacity-60" />
+                                <p className="font-medium">No reviews found</p>
+                                <p className="text-xs text-[#6B7280] mt-1">
+                                    {reviewSearch ? 'Try a different search query.' : 'Customer product reviews will appear here for moderation.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
+                                            <TableHead className="font-bold text-charcoal">Product</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Customer</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Rating</TableHead>
+                                            <TableHead className="font-bold text-charcoal max-w-md">Review Comment</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Date</TableHead>
+                                            <TableHead className="font-bold text-charcoal text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredReviews.map((r) => {
+                                            const formattedDate = r.created_at
+                                                ? new Date(r.created_at).toLocaleDateString('en-IN', {
+                                                      day: 'numeric',
+                                                      month: 'short',
+                                                      year: 'numeric',
+                                                  })
+                                                : '—';
+                                            const ratingNum = Math.min(5, Math.max(1, Number(r.rating) || 5));
+
+                                            return (
+                                                <TableRow key={r.id} className="border-b border-[#E5E7EB] hover:bg-neutral-50/60 transition-colors">
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            {r.product_image ? (
+                                                                <img
+                                                                    src={r.product_image}
+                                                                    alt={r.product_name}
+                                                                    className="w-10 h-10 object-cover rounded-md border border-[#E5E7EB] flex-shrink-0"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-md bg-neutral-100 border border-[#E5E7EB] flex items-center justify-center text-xs text-[#9CA3AF] flex-shrink-0">
+                                                                    <Package size={16} />
+                                                                </div>
+                                                            )}
+                                                            <div>
+                                                                <div className="font-medium text-charcoal">{r.product_name}</div>
+                                                                <div className="text-xs text-[#6B7280] font-mono">ID: {r.product_id ? r.product_id.slice(0, 8) : '—'}</div>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium text-charcoal">{r.customer_name}</div>
+                                                        {r.customer_email && (
+                                                            <div className="text-xs text-[#6B7280]">{r.customer_email}</div>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-1">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <Star
+                                                                    key={i}
+                                                                    size={14}
+                                                                    className={i < ratingNum ? 'fill-amber-400 text-amber-400' : 'text-neutral-200'}
+                                                                />
+                                                            ))}
+                                                            <span className="text-xs font-semibold text-charcoal ml-1">{ratingNum}.0</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="max-w-md">
+                                                        <p className="text-xs text-[#374151] italic leading-relaxed line-clamp-3">
+                                                            "{r.comment || 'No comment provided'}"
+                                                        </p>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-xs text-[#4B5563]">{formattedDate}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteReview(r)}
+                                                            disabled={deletingReviewId === r.id}
+                                                            className="text-rose border-rose/30 hover:bg-rose/10 hover:text-rose-dark hover:border-rose gap-1.5 h-8 px-2.5 text-xs font-medium"
+                                                            title="Delete review"
+                                                        >
+                                                            {deletingReviewId === r.id ? (
+                                                                <Loader2 size={13} className="animate-spin" />
+                                                            ) : (
+                                                                <Trash2 size={13} />
+                                                            )}
+                                                            Delete
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* NEWSLETTER TAB CONTENT */}
+            {activeTab === 'newsletter' && (
+                <div className="space-y-6">
+                    {/* Controls Bar */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-xs">
+                        <div className="relative w-full sm:w-80">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" size={18} />
+                            <Input
+                                placeholder="Search by email address..."
+                                value={subscriberSearch}
+                                onChange={(e) => setSubscriberSearch(e.target.value)}
+                                className="pl-9 border-[#E5E7EB]"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <span className="text-xs font-medium text-[#4B5563]">
+                                Showing {filteredSubscribers.length} of {subscribers.length} Subscribers
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={fetchSubscribers}
+                                disabled={subscribersLoading}
+                                className="border-[#E5E7EB] gap-2"
+                                title="Refresh subscriber list"
+                            >
+                                <RefreshCw size={14} className={subscribersLoading ? 'animate-spin' : ''} />
+                                Refresh
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={downloadNewsletterCSV}
+                                disabled={subscribers.length === 0}
+                                className="bg-rose hover:bg-rose-dark text-white gap-2 font-medium"
+                                title="Download subscribers as CSV"
+                            >
+                                <Download size={14} />
+                                Download CSV
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Newsletter Subscribers Table */}
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-xs">
+                        {subscribersLoading && subscribers.length === 0 ? (
+                            <div className="py-20 text-center text-[#4B5563] flex flex-col items-center gap-2">
+                                <Loader2 size={32} className="animate-spin text-rose" />
+                                <span>Loading subscribers...</span>
+                            </div>
+                        ) : filteredSubscribers.length === 0 ? (
+                            <div className="py-16 text-center text-[#4B5563]">
+                                <Mail size={40} className="mx-auto mb-2 text-[#9CA3AF] opacity-60" />
+                                <p className="font-medium">No subscribers found</p>
+                                <p className="text-xs text-[#6B7280] mt-1">
+                                    {subscriberSearch ? 'Try a different search term.' : 'Newsletter email subscriptions will appear here.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
+                                            <TableHead className="font-bold text-charcoal w-16 text-center">#</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Subscribed Email</TableHead>
+                                            <TableHead className="font-bold text-charcoal">Subscribe Date & Time</TableHead>
+                                            <TableHead className="font-bold text-charcoal text-right">Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredSubscribers.map((s, idx) => {
+                                            const dateVal = s.subscribed_at || s.created_at;
+                                            const formattedDate = dateVal
+                                                ? new Date(dateVal).toLocaleDateString('en-IN', {
+                                                      day: 'numeric',
+                                                      month: 'short',
+                                                      year: 'numeric',
+                                                      hour: '2-digit',
+                                                      minute: '2-digit',
+                                                  })
+                                                : '—';
+
+                                            return (
+                                                <TableRow key={s.id || s.email} className="border-b border-[#E5E7EB] hover:bg-neutral-50/60 transition-colors">
+                                                    <TableCell className="text-center text-xs text-[#6B7280] font-mono">
+                                                        {idx + 1}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-rose/10 text-rose flex items-center justify-center flex-shrink-0">
+                                                                <Mail size={14} />
+                                                            </div>
+                                                            <span className="text-sm font-medium text-charcoal">{s.email}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm text-[#4B5563]">{formattedDate}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            Subscribed
+                                                        </span>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* HOME CONTENT TAB CONTENT */}
+            {activeTab === 'homeContent' && (
+                <HomeContentTab />
+            )}
+
             {/* Product Add / Edit Dialog */}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -1357,18 +2304,123 @@ export default function AdminPage() {
                                 />
                             </div>
 
-                            <div className="sm:col-span-2">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-1">
-                                    Image URLs (comma separated)
-                                </label>
-                                <textarea
-                                    name="images"
-                                    value={formData.images}
-                                    onChange={handleChange}
-                                    rows={2}
-                                    placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-                                    className="w-full px-3 py-2 border border-[#E5E7EB] rounded-md text-sm text-charcoal focus:outline-none focus:ring-1 focus:ring-rose"
-                                />
+                            <div className="sm:col-span-2 space-y-3">
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-1.5">
+                                        Product Images
+                                    </label>
+
+                                    {/* Drag & Drop / Click to Browse Box */}
+                                    <div
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        onClick={() => !uploadingImage && fileInputRef.current?.click()}
+                                        className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors ${
+                                            isDraggingOver 
+                                                ? 'border-rose bg-rose/5' 
+                                                : 'border-[#E5E7EB] hover:border-rose/50 bg-[#F9FAFB]'
+                                        } ${uploadingImage ? 'opacity-70 pointer-events-none' : ''}`}
+                                    >
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleFileInputChange}
+                                            className="hidden"
+                                        />
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            {uploadingImage ? (
+                                                <>
+                                                    <Loader2 size={26} className="animate-spin text-rose" />
+                                                    <p className="text-sm font-medium text-charcoal">Uploading image to server...</p>
+                                                    <p className="text-xs text-[#6B7280]">Please wait a moment</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center text-rose">
+                                                        <Upload size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-semibold text-rose hover:underline">
+                                                            Click to browse image
+                                                        </span>
+                                                        <span className="text-sm text-[#4B5563]"> or drag and drop here</span>
+                                                    </div>
+                                                    <p className="text-xs text-[#6B7280]">
+                                                        JPG, PNG, or WebP up to 5MB &bull; Automatically saved to catalog
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Thumbnail Previews List with Remove Button */}
+                                {(() => {
+                                    const imageList = formData.images
+                                        ? formData.images.split(',').map((s) => s.trim()).filter(Boolean)
+                                        : [];
+                                    if (imageList.length === 0) return null;
+
+                                    return (
+                                        <div className="bg-neutral-50 p-3 rounded-lg border border-[#E5E7EB]">
+                                            <p className="text-xs font-semibold text-charcoal mb-2">
+                                                Images ({imageList.length}) &bull; First image is used as cover
+                                            </p>
+                                            <div className="flex flex-wrap gap-3">
+                                                {imageList.map((url, idx) => (
+                                                    <div key={idx} className="relative group w-20 h-20 rounded-md border border-[#E5E7EB] overflow-hidden bg-white flex-shrink-0 shadow-xs">
+                                                        <img
+                                                            src={url}
+                                                            alt={`Product thumbnail ${idx + 1}`}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600';
+                                                            }}
+                                                        />
+                                                        {idx === 0 && (
+                                                            <span className="absolute bottom-0 inset-x-0 bg-charcoal/85 text-white text-[9px] font-bold uppercase tracking-wider text-center py-0.5 pointer-events-none">
+                                                                Cover
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveImage(idx);
+                                                            }}
+                                                            title="Remove image"
+                                                            aria-label="Remove image"
+                                                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-charcoal/80 hover:bg-rose text-white flex items-center justify-center transition-colors shadow-xs"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* Fallback URL-paste field */}
+                                <div>
+                                    <label className="block text-xs font-medium text-[#4B5563] mb-1">
+                                        Or enter Image URLs manually (comma separated):
+                                    </label>
+                                    <textarea
+                                        name="images"
+                                        value={formData.images}
+                                        onChange={handleChange}
+                                        rows={2}
+                                        placeholder="https://example.com/img1.jpg, /images/products/example.jpg"
+                                        className="w-full px-3 py-2 border border-[#E5E7EB] rounded-md text-xs text-charcoal focus:outline-none focus:ring-1 focus:ring-rose"
+                                    />
+                                    <p className="text-[11px] text-[#6B7280] mt-0.5">
+                                        Uploaded image paths automatically appear above and below. Both file upload and URL paste work seamlessly together.
+                                    </p>
+                                </div>
                             </div>
 
                             <div>

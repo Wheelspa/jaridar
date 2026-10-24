@@ -90,7 +90,7 @@ def main():
         status_code, body = http_request(
             "POST",
             f"{BASE_URL}/auth/login",
-            json_data={"email": "admin@jaridar.com", "password": "admin123"}
+            json_data={"email": "admin@jaridar.com", "password": os.environ.get("ADMIN_PASSWORD", "")}
         )
         if status_code == 200 and isinstance(body, dict) and "token" in body:
             user_data = body.get("user", {})

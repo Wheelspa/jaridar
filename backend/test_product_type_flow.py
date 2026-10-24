@@ -10,7 +10,7 @@ def run_tests():
     # 1. Admin Login
     login_payload = {
         "email": "admin@jaridar.com",
-        "password": "admin123"
+        "password": os.environ.get("ADMIN_PASSWORD", "")
     }
     res = requests.post(f"{BASE_URL}/api/auth/login", json=login_payload)
     if res.status_code != 200:

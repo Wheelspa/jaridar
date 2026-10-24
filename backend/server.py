@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -16,6 +17,12 @@ import razorpay
 import hmac
 import hashlib
 import re
+import io
+import base64
+import requests
+from PIL import Image
+from google import genai
+from google.genai import types
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -33,9 +40,18 @@ if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
     razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 # JWT Config
-JWT_SECRET = os.environ.get('JWT_SECRET', 'jaridar-fashion-secret-key-2025')
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    raise RuntimeError("Critical startup error: JWT_SECRET environment variable is missing or empty. Please set JWT_SECRET in backend/.env.")
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
+
+# Try-On Config
+GEMINI_IMAGE_MODEL = os.environ.get('GEMINI_IMAGE_MODEL', 'gemini-2.5-flash-image')
+DAILY_TRYON_LIMIT = 5
+ALLOWED_TRYON_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+ALLOWED_TRYON_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/jpg"}
+MAX_TRYON_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 app = FastAPI(title="Jaridar Fashion Couture API")
 api_router = APIRouter(prefix="/api")
@@ -244,18 +260,22 @@ async def get_current_admin(user: dict = Depends(get_current_user)):
 async def ensure_admin_user():
     admin = await db.users.find_one({'email': 'admin@jaridar.com'})
     if not admin:
+        initial_password = os.environ.get('ADMIN_INITIAL_PASSWORD')
+        if not initial_password:
+            logger.warning("No admin user exists and ADMIN_INITIAL_PASSWORD is not set. Skipping admin creation.")
+            return
         admin_doc = {
             'id': str(uuid.uuid4()),
             'name': 'Admin',
             'email': 'admin@jaridar.com',
-            'password': hash_password('admin123'),
+            'password': hash_password(initial_password),
             'phone': None,
             'address': None,
             'is_admin': True,
             'created_at': datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(admin_doc)
-        logger.info("Default admin account created: admin@jaridar.com")
+        logger.info("Admin account created: admin@jaridar.com")
 
 async def ensure_seed_attributes():
     seed_attributes = [
@@ -502,6 +522,362 @@ async def get_product(product_id: str):
         raise HTTPException(status_code=404, detail='Product not found')
     return product
 
+# ==================== VIRTUAL TRY-ON ====================
+
+@api_router.get("/tryon/quota")
+async def get_tryon_quota(current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get('id')
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    usage_record = await db.tryon_usage.find_one({'user_id': user_id, 'date': today_str})
+    current_count = usage_record.get('count', 0) if usage_record else 0
+    return {
+        "daily_used": current_count,
+        "daily_limit": DAILY_TRYON_LIMIT,
+        "remaining": max(0, DAILY_TRYON_LIMIT - current_count)
+    }
+
+@api_router.post("/tryon")
+async def try_on_product(
+    file: UploadFile = File(...),
+    product_id: str = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    user_id = current_user.get('id')
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # 1. Check daily try-on limit per user
+    usage_record = await db.tryon_usage.find_one({'user_id': user_id, 'date': today_str})
+    current_count = usage_record.get('count', 0) if usage_record else 0
+    if current_count >= DAILY_TRYON_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"You have reached your daily limit of {DAILY_TRYON_LIMIT} virtual try-ons. Please try again tomorrow!"
+        )
+
+    # 2. Validate customer photo extension & mime type
+    filename = file.filename or "photo.jpg"
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_TRYON_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file format. Please upload a JPG, PNG, or WebP photo."
+        )
+
+    content_type = (file.content_type or "").lower()
+    if content_type and content_type not in ALLOWED_TRYON_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image type. Please upload a valid JPG, PNG, or WebP image."
+        )
+
+    # 3. Read uploaded photo into memory only (DO NOT SAVE TO DISK OR DB)
+    customer_bytes = await file.read()
+    if len(customer_bytes) > MAX_TRYON_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Photo exceeds the maximum allowed limit of 5MB."
+        )
+    if len(customer_bytes) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded photo is empty. Please select a valid photo."
+        )
+
+    try:
+        customer_img = Image.open(io.BytesIO(customer_bytes))
+        customer_img.load()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to parse uploaded image. Please ensure it is a valid photo."
+        )
+
+    # 4. Load the product's first image
+    product = await db.products.find_one({'id': product_id}, {'_id': 0})
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+
+    images = product.get('images', [])
+    if not images or not images[0]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This product does not have any product images available for virtual try-on."
+        )
+
+    product_img_src = images[0]
+    product_img = None
+    try:
+        if product_img_src.startswith(('http://', 'https://')):
+            resp = requests.get(product_img_src, timeout=15)
+            resp.raise_for_status()
+            product_img = Image.open(io.BytesIO(resp.content))
+            product_img.load()
+        else:
+            clean_path = product_img_src.lstrip('/')
+            candidate_paths = [
+                ROOT_DIR.parent / "frontend" / "public" / clean_path,
+                ROOT_DIR / clean_path,
+                UPLOAD_PRODUCTS_DIR / Path(clean_path).name,
+            ]
+            found_path = next((p for p in candidate_paths if p.is_file()), None)
+            if not found_path:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Product reference image file not found on server."
+                )
+            with open(found_path, "rb") as f:
+                product_img = Image.open(io.BytesIO(f.read()))
+                product_img.load()
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to load product image for tryon: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to load product image for try-on."
+        )
+
+    # 5. Convert images to standard RGB if needed
+    if customer_img.mode != "RGB":
+        customer_img = customer_img.convert("RGB")
+    if product_img.mode != "RGB":
+        product_img = product_img.convert("RGB")
+
+    # 6. Verify Gemini API Key exists
+    gemini_key = os.environ.get('GEMINI_API_KEY')
+    if not gemini_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Virtual Try-On AI service is not configured on the server."
+        )
+
+    # 7. Call Gemini API
+    model_name = os.environ.get('GEMINI_IMAGE_MODEL', GEMINI_IMAGE_MODEL)
+    prompt_text = (
+        "Dress the person in the first photo in the garment shown in the second image. "
+        "Keep the person's face, body shape, pose, skin tone and background unchanged. "
+        "Only change the clothing."
+    )
+
+    try:
+        genai_client = genai.Client(api_key=gemini_key)
+        response = genai_client.models.generate_content(
+            model=model_name,
+            contents=[customer_img, product_img, prompt_text],
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+            )
+        )
+    except HTTPException:
+        raise
+    except Exception as err:
+        err_msg = str(err).lower()
+        err_type = type(err).__name__
+        logger.error(f"Gemini API tryon generation failed: {err_type}")
+
+        if "resource_exhausted" in err_msg or "quota" in err_msg or "429" in err_msg:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="The AI virtual try-on service is experiencing high demand or rate limits. Please try again in a little while."
+            )
+        elif "timeout" in err_msg or "deadline" in err_msg or "timed out" in err_msg:
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="The AI service took too long to generate your preview. Please try again."
+            )
+        elif "safety" in err_msg or "blocked" in err_msg or "harm" in err_msg:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The photo could not be processed due to safety guidelines. Please try with a different photo."
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Unable to generate virtual try-on preview at this time. Please try again later."
+            )
+
+    # 8. Check for safety blocks or extract generated image
+    if hasattr(response, 'candidates') and response.candidates:
+        for cand in response.candidates:
+            finish_reason = getattr(cand, 'finish_reason', None)
+            if finish_reason and str(finish_reason).upper() == "SAFETY":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="The photo could not be processed due to safety guidelines. Please try with a different photo."
+                )
+
+    generated_bytes = None
+    output_mime = "image/png"
+
+    if hasattr(response, 'parts') and response.parts:
+        for part in response.parts:
+            if getattr(part, 'inline_data', None) is not None:
+                generated_bytes = part.inline_data.data
+                output_mime = getattr(part.inline_data, 'mime_type', None) or "image/png"
+                break
+
+    if not generated_bytes and hasattr(response, 'candidates') and response.candidates:
+        for cand in response.candidates:
+            if cand.content and cand.content.parts:
+                for part in cand.content.parts:
+                    if getattr(part, 'inline_data', None) is not None:
+                        generated_bytes = part.inline_data.data
+                        output_mime = getattr(part.inline_data, 'mime_type', None) or "image/png"
+                        break
+                if generated_bytes:
+                    break
+
+    if not generated_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="The AI model did not produce an image output. Please try with a clearer photo."
+        )
+
+    # 9. Format base64 Data URL (in memory only!)
+    b64_image = base64.b64encode(generated_bytes).decode('utf-8')
+    data_url = f"data:{output_mime};base64,{b64_image}"
+
+    # 10. Update daily usage count for user
+    await db.tryon_usage.update_one(
+        {'user_id': user_id, 'date': today_str},
+        {
+            '$inc': {'count': 1},
+            '$set': {'updated_at': datetime.now(timezone.utc).isoformat()},
+            '$setOnInsert': {'created_at': datetime.now(timezone.utc).isoformat()}
+        },
+        upsert=True
+    )
+    new_count = current_count + 1
+    remaining = max(0, DAILY_TRYON_LIMIT - new_count)
+
+    return {
+        "success": True,
+        "image": data_url,
+        "image_url": data_url,
+        "daily_used": new_count,
+        "daily_limit": DAILY_TRYON_LIMIT,
+        "remaining": remaining
+    }
+
+# ==================== SITE CONTENT ====================
+
+DEFAULT_SITE_CONTENT = {
+    "key": "home",
+    "announcement": {
+        "enabled": True,
+        "messages": [
+            { "prefix": "BUY 1 GET ", "highlight": "20% OFF", "suffix": "" },
+            { "prefix": "BUY 2 GET EXTRA ", "highlight": "₹500 OFF", "suffix": "" },
+            { "prefix": "FREE SHIPPING ON ORDERS ABOVE ₹2999", "highlight": "", "suffix": "" }
+        ]
+    },
+    "hero_slides": [
+        {
+            "id": 1,
+            "tabName": "NEW SEASON",
+            "label": "JUST IN",
+            "title1": "NEW SEASON",
+            "title2": "ARRIVALS",
+            "description": "Fresh co-ords, kurtas and dresses, now in store.",
+            "buttonText": "SHOP NEW ARRIVALS",
+            "link": "/shop?filter=new",
+            "video": "/videos/store-video-1.mp4",
+            "poster": "/videos/store-video-1-poster.jpg",
+            "image": "",
+            "objectPosition": "center 35%"
+        },
+        {
+            "id": 2,
+            "tabName": "ELEGANCE",
+            "label": "TIMELESS ELEGANCE",
+            "title1": "EVERY OCCASION",
+            "title2": "COVERED",
+            "description": "Kurtas, dresses and co-ords crafted for every moment.",
+            "buttonText": "SHOP COLLECTIONS",
+            "link": "/shop",
+            "video": "/videos/store-video-2.mp4",
+            "poster": "/videos/store-video-2-poster.jpg",
+            "image": "",
+            "objectPosition": "center 25%"
+        }
+    ]
+}
+
+@api_router.get("/site-content")
+async def get_site_content():
+    content = await db.site_content.find_one({"key": "home"}, {"_id": 0})
+    if not content:
+        return DEFAULT_SITE_CONTENT
+    if "announcement" not in content:
+        content["announcement"] = DEFAULT_SITE_CONTENT["announcement"]
+    if "hero_slides" not in content or not content["hero_slides"]:
+        content["hero_slides"] = DEFAULT_SITE_CONTENT["hero_slides"]
+    return content
+
+@api_router.put("/admin/site-content")
+async def update_site_content(
+    payload: Dict[str, Any],
+    admin: dict = Depends(get_current_admin)
+):
+    update_data = {}
+    if "announcement" in payload and isinstance(payload["announcement"], dict):
+        ann = payload["announcement"]
+        raw_msgs = ann.get("messages", [])
+        clean_msgs = []
+        for m in raw_msgs[:3]:
+            if isinstance(m, str):
+                clean_msgs.append({"prefix": m, "highlight": "", "suffix": ""})
+            elif isinstance(m, dict):
+                clean_msgs.append({
+                    "prefix": str(m.get("prefix", "") or ""),
+                    "highlight": str(m.get("highlight", "") or ""),
+                    "suffix": str(m.get("suffix", "") or "")
+                })
+        update_data["announcement"] = {
+            "enabled": bool(ann.get("enabled", True)),
+            "messages": clean_msgs
+        }
+
+    if "hero_slides" in payload and isinstance(payload["hero_slides"], list):
+        raw_slides = payload["hero_slides"]
+        clean_slides = []
+        for i, default_slide in enumerate(DEFAULT_SITE_CONTENT["hero_slides"]):
+            slide_data = raw_slides[i] if i < len(raw_slides) and isinstance(raw_slides[i], dict) else {}
+            clean_slides.append({
+                "id": default_slide["id"],
+                "tabName": str(slide_data.get("tabName", default_slide["tabName"]) or default_slide["tabName"]),
+                "label": str(slide_data.get("label", default_slide["label"]) or default_slide["label"]),
+                "title1": str(slide_data.get("title1", default_slide["title1"]) or default_slide["title1"]),
+                "title2": str(slide_data.get("title2", default_slide["title2"]) or default_slide["title2"]),
+                "description": str(slide_data.get("description", default_slide["description"]) or default_slide["description"]),
+                "buttonText": str(slide_data.get("buttonText", default_slide["buttonText"]) or default_slide["buttonText"]),
+                "link": str(slide_data.get("link", default_slide["link"]) or default_slide["link"]),
+                "video": default_slide["video"],
+                "poster": default_slide["poster"],
+                "image": str(slide_data.get("image", "") or ""),
+                "objectPosition": default_slide.get("objectPosition", "center 35%")
+            })
+        update_data["hero_slides"] = clean_slides
+
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    await db.site_content.update_one(
+        {"key": "home"},
+        {"$set": update_data},
+        upsert=True
+    )
+
+    updated_doc = await db.site_content.find_one({"key": "home"}, {"_id": 0})
+    return updated_doc
+
+async def ensure_seed_site_content():
+    content = await db.site_content.find_one({"key": "home"})
+    if not content:
+        seed_data = DEFAULT_SITE_CONTENT.copy()
+        seed_data["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.site_content.insert_one(seed_data)
+        logger.info("Default site content seeded into db.site_content")
+
 CATEGORY_EDITORIAL_IMAGES = {
     'ethnic': '/images/products/rust-ajrakh-shirt-kurta.jpg',
     'traditional': '/images/categories/category-traditional.jpg',
@@ -577,6 +953,45 @@ async def validate_product_attributes(data: dict, existing_product: Optional[dic
                     detail=f"Invalid {field} '{val}'. Value must be an active {field} attribute."
                 )
 
+# ==================== ADMIN DASHBOARD ROUTES ====================
+
+@api_router.get("/admin/dashboard-stats")
+async def admin_get_dashboard_stats(admin: dict = Depends(get_current_admin)):
+    total_products = await db.products.count_documents({})
+    total_orders = await db.orders.count_documents({})
+    
+    statuses = ["pending", "confirmed", "shipped", "delivered", "cancelled"]
+    orders_by_status = {}
+    for s in statuses:
+        orders_by_status[s] = await db.orders.count_documents({"order_status": s})
+        
+    revenue_orders = await db.orders.find(
+        {"order_status": {"$in": ["delivered", "confirmed"]}},
+        {"total_amount": 1, "_id": 0}
+    ).to_list(10000)
+    total_revenue = round(sum(float(o.get("total_amount", 0)) for o in revenue_orders), 2)
+    
+    total_customers = await db.users.count_documents(
+        {"$or": [{"is_admin": False}, {"is_admin": {"$exists": False}}, {"is_admin": None}]}
+    )
+    if total_customers == 0:
+        total_customers = await db.users.count_documents({})
+        
+    low_stock_cursor = db.products.find(
+        {"stock": {"$lt": 5}},
+        {"_id": 0, "id": 1, "name": 1, "stock": 1, "price": 1, "images": 1, "category": 1, "product_type": 1}
+    ).sort("stock", 1)
+    low_stock_products = await low_stock_cursor.to_list(100)
+    
+    return {
+        "total_products": total_products,
+        "total_orders": total_orders,
+        "orders_by_status": orders_by_status,
+        "total_revenue": total_revenue,
+        "total_customers": total_customers,
+        "low_stock_products": low_stock_products
+    }
+
 # ==================== ADMIN PRODUCTS ROUTES ====================
 
 @api_router.get("/admin/products", response_model=List[ProductResponse])
@@ -621,6 +1036,72 @@ async def admin_delete_product(product_id: str, admin: dict = Depends(get_curren
     
     await db.products.delete_one({'id': product_id})
     return {'message': 'Product deleted successfully', 'id': product_id}
+
+UPLOAD_PRODUCTS_DIR = ROOT_DIR.parent / "frontend" / "public" / "images" / "products"
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+ALLOWED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/jpg"}
+MAX_IMAGE_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+@api_router.post("/admin/products/upload-image")
+async def admin_upload_product_image(
+    file: UploadFile = File(...),
+    admin: dict = Depends(get_current_admin)
+):
+    original_filename = file.filename or "image.jpg"
+    ext = Path(original_filename).suffix.lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only JPG, PNG, and WebP images are allowed."
+        )
+
+    content_type = (file.content_type or "").lower()
+    if content_type and content_type not in ALLOWED_IMAGE_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid content type. Only JPG, PNG, and WebP images are allowed."
+        )
+
+    content = await file.read()
+    if len(content) > MAX_IMAGE_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds maximum allowed limit of 5MB."
+        )
+    if len(content) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file is empty."
+        )
+
+    base_stem = Path(original_filename).stem
+    slug = re.sub(r'[^a-zA-Z0-9_-]', '-', base_stem).strip('-').lower()
+    slug = re.sub(r'-+', '-', slug)
+    if not slug:
+        slug = "product"
+
+    normalized_ext = ".jpg" if ext == ".jpeg" else ext
+    timestamp = int(datetime.now(timezone.utc).timestamp())
+    filename = f"{slug}-{timestamp}{normalized_ext}"
+
+    UPLOAD_PRODUCTS_DIR.mkdir(parents=True, exist_ok=True)
+    destination_path = UPLOAD_PRODUCTS_DIR / filename
+    if destination_path.exists():
+        filename = f"{slug}-{timestamp}-{uuid.uuid4().hex[:6]}{normalized_ext}"
+        destination_path = UPLOAD_PRODUCTS_DIR / filename
+
+    with open(destination_path, "wb") as f:
+        f.write(content)
+
+    public_path = f"/images/products/{filename}"
+    logger.info(f"Product image uploaded: {destination_path} -> {public_path}")
+
+    return {
+        "url": public_path,
+        "image_url": public_path,
+        "path": public_path,
+        "filename": filename
+    }
 
 # ==================== ADMIN ORDERS ROUTES ====================
 
@@ -686,6 +1167,35 @@ async def admin_update_order_status(order_id: str, update: OrderStatusUpdate, ad
     updated_order['customer_phone'] = (user.get('phone') if user else None) or shipping.get('phone') or 'N/A'
     
     return updated_order
+
+# ==================== ADMIN CUSTOMERS ROUTES ====================
+
+@api_router.get("/admin/customers")
+async def admin_get_customers(admin: dict = Depends(get_current_admin)):
+    users = await db.users.find({}, {"password": 0, "_id": 0}).sort("created_at", -1).to_list(1000)
+    customers = []
+    for u in users:
+        u_id = u.get("id")
+        u_email = u.get("email")
+        query_conditions = []
+        if u_id:
+            query_conditions.append({"user_id": u_id})
+        if u_email:
+            query_conditions.append({"shipping_address.email": u_email})
+        
+        order_count = await db.orders.count_documents({"$or": query_conditions}) if query_conditions else 0
+        
+        customers.append({
+            "id": u_id,
+            "name": u.get("name") or "Unnamed User",
+            "email": u_email or "",
+            "phone": u.get("phone") or "",
+            "created_at": u.get("created_at"),
+            "is_admin": bool(u.get("is_admin", False)),
+            "order_count": order_count,
+            "total_orders": order_count
+        })
+    return customers
 
 # Helper to attach counts and normalize fields
 async def attach_product_counts(attributes_list: List[dict]) -> List[dict]:
@@ -1026,6 +1536,67 @@ async def create_review(review: ReviewCreate, user: dict = Depends(get_current_u
     
     return {'message': 'Review submitted', 'id': review_doc['id']}
 
+# ==================== ADMIN REVIEWS ROUTES ====================
+
+@api_router.get("/admin/reviews")
+async def admin_get_reviews(admin: dict = Depends(get_current_admin)):
+    reviews = await db.reviews.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    enriched_reviews = []
+    
+    for r in reviews:
+        prod_id = r.get("product_id")
+        user_id = r.get("user_id")
+        
+        product = await db.products.find_one({"id": prod_id}, {"_id": 0, "name": 1, "images": 1}) if prod_id else None
+        user = await db.users.find_one({"id": user_id}, {"_id": 0, "name": 1, "email": 1}) if user_id else None
+        
+        product_name = (product.get("name") if product else None) or "Unknown Product"
+        product_images = product.get("images") if product else []
+        product_image = product_images[0] if (product_images and len(product_images) > 0) else None
+        
+        customer_name = (user.get("name") if user else None) or r.get("user_name") or "Anonymous Customer"
+        customer_email = user.get("email") if user else None
+        
+        enriched_reviews.append({
+            "id": r.get("id"),
+            "product_id": prod_id,
+            "product_name": product_name,
+            "product_image": product_image,
+            "user_id": user_id,
+            "user_name": customer_name,
+            "customer_name": customer_name,
+            "customer_email": customer_email,
+            "rating": r.get("rating", 5),
+            "comment": r.get("comment", ""),
+            "created_at": r.get("created_at")
+        })
+        
+    return enriched_reviews
+
+@api_router.delete("/admin/reviews/{review_id}")
+async def admin_delete_review(review_id: str, admin: dict = Depends(get_current_admin)):
+    review = await db.reviews.find_one({"id": review_id})
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+        
+    product_id = review.get("product_id")
+    await db.reviews.delete_one({"id": review_id})
+    
+    if product_id:
+        remaining_reviews = await db.reviews.find({"product_id": product_id}).to_list(1000)
+        if remaining_reviews:
+            avg_rating = round(sum(r.get("rating", 0) for r in remaining_reviews) / len(remaining_reviews), 1)
+            count = len(remaining_reviews)
+        else:
+            avg_rating = 0.0
+            count = 0
+        await db.products.update_one(
+            {"id": product_id},
+            {"$set": {"rating": avg_rating, "review_count": count}}
+        )
+        
+    return {"message": "Review deleted successfully", "id": review_id}
+
 # ==================== ORDERS ROUTES ====================
 
 @api_router.get("/orders")
@@ -1155,6 +1726,20 @@ async def subscribe_newsletter(data: NewsletterSubscribe):
         'subscribed_at': datetime.now(timezone.utc).isoformat()
     })
     return {'message': 'Successfully subscribed to newsletter'}
+
+@api_router.get("/admin/newsletter")
+async def admin_get_newsletter(admin: dict = Depends(get_current_admin)):
+    subscribers = await db.newsletter.find({}, {"_id": 0}).sort("subscribed_at", -1).to_list(10000)
+    result = []
+    for s in subscribers:
+        sub_date = s.get("subscribed_at") or s.get("created_at") or ""
+        result.append({
+            "id": s.get("id"),
+            "email": s.get("email", ""),
+            "subscribed_at": sub_date,
+            "created_at": sub_date
+        })
+    return result
 
 # ==================== SEED DATA ====================
 
@@ -1447,6 +2032,11 @@ async def root():
 # Include router
 app.include_router(api_router)
 
+# Mount public images directory for static serving
+images_dir = ROOT_DIR.parent / "frontend" / "public" / "images"
+if images_dir.exists():
+    app.mount("/images", StaticFiles(directory=str(images_dir)), name="images")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -1459,6 +2049,7 @@ app.add_middleware(
 async def startup_event():
     await ensure_admin_user()
     await ensure_seed_attributes()
+    await ensure_seed_site_content()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingBag, Minus, Plus, Truck, RefreshCw, Shield, ChevronRight, Star, X, ChevronLeft, Search } from 'lucide-react';
+import { Heart, ShoppingBag, Minus, Plus, Truck, RefreshCw, Shield, ChevronRight, Star, X, ChevronLeft, Search, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { StarRating } from '../components/common/StarRating';
 import { ProductCard } from '../components/common/ProductCard';
+import { TryOnModal } from '../components/product/TryOnModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
 import { formatAttributeLabel } from '../lib/utils';
@@ -38,6 +39,9 @@ const ProductDetailPage = () => {
     const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    // Virtual Try-On Modal State
+    const [isTryOnOpen, setIsTryOnOpen] = useState(false);
 
     const inWishlist = product ? isInWishlist(product.id) : false;
 
@@ -382,20 +386,36 @@ const ProductDetailPage = () => {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-3 mb-6">
-                            <button 
-                                onClick={handleAddToCart}
-                                className="btn-primary flex-1 flex items-center justify-center gap-2 shadow-sm"
-                                data-testid="add-to-cart-btn"
+                        <div className="flex flex-col gap-3 mb-6">
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={handleAddToCart}
+                                    className="btn-primary flex-1 flex items-center justify-center gap-2 shadow-sm"
+                                    data-testid="add-to-cart-btn"
+                                >
+                                    <ShoppingBag size={16} /> Add to Cart
+                                </button>
+                                <button 
+                                    onClick={handleWishlist}
+                                    className={`w-12 h-12 border rounded-md flex items-center justify-center transition-all ${inWishlist ? 'bg-rose text-white border-rose' : 'border-[#E5E7EB] text-charcoal bg-white hover:border-rose hover:text-rose'}`}
+                                    data-testid="wishlist-btn"
+                                >
+                                    <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
+                                </button>
+                            </div>
+
+                            {/* Try Me On Button */}
+                            <button
+                                type="button"
+                                onClick={() => setIsTryOnOpen(true)}
+                                className="w-full py-3.5 px-4 rounded-md border-2 border-rose/30 bg-rose/5 hover:bg-rose/10 text-rose font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs hover:border-rose cursor-pointer"
+                                data-testid="try-me-on-btn"
                             >
-                                <ShoppingBag size={16} /> Add to Cart
-                            </button>
-                            <button 
-                                onClick={handleWishlist}
-                                className={`w-12 h-12 border rounded-md flex items-center justify-center transition-all ${inWishlist ? 'bg-rose text-white border-rose' : 'border-[#E5E7EB] text-charcoal bg-white hover:border-rose hover:text-rose'}`}
-                                data-testid="wishlist-btn"
-                            >
-                                <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
+                                <Sparkles size={16} className="text-rose animate-pulse" />
+                                <span>Try Me On</span>
+                                <span className="text-[10px] lowercase px-2 py-0.5 rounded-full bg-rose/10 text-rose font-medium border border-rose/20">
+                                    AI Preview
+                                </span>
                             </button>
                         </div>
 
@@ -624,6 +644,14 @@ const ProductDetailPage = () => {
                     )}
                 </div>
             )}
+
+            {/* Virtual Try-On Modal */}
+            <TryOnModal
+                isOpen={isTryOnOpen}
+                onClose={() => setIsTryOnOpen(false)}
+                product={product}
+                isAuthenticated={isAuthenticated}
+            />
         </div>
     );
 };

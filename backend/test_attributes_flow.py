@@ -46,7 +46,7 @@ def main():
     
     # 4. Admin Login
     log("\n[4] Authenticating Admin...")
-    login_res = requests.post(f"{BASE_URL}/auth/login", json={"email": "admin@jaridar.com", "password": "admin123"})
+    login_res = requests.post(f"{BASE_URL}/auth/login", json={"email": "admin@jaridar.com", "password": os.environ.get("ADMIN_PASSWORD", "")})
     if login_res.status_code != 200:
         log(f"    Admin login failed: {login_res.text}")
         return

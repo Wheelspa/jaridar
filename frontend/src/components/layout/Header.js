@@ -16,11 +16,14 @@ import {
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const ANNOUNCEMENT_MESSAGES = [
-    { prefix: "BUY 1 GET ", highlight: "20% OFF", suffix: "" },
-    { prefix: "BUY 2 GET EXTRA ", highlight: "₹500 OFF", suffix: "" },
-    { prefix: "FREE SHIPPING ON ORDERS ABOVE ₹2999", highlight: "", suffix: "" }
-];
+const DEFAULT_ANNOUNCEMENT = {
+    enabled: true,
+    messages: [
+        { prefix: "BUY 1 GET ", highlight: "20% OFF", suffix: "" },
+        { prefix: "BUY 2 GET EXTRA ", highlight: "₹500 OFF", suffix: "" },
+        { prefix: "FREE SHIPPING ON ORDERS ABOVE ₹2999", highlight: "", suffix: "" }
+    ]
+};
 
 const ATTRIBUTE_THUMBNAILS = {
     // Product types
@@ -60,6 +63,7 @@ export const Header = () => {
     const [isFabricsOpen, setIsFabricsOpen] = useState(false);
     const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
     const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
+    const [announcement, setAnnouncement] = useState(DEFAULT_ANNOUNCEMENT);
     const [headerAttributes, setHeaderAttributes] = useState({
         product_type: [],
         region: [],
@@ -71,6 +75,21 @@ export const Header = () => {
     const { wishlistCount } = useWishlist();
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Fetch dynamic site content for announcement bar
+    useEffect(() => {
+        const fetchSiteContent = async () => {
+            try {
+                const res = await axios.get(`${API}/site-content`);
+                if (res.data?.announcement) {
+                    setAnnouncement(res.data.announcement);
+                }
+            } catch (err) {
+                console.error('Failed to fetch site content in header:', err);
+            }
+        };
+        fetchSiteContent();
+    }, []);
 
     useEffect(() => {
         const fetchHeaderAttributes = async () => {
@@ -90,12 +109,17 @@ export const Header = () => {
         fetchHeaderAttributes();
     }, []);
 
+    const announcementMessages = (announcement?.messages && announcement.messages.length > 0)
+        ? announcement.messages
+        : DEFAULT_ANNOUNCEMENT.messages;
+
     useEffect(() => {
+        if (!announcementMessages.length) return;
         const timer = setInterval(() => {
-            setCurrentMsgIndex((prev) => (prev + 1) % ANNOUNCEMENT_MESSAGES.length);
+            setCurrentMsgIndex((prev) => (prev + 1) % announcementMessages.length);
         }, 3000);
         return () => clearInterval(timer);
-    }, []);
+    }, [announcementMessages.length]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -106,48 +130,52 @@ export const Header = () => {
         }
     };
 
+    const currentMsg = announcementMessages[currentMsgIndex % announcementMessages.length] || announcementMessages[0];
+
     return (
         <div className="w-full">
             {/* Announcement Bar */}
-            <div className="bg-[#C2255C] h-[42px] flex items-center justify-center">
-                <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] text-center">
-                    {/* Desktop: all three centered in one line separated by | */}
-                    <div className="hidden md:flex items-center justify-center gap-4 text-sm uppercase tracking-wide">
-                        {ANNOUNCEMENT_MESSAGES.map((msg, idx) => (
-                            <span key={idx} className="flex items-center gap-4">
-                                {idx > 0 && <span className="text-white/40 font-normal">|</span>}
-                                <span>
-                                    <span className="font-medium text-white">{msg.prefix}</span>
-                                    {msg.highlight && <span className="font-bold text-[#F3D9A0]">{msg.highlight}</span>}
-                                    {msg.suffix && <span className="font-medium text-white">{msg.suffix}</span>}
+            {announcement?.enabled !== false && announcementMessages.length > 0 && (
+                <div className="bg-[#C2255C] h-[42px] flex items-center justify-center" data-testid="announcement-bar">
+                    <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] text-center">
+                        {/* Desktop: all three centered in one line separated by | */}
+                        <div className="hidden md:flex items-center justify-center gap-4 text-sm uppercase tracking-wide">
+                            {announcementMessages.map((msg, idx) => (
+                                <span key={idx} className="flex items-center gap-4">
+                                    {idx > 0 && <span className="text-white/40 font-normal">|</span>}
+                                    <span>
+                                        <span className="font-medium text-white">{msg.prefix || ''}</span>
+                                        {msg.highlight && <span className="font-bold text-[#F3D9A0]">{msg.highlight}</span>}
+                                        {msg.suffix && <span className="font-medium text-white">{msg.suffix}</span>}
+                                    </span>
                                 </span>
-                            </span>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
 
-                    {/* Mobile: rotate 1 at a time every 3s */}
-                    <div className="md:hidden relative h-5 flex items-center justify-center overflow-hidden">
-                        <AnimatePresence mode="wait">
-                            <motion.p
-                                key={currentMsgIndex}
-                                initial={{ opacity: 0, y: 3 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -3 }}
-                                transition={{ duration: 0.35, ease: "easeInOut" }}
-                                className="text-sm uppercase tracking-wide whitespace-nowrap"
-                            >
-                                <span className="font-medium text-white">{ANNOUNCEMENT_MESSAGES[currentMsgIndex].prefix}</span>
-                                {ANNOUNCEMENT_MESSAGES[currentMsgIndex].highlight && (
-                                    <span className="font-bold text-[#F3D9A0]">{ANNOUNCEMENT_MESSAGES[currentMsgIndex].highlight}</span>
-                                )}
-                                {ANNOUNCEMENT_MESSAGES[currentMsgIndex].suffix && (
-                                    <span className="font-medium text-white">{ANNOUNCEMENT_MESSAGES[currentMsgIndex].suffix}</span>
-                                )}
-                            </motion.p>
-                        </AnimatePresence>
+                        {/* Mobile: rotate 1 at a time every 3s */}
+                        <div className="md:hidden relative h-5 flex items-center justify-center overflow-hidden">
+                            <AnimatePresence mode="wait">
+                                <motion.p
+                                    key={currentMsgIndex}
+                                    initial={{ opacity: 0, y: 3 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -3 }}
+                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                    className="text-sm uppercase tracking-wide whitespace-nowrap"
+                                >
+                                    <span className="font-medium text-white">{currentMsg.prefix || ''}</span>
+                                    {currentMsg.highlight && (
+                                        <span className="font-bold text-[#F3D9A0]">{currentMsg.highlight}</span>
+                                    )}
+                                    {currentMsg.suffix && (
+                                        <span className="font-medium text-white">{currentMsg.suffix}</span>
+                                    )}
+                                </motion.p>
+                            </AnimatePresence>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Main Sticky Header */}
             <header className="sticky top-0 z-50 bg-white border-b border-[#E5E7EB] w-full" data-testid="header">

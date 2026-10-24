@@ -6,7 +6,7 @@ import { ProductCard } from '../components/common/ProductCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const heroSlides = [
+const defaultHeroSlides = [
     {
         id: 1,
         tabName: 'NEW SEASON',
@@ -18,6 +18,7 @@ const heroSlides = [
         link: '/shop?filter=new',
         video: '/videos/store-video-1.mp4',
         poster: '/videos/store-video-1-poster.jpg',
+        image: '',
         objectPosition: 'center 35%'
     },
     {
@@ -31,6 +32,7 @@ const heroSlides = [
         link: '/shop',
         video: '/videos/store-video-2.mp4',
         poster: '/videos/store-video-2-poster.jpg',
+        image: '',
         objectPosition: 'center 25%'
     }
 ];
@@ -66,6 +68,7 @@ const HomePage = () => {
     const [catError, setCatError] = useState(false);
 
     // Hero Carousel state
+    const [slides, setSlides] = useState(defaultHeroSlides);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
     const [isTabVisible, setIsTabVisible] = useState(true);
@@ -195,23 +198,35 @@ const HomePage = () => {
     useEffect(() => {
         fetchProductsData();
         fetchCategoriesData();
+        fetchSiteContent();
     }, []);
+
+    const fetchSiteContent = async () => {
+        try {
+            const res = await axios.get(`${API}/site-content`);
+            if (res.data?.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length === 2) {
+                setSlides(res.data.hero_slides);
+            }
+        } catch (err) {
+            console.error('Failed to load site content on home page:', err);
+        }
+    };
 
     // Carousel auto-rotation timer (10s per slide, paused when hovered or tab hidden)
     useEffect(() => {
-        if (isHovered || !isTabVisible) return;
+        if (isHovered || !isTabVisible || !slides.length) return;
         const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
         }, 10000);
         return () => clearInterval(interval);
-    }, [isHovered, isTabVisible]);
+    }, [isHovered, isTabVisible, slides.length]);
 
     const prevHeroSlide = () => {
-        setCurrentSlide((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1));
+        setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
     };
 
     const nextHeroSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
     };
 
     const fetchProductsData = async () => {
@@ -273,7 +288,7 @@ const HomePage = () => {
             >
                 {/* Desktop Full Viewport & Mobile Responsive Container */}
                 <div className="relative w-full h-[540px] md:h-[580px] lg:h-[clamp(560px,42vw,720px)] overflow-hidden">
-                    {heroSlides.map((slide, index) => {
+                    {slides.map((slide, index) => {
                         const isActive = currentSlide === index;
                         const hasError = heroVideoErrors[slide.id];
                         const mobileRef = index === 0 ? slide0MobileVideoRef : slide1MobileVideoRef;
@@ -288,8 +303,18 @@ const HomePage = () => {
                                 }`}
                             >
                                 <div className="w-full h-full relative overflow-hidden bg-[#1A1412]">
-                                    {/* Video / Error state background */}
-                                    {hasError ? (
+                                    {/* Video / Photo / Error state background */}
+                                    {slide.image ? (
+                                        <div className="absolute inset-0 w-full h-full bg-[#1A1412] overflow-hidden pointer-events-none">
+                                            <img 
+                                                src={slide.image} 
+                                                alt={slide.title1 || slide.tabName} 
+                                                className="w-full h-full object-cover origin-top"
+                                                style={{ objectPosition: slide.objectPosition || 'center 35%' }}
+                                            />
+                                            <div className="absolute inset-0 bg-black/40" />
+                                        </div>
+                                    ) : hasError ? (
                                         <div className="absolute inset-0 w-full h-full bg-[#1A1412] overflow-hidden pointer-events-none">
                                             <img 
                                                 src={slide.poster} 
@@ -416,7 +441,7 @@ const HomePage = () => {
 
                     {/* DOT INDICATORS at bottom center */}
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 pointer-events-auto">
-                        {heroSlides.map((slide, index) => {
+                        {slides.map((slide, index) => {
                             const isActive = currentSlide === index;
                             return (
                                 <button

@@ -77,7 +77,14 @@ agenthub/agents/youtube/db
 .cache/
 
 # Mobile development
-android-sdk/ -e 
+android-sdk/
+
 # Environment files
 *.env
 *.env.*
+
+backup_local_24oct/
+backend/test_atlas_connection.py
+backend/test_results.json
+*.bak
+frontend/src_backup_before_white/
