@@ -244,3 +244,38 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 .badge-sale {
     @apply absolute top-3 right-3 bg-rose text-white text-xs uppercase tracking-wider px-2 py-0.5 font-bold rounded-sm;
 }
+
+/* Scrolling Development Marquee Strip */
+@keyframes jaridarMarqueeScroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+.jaridar-marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    max-width: 100%;
+}
+
+.jaridar-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: jaridarMarqueeScroll 35s linear infinite;
+    will-change: transform;
+}
+
+.jaridar-marquee-container:hover .jaridar-marquee-track {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jaridar-marquee-track {
+        animation-play-state: paused;
+    }
+}
+

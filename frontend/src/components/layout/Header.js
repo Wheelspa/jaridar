@@ -25,6 +25,15 @@ const DEFAULT_ANNOUNCEMENT = {
     ]
 };
 
+// Under development notice configuration (marquee strip)
+const DEV_MARQUEE_CONFIG = {
+    enabled: true,
+    message: "Our website is currently under development. Thank you for your support! For any help, call us: ",
+    phone: "+91 91850 25980",
+    tel: "+919185025980",
+    separator: "✦"
+};
+
 const ATTRIBUTE_THUMBNAILS = {
     // Product types
     'saree': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300',
@@ -173,6 +182,35 @@ export const Header = () => {
                                 </motion.p>
                             </AnimatePresence>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Development Marquee Strip */}
+            {DEV_MARQUEE_CONFIG.enabled && (
+                <div 
+                    className="jaridar-marquee-container bg-[#FAF5F0] border-b border-[#EAE4D9] text-[#831843] h-[36px] flex items-center select-none"
+                    data-testid="dev-marquee-strip"
+                >
+                    <div className="jaridar-marquee-track flex items-center">
+                        {[0, 1].map((copyIndex) => (
+                            <div key={copyIndex} className="flex items-center flex-shrink-0">
+                                {[0, 1, 2, 3].map((itemIndex) => (
+                                    <span key={itemIndex} className="inline-flex items-center mx-4 sm:mx-6 text-xs font-medium tracking-wide">
+                                        <span>{DEV_MARQUEE_CONFIG.message}</span>
+                                        <a
+                                            href={`tel:${DEV_MARQUEE_CONFIG.tel}`}
+                                            className="font-bold underline decoration-current underline-offset-2 hover:opacity-80 transition-opacity ml-1"
+                                        >
+                                            {DEV_MARQUEE_CONFIG.phone}
+                                        </a>
+                                        <span className="text-[#831843]/35 ml-4 sm:ml-6" aria-hidden="true">
+                                            {DEV_MARQUEE_CONFIG.separator}
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
