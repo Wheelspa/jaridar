@@ -54,7 +54,7 @@ const defaultCategories = [
 const SectionDivider = ({ align = "center" }) => (
     <div className={`flex items-center gap-2 my-3 ${align === "left" ? "justify-center md:justify-start" : "justify-center"}`}>
         <div className="w-8 h-[1px] bg-[#3B6FA0]/40"></div>
-        <span className="text-[#3B6FA0] text-xs">♥</span>
+        <span className="text-[#3B6FA0] text-xs">❖</span>
         <div className="w-8 h-[1px] bg-[#3B6FA0]/40"></div>
     </div>
 );
@@ -149,6 +149,9 @@ const HomePage = () => {
         activeRefs.forEach((ref) => {
             if (ref.current) {
                 ref.current.muted = true;
+                try {
+                    ref.current.load();
+                } catch (_) {}
                 ref.current.currentTime = 0;
                 ref.current.play().catch(() => {});
             }
@@ -308,9 +311,11 @@ const HomePage = () => {
                                         <div className="absolute inset-0 w-full h-full bg-[#1A1412] overflow-hidden pointer-events-none">
                                             <img 
                                                 src={slide.image} 
-                                                alt={slide.title1 || slide.tabName} 
+                                                alt={slide.title1 ? `${slide.title1} ${slide.title2 || ''} - Jaridar Fashion Couture`.trim() : (slide.tabName || 'Jaridar Hero Banner')} 
                                                 className="w-full h-full object-cover origin-top"
                                                 style={{ objectPosition: slide.objectPosition || 'center 35%' }}
+                                                loading={index === 0 ? "eager" : "lazy"}
+                                                decoding={index === 0 ? "sync" : "async"}
                                             />
                                             <div className="absolute inset-0 bg-black/40" />
                                         </div>
@@ -318,9 +323,11 @@ const HomePage = () => {
                                         <div className="absolute inset-0 w-full h-full bg-[#1A1412] overflow-hidden pointer-events-none">
                                             <img 
                                                 src={slide.poster} 
-                                                alt={slide.title1} 
+                                                alt={slide.title1 ? `${slide.title1} ${slide.title2 || ''} - Jaridar Fashion Couture`.trim() : 'Jaridar Video Poster'} 
                                                 className="w-full h-full object-cover origin-top"
                                                 style={{ objectPosition: slide.objectPosition }}
+                                                loading={index === 0 ? "eager" : "lazy"}
+                                                decoding={index === 0 ? "sync" : "async"}
                                             />
                                             <div className="absolute inset-0 bg-black/40" />
                                         </div>
@@ -329,9 +336,9 @@ const HomePage = () => {
                                             {/* Mobile / Tablet (<1024px): Single full-bleed cover video */}
                                             <video 
                                                 ref={mobileRef}
-                                                src={slide.video}
+                                                src={isActive ? slide.video : undefined}
                                                 poster={slide.poster}
-                                                autoPlay
+                                                autoPlay={isActive}
                                                 muted
                                                 loop
                                                 playsInline
@@ -344,9 +351,9 @@ const HomePage = () => {
                                             {/* Desktop (>=1024px): Background layer */}
                                             <video 
                                                 ref={bgRef}
-                                                src={slide.video}
+                                                src={isActive ? slide.video : undefined}
                                                 poster={slide.poster}
-                                                autoPlay
+                                                autoPlay={isActive}
                                                 muted
                                                 loop
                                                 playsInline
@@ -365,9 +372,9 @@ const HomePage = () => {
                                             >
                                                 <video 
                                                     ref={fgRef}
-                                                    src={slide.video}
+                                                    src={isActive ? slide.video : undefined}
                                                     poster={slide.poster}
-                                                    autoPlay
+                                                    autoPlay={isActive}
                                                     muted
                                                     loop
                                                     playsInline
@@ -526,8 +533,10 @@ const HomePage = () => {
                                     >
                                         <img 
                                             src={editorialImg}
-                                            alt={category.name}
+                                            alt={`${category.name} Collection - Jaridar Fashion Couture`}
                                             className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
+                                            loading="lazy"
+                                            decoding="async"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/85 via-[#1F2937]/20 to-transparent"></div>
                                         <div className="absolute bottom-5 left-4 right-4 text-center text-white space-y-1">
@@ -649,8 +658,10 @@ const HomePage = () => {
                             <div className="bg-white/85 backdrop-blur-xs border border-[#E5E7EB] rounded-2xl shadow-md p-6 max-w-[220px] sm:max-w-[260px] w-full flex items-center justify-center gap-3">
                                 <img 
                                     src="/images/logo/jaridar-icon.png" 
-                                    alt="Jaridar Icon" 
+                                    alt="Jaridar Fashion Couture Logo" 
                                     className="h-10 sm:h-12 w-auto object-contain flex-shrink-0" 
+                                    loading="lazy"
+                                    decoding="async"
                                 />
                                 <div className="flex flex-col justify-center text-left">
                                     <span className="font-heading text-xl sm:text-2xl font-black text-[#C2255C] tracking-tight leading-none">
@@ -692,8 +703,10 @@ const HomePage = () => {
                             <div className="bg-white/85 backdrop-blur-xs border border-[#E5E7EB] rounded-2xl shadow-lg p-8 lg:p-9 max-w-[340px] xl:max-w-[380px] w-full flex items-center justify-center gap-4 transition-all">
                                 <img 
                                     src="/images/logo/jaridar-icon.png" 
-                                    alt="Jaridar Icon" 
+                                    alt="Jaridar Fashion Couture Logo" 
                                     className="h-14 xl:h-16 w-auto object-contain flex-shrink-0" 
+                                    loading="lazy"
+                                    decoding="async"
                                 />
                                 <div className="flex flex-col justify-center text-left">
                                     <span className="font-heading text-2xl xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
@@ -762,7 +775,7 @@ const HomePage = () => {
                     <div className="flex items-center gap-3">
                         <Instagram size={20} className="text-[#C2255C]" />
                         <span className="font-heading text-xs md:text-sm uppercase tracking-widest text-[#1F2937] font-semibold">
-                            Get Inspired — Follow Us on Instagram
+                            Get Inspired – Follow Us on Instagram
                         </span>
                     </div>
                     <a 

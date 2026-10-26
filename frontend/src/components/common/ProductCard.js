@@ -75,9 +75,10 @@ export const ProductCard = ({ product }) => {
                 <div className="relative aspect-[3/4] overflow-hidden bg-white">
                     <img 
                         src={product.images[0]} 
-                        alt={product.name}
+                        alt={product.name ? `${product.name} - Jaridar Fashion Couture` : 'Jaridar Couture Product'}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                         loading="lazy"
+                        decoding="async"
                     />
                     
                     {/* Top Badges */}
