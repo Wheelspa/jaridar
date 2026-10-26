@@ -362,6 +362,14 @@ async def ensure_seed_attributes():
     if inserted_count > 0:
         logger.info(f"Total seeded attributes: {inserted_count}.")
 
+
+# ==================== HEALTH CHECK ====================
+
+@api_router.get("/health")
+async def health_check():
+    return {"ok": True}
+
+
 # ==================== AUTH ROUTES ====================
 
 @api_router.post("/auth/register")
