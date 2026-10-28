@@ -50,7 +50,7 @@ const ATTRIBUTE_THUMBNAILS = {
     // Regions
     'banarasi': '/images/categories/category-traditional.jpg',
     'kanjivaram': '/images/categories/category-ethnic.jpg',
-    'rajasthani': '/images/categories/category-bridal.jpg',
+    'rajasthani': '/images/categories/category-traditional.jpg',
     'gujarati': '/images/categories/category-western.jpg',
     'bengali': '/images/categories/category-traditional.jpg',
 
@@ -106,9 +106,9 @@ export const Header = () => {
                 const res = await axios.get(`${API}/attributes?with_counts=true`);
                 if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
                     setHeaderAttributes({
-                        product_type: (res.data.product_type || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1),
-                        region: (res.data.region || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1),
-                        fabric: (res.data.fabric || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1),
+                        product_type: (res.data.product_type || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1 && item.value !== 'bridal' && !item.label?.toLowerCase().includes('bridal') && item.value !== 'saree' && !item.label?.toLowerCase().includes('saree')),
+                        region: (res.data.region || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1 && item.value !== 'bridal' && !item.label?.toLowerCase().includes('bridal')),
+                        fabric: (res.data.fabric || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1 && item.value !== 'bridal' && !item.label?.toLowerCase().includes('bridal')),
                     });
                 }
             } catch (err) {
@@ -217,264 +217,247 @@ export const Header = () => {
 
             {/* Main Sticky Header */}
             <header className="sticky top-0 z-50 bg-white border-b border-[#E5E7EB] w-full" data-testid="header">
-                <div className="w-full max-w-full px-4 sm:px-6 md:px-8 xl:px-[50px] h-[72px] xl:h-[110px] flex items-center justify-between gap-2 sm:gap-4">
+                <div className="w-full max-w-full px-4 sm:px-6 md:px-8 xl:px-[50px] h-[72px] xl:h-[110px] flex items-center justify-between">
                     
-                    {/* Left Unit: Mobile Toggle (below lg) + Logo */}
-                    <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-                        <button 
-                            className="lg:hidden p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            data-testid="mobile-menu-btn"
-                            aria-label="Toggle Menu"
-                        >
-                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
-
-                        <Link to="/" className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0" data-testid="logo">
-                            <img 
-                                src="/images/logo/jaridar-icon.png" 
-                                alt="Jaridar Icon" 
-                                className="h-12 sm:h-14 xl:h-16 w-auto object-contain flex-shrink-0" 
-                            />
-                            <div className="flex flex-col justify-center">
-                                <span className="font-heading text-xl sm:text-2xl xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
-                                    JARIDAR
-                                </span>
-                                <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.26em] pt-0.5 leading-tight">
-                                    Fashion Couture
-                                </span>
-                            </div>
-                        </Link>
-                    </div>
-
-                    {/* Center Unit: Desktop Nav */}
-                    <nav className="hidden lg:flex items-center justify-center gap-3 lg:gap-3.5 xl:gap-5 2xl:gap-8 h-full min-w-0 flex-1 px-1 lg:px-2">
-                        {/* 1. HOME */}
-                        <Link 
-                            to="/" 
-                            className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                location.pathname === '/' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                            }`}
-                        >
-                            HOME
-                        </Link>
-
-                        {/* 2. COLLECTIONS Mega Menu Trigger */}
-                        <div 
-                            className="relative h-full flex items-center"
-                            onMouseEnter={() => setIsCollectionsOpen(true)}
-                            onMouseLeave={() => setIsCollectionsOpen(false)}
-                        >
-                            <Link 
-                                to="/shop" 
-                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                    isCollectionsOpen || location.search.includes('category=') || location.search.includes('product_type=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                }`}
-                            >
-                                COLLECTIONS
-                                <ChevronDown size={14} className={`transition-transform duration-200 ${isCollectionsOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                            </Link>
-
-                            {/* Dropdown Mega Panel */}
-                            {isCollectionsOpen && (
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[840px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 lg:p-8 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="border-b border-[#E5E7EB] pb-3 mb-5 flex items-center justify-between">
-                                        <h3 className="font-heading text-sm uppercase tracking-wider font-bold text-charcoal">
-                                            Product Types
-                                        </h3>
-                                        <Link 
-                                            to="/shop" 
-                                            onClick={() => setIsCollectionsOpen(false)}
-                                            className="text-xs font-semibold text-[#C2255C] hover:underline"
-                                        >
-                                            View All Products →
-                                        </Link>
-                                    </div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                                        {headerAttributes.product_type.map((pt) => {
-                                            const imgUrl = ATTRIBUTE_THUMBNAILS[pt.value];
-                                            return (
-                                                <Link 
-                                                    key={pt.value}
-                                                    to={`/shop?product_type=${pt.value}`} 
-                                                    onClick={() => setIsCollectionsOpen(false)}
-                                                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all group"
-                                                >
-                                                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
-                                                        {imgUrl ? (
-                                                            <img 
-                                                                src={imgUrl} 
-                                                                alt={pt.label} 
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
-                                                                {pt.label ? pt.label.slice(0, 2) : '•'}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors truncate">{pt.label}</h4>
-                                                        <span className="text-xs text-[#4B5563] font-normal">{pt.count !== undefined ? `${pt.count} Items` : 'Explore'}</span>
-                                                    </div>
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 3. BY REGION Mega Menu Trigger */}
-                        <div 
-                            className="relative h-full flex items-center"
-                            onMouseEnter={() => setIsRegionOpen(true)}
-                            onMouseLeave={() => setIsRegionOpen(false)}
-                        >
-                            <Link 
-                                to="/shop" 
-                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                    isRegionOpen || location.search.includes('region=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                }`}
-                            >
-                                BY REGION
-                                <ChevronDown size={14} className={`transition-transform duration-200 ${isRegionOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                            </Link>
-
-                            {/* Dropdown Mega Panel */}
-                            {isRegionOpen && (
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[720px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="grid grid-cols-5 gap-4">
-                                        {headerAttributes.region.map((reg) => {
-                                            const imgUrl = ATTRIBUTE_THUMBNAILS[reg.value];
-                                            return (
-                                                <Link 
-                                                    key={reg.value}
-                                                    to={`/shop?region=${reg.value}`} 
-                                                    onClick={() => setIsRegionOpen(false)}
-                                                    className="flex flex-col items-center text-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-all group"
-                                                >
-                                                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
-                                                        {imgUrl ? (
-                                                            <img 
-                                                                src={imgUrl} 
-                                                                alt={reg.label} 
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
-                                                                {reg.label ? reg.label.slice(0, 2) : '•'}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-tight">{reg.label}</h4>
-                                                        <span className="text-xs text-[#4B5563]">{reg.count !== undefined ? `${reg.count} Items` : 'Explore'}</span>
-                                                    </div>
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 4. NEW ARRIVALS */}
-                        <Link 
-                            to="/shop?filter=new" 
-                            className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                location.search.includes('filter=new') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                            }`}
-                        >
-                            NEW ARRIVALS
-                        </Link>
-
-                        {/* 5. FESTIVE */}
-                        <Link 
-                            to="/shop?style=festive-wear" 
-                            className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                location.search.includes('style=festive-wear') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                            }`}
-                        >
-                            FESTIVE
-                        </Link>
-
-                        {/* 6. FABRICS Mega Menu Trigger */}
-                        <div 
-                            className="relative h-full flex items-center"
-                            onMouseEnter={() => setIsFabricsOpen(true)}
-                            onMouseLeave={() => setIsFabricsOpen(false)}
-                        >
+                    {/* Left Group: Mobile Toggle (below lg) + Logo + Desktop Nav directly next to logo */}
+                    <div className="flex items-center gap-6 xl:gap-8 2xl:gap-10 h-full min-w-0">
+                        {/* Mobile Toggle + Logo */}
+                        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
                             <button 
-                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                    isFabricsOpen || location.search.includes('fabric=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                }`}
+                                className="lg:hidden p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                data-testid="mobile-menu-btn"
+                                aria-label="Toggle Menu"
                             >
-                                FABRICS
-                                <ChevronDown size={14} className={`transition-transform duration-200 ${isFabricsOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
+                                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
 
-                            {/* Dropdown Mega Panel */}
-                            {isFabricsOpen && (
-                                <div className="absolute top-full right-0 xl:left-1/2 xl:-translate-x-1/2 w-[780px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="grid grid-cols-6 gap-4">
-                                        {headerAttributes.fabric.map((fab) => {
-                                            const imgUrl = ATTRIBUTE_THUMBNAILS[fab.value];
-                                            return (
-                                                <Link 
-                                                    key={fab.value}
-                                                    to={`/shop?fabric=${fab.value}`} 
-                                                    onClick={() => setIsFabricsOpen(false)}
-                                                    className="flex flex-col items-center text-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-all group"
-                                                >
-                                                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
-                                                        {imgUrl ? (
-                                                            <img 
-                                                                src={imgUrl} 
-                                                                alt={fab.label} 
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
-                                                                {fab.label ? fab.label.slice(0, 2) : '•'}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-tight">{fab.label}</h4>
-                                                        <span className="text-xs text-[#4B5563]">{fab.count !== undefined ? `${fab.count} Items` : 'Explore'}</span>
-                                                    </div>
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
+                            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0" data-testid="logo">
+                                <img 
+                                    src="/images/logo/jaridar-icon.png" 
+                                    alt="Jaridar Icon" 
+                                    className="h-12 sm:h-14 xl:h-16 w-auto object-contain flex-shrink-0" 
+                                />
+                                <div className="flex flex-col justify-center">
+                                    <span className="font-heading text-xl sm:text-2xl xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
+                                        JARIDAR
+                                    </span>
+                                    <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.26em] pt-0.5 leading-tight">
+                                        Fashion Couture
+                                    </span>
                                 </div>
-                            )}
+                            </Link>
                         </div>
 
-                        {/* 7. ABOUT US */}
-                        <Link 
-                            to="/about" 
-                            className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                location.pathname === '/about' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                            }`}
-                        >
-                            ABOUT US
-                        </Link>
+                        {/* Desktop Nav: left-aligned directly next to logo */}
+                        <nav className="hidden lg:flex items-center justify-start gap-4 xl:gap-6 2xl:gap-8 h-full">
+                            {/* 1. HOME */}
+                            <Link 
+                                to="/" 
+                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
+                                    location.pathname === '/' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                }`}
+                            >
+                                HOME
+                            </Link>
 
-                        {/* 8. CONTACT */}
-                        <Link 
-                            to="/contact" 
-                            className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                location.pathname === '/contact' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                            }`}
-                        >
-                            CONTACT
-                        </Link>
-                    </nav>
+                            {/* 2. COLLECTIONS Mega Menu Trigger */}
+                            <div 
+                                className="relative h-full flex items-center"
+                                onMouseEnter={() => setIsCollectionsOpen(true)}
+                                onMouseLeave={() => setIsCollectionsOpen(false)}
+                            >
+                                <Link 
+                                    to="/shop" 
+                                    className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
+                                        isCollectionsOpen || location.search.includes('category=') || location.search.includes('product_type=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                    }`}
+                                >
+                                    COLLECTIONS
+                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isCollectionsOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
+                                </Link>
 
-                    {/* Right Unit: Icons */}
-                    <div className="flex items-center gap-2 lg:gap-3.5 xl:gap-[22px] flex-shrink-0 pr-1 sm:pr-2">
+                                {/* Dropdown Mega Panel */}
+                                {isCollectionsOpen && (
+                                    <div className="absolute top-full left-0 xl:left-1/2 xl:-translate-x-1/2 w-[840px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 lg:p-8 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="border-b border-[#E5E7EB] pb-3 mb-5 flex items-center justify-between">
+                                            <h3 className="font-heading text-sm uppercase tracking-wider font-bold text-charcoal">
+                                                Product Types
+                                            </h3>
+                                            <Link 
+                                                to="/shop" 
+                                                onClick={() => setIsCollectionsOpen(false)}
+                                                className="text-xs font-semibold text-[#C2255C] hover:underline"
+                                            >
+                                                View All Products →
+                                            </Link>
+                                        </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                            {headerAttributes.product_type.map((pt) => {
+                                                const imgUrl = ATTRIBUTE_THUMBNAILS[pt.value];
+                                                return (
+                                                    <Link 
+                                                        key={pt.value}
+                                                        to={`/shop?product_type=${pt.value}`} 
+                                                        onClick={() => setIsCollectionsOpen(false)}
+                                                        className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all group"
+                                                    >
+                                                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
+                                                            {imgUrl ? (
+                                                                <img 
+                                                                    src={imgUrl} 
+                                                                    alt={pt.label} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
+                                                                    {pt.label ? pt.label.slice(0, 2) : '•'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors truncate">{pt.label}</h4>
+                                                            <span className="text-xs text-[#4B5563] font-normal">{pt.count !== undefined ? `${pt.count} Items` : 'Explore'}</span>
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 3. BY REGION Mega Menu Trigger */}
+                            <div 
+                                className="relative h-full flex items-center"
+                                onMouseEnter={() => setIsRegionOpen(true)}
+                                onMouseLeave={() => setIsRegionOpen(false)}
+                            >
+                                <Link 
+                                    to="/shop" 
+                                    className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
+                                        isRegionOpen || location.search.includes('region=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                    }`}
+                                >
+                                    BY REGION
+                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isRegionOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
+                                </Link>
+
+                                {/* Dropdown Mega Panel */}
+                                {isRegionOpen && (
+                                    <div className="absolute top-full left-0 xl:left-1/2 xl:-translate-x-1/2 w-[720px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="grid grid-cols-5 gap-4">
+                                            {headerAttributes.region.map((reg) => {
+                                                const imgUrl = ATTRIBUTE_THUMBNAILS[reg.value];
+                                                return (
+                                                    <Link 
+                                                        key={reg.value}
+                                                        to={`/shop?region=${reg.value}`} 
+                                                        onClick={() => setIsRegionOpen(false)}
+                                                        className="flex flex-col items-center text-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-all group"
+                                                    >
+                                                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
+                                                            {imgUrl ? (
+                                                                <img 
+                                                                    src={imgUrl} 
+                                                                    alt={reg.label} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
+                                                                    {reg.label ? reg.label.slice(0, 2) : '•'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-tight">{reg.label}</h4>
+                                                            <span className="text-xs text-[#4B5563]">{reg.count !== undefined ? `${reg.count} Items` : 'Explore'}</span>
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 4. FABRICS Mega Menu Trigger */}
+                            <div 
+                                className="relative h-full flex items-center"
+                                onMouseEnter={() => setIsFabricsOpen(true)}
+                                onMouseLeave={() => setIsFabricsOpen(false)}
+                            >
+                                <button 
+                                    className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
+                                        isFabricsOpen || location.search.includes('fabric=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                    }`}
+                                >
+                                    FABRICS
+                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isFabricsOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
+                                </button>
+
+                                {/* Dropdown Mega Panel */}
+                                {isFabricsOpen && (
+                                    <div className="absolute top-full right-0 xl:left-1/2 xl:-translate-x-1/2 w-[780px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="grid grid-cols-6 gap-4">
+                                            {headerAttributes.fabric.map((fab) => {
+                                                const imgUrl = ATTRIBUTE_THUMBNAILS[fab.value];
+                                                return (
+                                                    <Link 
+                                                        key={fab.value}
+                                                        to={`/shop?fabric=${fab.value}`} 
+                                                        onClick={() => setIsFabricsOpen(false)}
+                                                        className="flex flex-col items-center text-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-all group"
+                                                    >
+                                                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
+                                                            {imgUrl ? (
+                                                                <img 
+                                                                    src={imgUrl} 
+                                                                    alt={fab.label} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
+                                                                    {fab.label ? fab.label.slice(0, 2) : '•'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-tight">{fab.label}</h4>
+                                                            <span className="text-xs text-[#4B5563]">{fab.count !== undefined ? `${fab.count} Items` : 'Explore'}</span>
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 7. ABOUT US */}
+                            <Link 
+                                to="/about" 
+                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
+                                    location.pathname === '/about' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                }`}
+                            >
+                                ABOUT US
+                            </Link>
+
+                            {/* 8. CONTACT */}
+                            <Link 
+                                to="/contact" 
+                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
+                                    location.pathname === '/contact' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                }`}
+                            >
+                                CONTACT
+                            </Link>
+                        </nav>
+                    </div>
+
+                    {/* Right Unit: Icons at far right with equal padding */}
+                    <div className="flex items-center gap-2 lg:gap-3.5 xl:gap-[22px] flex-shrink-0">
                         {/* 1. Search */}
                         <div className="relative">
                             <button 
@@ -688,25 +671,7 @@ export const Header = () => {
                             )}
                         </div>
 
-                        {/* 4. New Arrivals */}
-                        <Link 
-                            to="/shop?filter=new" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#E5E7EB] text-[#1F2937] font-medium" 
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            New Arrivals
-                        </Link>
-
-                        {/* 5. Festive */}
-                        <Link 
-                            to="/shop?style=festive-wear" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#E5E7EB] text-[#1F2937] font-medium" 
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Festive
-                        </Link>
-
-                        {/* 6. Fabrics Accordion */}
+                        {/* 4. Fabrics Accordion */}
                         <div className="border-b border-[#E5E7EB] pb-2">
                             <div 
                                 className="flex items-center justify-between py-2 cursor-pointer"

@@ -27,7 +27,7 @@ export default function ShippingPolicyPage() {
                         <Clock className="text-rose" size={24} /> Custom & Couture Lead Times
                     </h2>
                     <p className="text-[#4B5563] text-base leading-relaxed">
-                        [Placeholder Text] Made-to-measure and bridal ensembles require 3-6 weeks for meticulous hand embroidery and fitting prior to dispatch.
+                        [Placeholder Text] Made-to-measure and couture ensembles require 3-6 weeks for meticulous hand embroidery and fitting prior to dispatch.
                     </p>
                 </div>
             </div>

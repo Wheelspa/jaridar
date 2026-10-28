@@ -5,7 +5,7 @@ export default function BulkOrdersPage() {
     return (
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
             <div className="text-center max-w-3xl mx-auto space-y-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-rose font-semibold">Corporate & Bridal Parties</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-rose font-semibold">Corporate & Celebration Events</p>
                 <h1 className="text-2xl md:text-4xl font-bold tracking-wide text-charcoal">Bulk Orders</h1>
                 <p className="text-[#4B5563] text-base leading-relaxed">
                     Custom bulk ordering for wedding entourages, corporate gifting, and special celebrations.

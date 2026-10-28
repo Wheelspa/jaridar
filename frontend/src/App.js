@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -25,16 +25,12 @@ import AboutPage from "@/pages/AboutPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsPage from "@/pages/TermsPage";
 import FaqPage from "@/pages/FaqPage";
-import ReturnsPage from "@/pages/ReturnsPage";
 import ExchangePolicyPage from "@/pages/ExchangePolicyPage";
-import InternationalOrdersPage from "@/pages/InternationalOrdersPage";
 import ShippingPolicyPage from "@/pages/ShippingPolicyPage";
 import PaymentOptionsPage from "@/pages/PaymentOptionsPage";
 import ContactPage from "@/pages/ContactPage";
 import OurStoresPage from "@/pages/OurStoresPage";
-import InStoreProductsPage from "@/pages/InStoreProductsPage";
 import BlogPage from "@/pages/BlogPage";
-import SellWithUsPage from "@/pages/SellWithUsPage";
 import BulkOrdersPage from "@/pages/BulkOrdersPage";
 import OffersPage from "@/pages/OffersPage";
 
@@ -56,16 +52,14 @@ function App() {
                   <Route path="/terms" element={<TermsPage />} />
                   <Route path="/terms-and-conditions" element={<TermsPage />} />
                   <Route path="/faqs" element={<FaqPage />} />
-                  <Route path="/returns" element={<ReturnsPage />} />
+                  <Route path="/returns" element={<Navigate to="/exchange-policy" replace />} />
                   <Route path="/exchange-policy" element={<ExchangePolicyPage />} />
-                  <Route path="/international-orders" element={<InternationalOrdersPage />} />
+                  <Route path="/international-orders" element={<Navigate to="/shipping-policy" replace />} />
                   <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
                   <Route path="/payment-options" element={<PaymentOptionsPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/our-stores" element={<OurStoresPage />} />
-                  <Route path="/in-store-products" element={<InStoreProductsPage />} />
                   <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/sell-with-us" element={<SellWithUsPage />} />
                   <Route path="/bulk-orders" element={<BulkOrdersPage />} />
                   <Route path="/offers" element={<OffersPage />} />
                   <Route path="/product/:id" element={<ProductDetailPage />} />

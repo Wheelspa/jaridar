@@ -18,7 +18,7 @@ export default function BlogPage() {
                 </div>
                 <h2 className="text-lg font-semibold text-charcoal">Coming Soon</h2>
                 <p className="text-[#4B5563] text-base leading-relaxed max-w-lg mx-auto">
-                    [Placeholder Text] We are preparing curated articles on Indian couture trends, artisan spotlights, and bridal fashion advice. Check back soon!
+                    [Placeholder Text] We are preparing curated articles on Indian couture trends, artisan spotlights, and couture fashion advice. Check back soon!
                 </p>
             </div>
         </div>

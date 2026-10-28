@@ -6,7 +6,7 @@ export default function ExchangePolicyPage() {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
             <div className="text-center max-w-3xl mx-auto space-y-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-rose font-semibold">Customer Service</p>
-                <h1 className="text-2xl md:text-4xl font-bold tracking-wide text-charcoal">Exchange Policy</h1>
+                <h1 className="text-2xl md:text-4xl font-bold tracking-wide text-charcoal">Exchange & Order Cancellation</h1>
                 <p className="text-[#4B5563] text-base leading-relaxed">
                     Easy and hassle-free exchanges for sizing and style adjustments.
                 </p>
@@ -27,7 +27,7 @@ export default function ExchangePolicyPage() {
                         <CheckCircle className="text-rose" size={24} /> Exchange Eligibility
                     </h2>
                     <p className="text-[#4B5563] text-base leading-relaxed">
-                        [Placeholder Text] Products must be unworn, unwashed, and returned in their original condition with security tags attached. Custom bridal wear is excluded from standard exchanges.
+                        [Placeholder Text] Products must be unworn, unwashed, and returned in their original condition with security tags attached. Custom tailored wear is excluded from standard exchanges.
                     </p>
                 </div>
             </div>

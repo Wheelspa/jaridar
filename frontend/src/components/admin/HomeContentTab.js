@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { 
     Save, UploadCloud, RefreshCw, Check, AlertCircle, Eye, 
-    Image as ImageIcon, Video, Trash2, Sparkles, Sliders
+    Image as ImageIcon, Video, Trash2, Sparkles, Sliders,
+    Plus, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -45,6 +46,34 @@ const DEFAULT_SITE_CONTENT = {
             poster: '/videos/store-video-2-poster.jpg',
             image: '',
             objectPosition: 'center 25%'
+        },
+        {
+            id: 3,
+            tabName: 'BOUTIQUE PICKS',
+            label: 'HANDPICKED',
+            title1: 'CURATED',
+            title2: 'COLLECTIONS',
+            description: 'Discover thoughtfully designed pieces crafted to elevate your style.',
+            buttonText: 'EXPLORE SHOP',
+            link: '/shop',
+            video: '/videos/hero-4.mp4',
+            poster: '/videos/hero-4-poster.jpg',
+            image: '',
+            objectPosition: 'center 35%'
+        },
+        {
+            id: 4,
+            tabName: 'OUR COUTURE',
+            label: 'BESPOKE CRAFT',
+            title1: 'FASHION CRAFTED',
+            title2: 'AROUND YOU',
+            description: 'Where timeless Indian elegance meets contemporary design aesthetics.',
+            buttonText: 'VISIT OUR STORE',
+            link: '/our-stores',
+            video: '/videos/hero-5.mp4',
+            poster: '/videos/hero-5-poster.jpg',
+            image: '',
+            objectPosition: 'center 35%'
         }
     ]
 };
@@ -56,8 +85,7 @@ export const HomeContentTab = () => {
     const [uploadingSlide, setUploadingSlide] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    const slide0FileInputRef = useRef(null);
-    const slide1FileInputRef = useRef(null);
+    const fileInputRefs = useRef({});
 
     useEffect(() => {
         fetchContent();
@@ -69,8 +97,8 @@ export const HomeContentTab = () => {
             const res = await axios.get(`${API}/site-content`);
             if (res.data) {
                 const safeAnnouncement = res.data.announcement || DEFAULT_SITE_CONTENT.announcement;
-                const safeSlides = (res.data.hero_slides && res.data.hero_slides.length === 2)
-                    ? res.data.hero_slides
+                const safeSlides = (res.data.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length >= 1)
+                    ? res.data.hero_slides.slice(0, 6)
                     : DEFAULT_SITE_CONTENT.hero_slides;
 
                 // Ensure at least 3 message slots exist for editing
@@ -141,6 +169,61 @@ export const HomeContentTab = () => {
         setSaveSuccess(false);
     };
 
+    const handleAddSlide = () => {
+        if (content.hero_slides.length >= 6) {
+            toast.error('Maximum 6 hero slides allowed.');
+            return;
+        }
+        const newSlideNum = content.hero_slides.length + 1;
+        const newSlide = {
+            id: Date.now(),
+            tabName: `SLIDE ${newSlideNum}`,
+            label: 'EXCLUSIVE',
+            title1: 'NEW',
+            title2: 'COLLECTION',
+            description: 'Discover contemporary couture and everyday elegance.',
+            buttonText: 'EXPLORE SHOP',
+            link: '/shop',
+            video: '/videos/store-video-1.mp4',
+            poster: '/videos/store-video-1-poster.jpg',
+            image: '',
+            objectPosition: 'center 35%'
+        };
+        setContent(prev => ({
+            ...prev,
+            hero_slides: [...prev.hero_slides, newSlide]
+        }));
+        setSaveSuccess(false);
+        toast.success(`Slide ${newSlideNum} added. Remember to click "Save Changes".`);
+    };
+
+    const handleRemoveSlide = (slideIndex) => {
+        if (content.hero_slides.length <= 1) {
+            toast.error('You must keep at least 1 hero slide.');
+            return;
+        }
+        setContent(prev => ({
+            ...prev,
+            hero_slides: prev.hero_slides.filter((_, idx) => idx !== slideIndex)
+        }));
+        setSaveSuccess(false);
+        toast.info('Slide removed. Remember to click "Save Changes".');
+    };
+
+    const handleMoveSlide = (fromIndex, toIndex) => {
+        if (toIndex < 0 || toIndex >= content.hero_slides.length) return;
+        setContent(prev => {
+            const updated = [...prev.hero_slides];
+            const [moved] = updated.splice(fromIndex, 1);
+            updated.splice(toIndex, 0, moved);
+            return {
+                ...prev,
+                hero_slides: updated
+            };
+        });
+        setSaveSuccess(false);
+    };
+
     // Image Upload Handler
     const handleImageUpload = async (slideIndex, file) => {
         if (!file) return;
@@ -182,14 +265,15 @@ export const HomeContentTab = () => {
             toast.error(msg);
         } finally {
             setUploadingSlide(null);
-            if (slideIndex === 0 && slide0FileInputRef.current) slide0FileInputRef.current.value = '';
-            if (slideIndex === 1 && slide1FileInputRef.current) slide1FileInputRef.current.value = '';
+            if (fileInputRefs.current[slideIndex]) {
+                fileInputRefs.current[slideIndex].value = '';
+            }
         }
     };
 
     const handleRemoveSlideImage = (slideIndex) => {
         handleSlideChange(slideIndex, 'image', '');
-        toast.info(`Slide ${slideIndex + 1} will use the default store video. Click "Save Changes" to publish.`);
+        toast.info(`Slide ${slideIndex + 1} will use the default video. Click "Save Changes" to publish.`);
     };
 
     // Save All
@@ -436,24 +520,37 @@ export const HomeContentTab = () => {
                 </div>
             </div>
 
-            {/* SECTION 2: HERO BANNER (2 SLIDES) */}
+            {/* SECTION 2: HERO BANNER (UP TO 6 SLIDES) */}
             <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-xs overflow-hidden" data-testid="hero-slides-section">
-                <div className="px-6 py-4 bg-[#FDFBF7] border-b border-[#E5E7EB]">
-                    <h4 className="font-semibold text-sm text-charcoal flex items-center gap-2">
-                        <span>2. Hero Banner Slides</span>
-                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/20">
-                            Exactly 2 Slides
-                        </span>
-                    </h4>
-                    <p className="text-xs text-[#595959] mt-0.5">
-                        Edit titles, descriptions, button links, and upload an optional custom photo to replace the background video for each slide.
-                    </p>
+                <div className="px-6 py-4 bg-[#FDFBF7] border-b border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h4 className="font-semibold text-sm text-charcoal flex items-center gap-2">
+                            <span>2. Hero Banner Slides</span>
+                            <span className="text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/20">
+                                {content.hero_slides.length} of 6 Slides
+                            </span>
+                        </h4>
+                        <p className="text-xs text-[#595959] mt-0.5">
+                            Customize titles, buttons, links, videos, and upload photos. Admin can add, reorder, or remove slides (up to 6).
+                        </p>
+                    </div>
+
+                    {content.hero_slides.length < 6 && (
+                        <button
+                            type="button"
+                            onClick={handleAddSlide}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1A1412] text-white hover:bg-[#332A26] rounded-lg text-xs font-semibold shadow-xs transition-colors"
+                            data-testid="add-hero-slide-btn"
+                        >
+                            <Plus size={14} />
+                            <span>Add Slide</span>
+                        </button>
+                    )}
                 </div>
 
                 <div className="p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {content.hero_slides.map((slide, index) => {
-                            const fileInputRef = index === 0 ? slide0FileInputRef : slide1FileInputRef;
                             const isUploading = uploadingSlide === index;
 
                             return (
@@ -474,16 +571,47 @@ export const HomeContentTab = () => {
                                                 </h5>
                                             </div>
 
-                                            {/* Media State Badge */}
-                                            {slide.image ? (
-                                                <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-                                                    <ImageIcon size={12} /> Custom Photo
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-medium">
-                                                    <Video size={12} /> Default Store Video
-                                                </span>
-                                            )}
+                                            {/* Reorder & Action Controls */}
+                                            <div className="flex items-center gap-1.5">
+                                                {/* Media State Badge */}
+                                                {slide.image ? (
+                                                    <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium mr-1">
+                                                        <ImageIcon size={11} /> Photo
+                                                    </span>
+                                                ) : (
+                                                    <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-medium mr-1">
+                                                        <Video size={11} /> Video
+                                                    </span>
+                                                )}
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleMoveSlide(index, index - 1)}
+                                                    disabled={index === 0}
+                                                    className="p-1 rounded text-gray-500 hover:text-charcoal hover:bg-gray-100 disabled:opacity-30 disabled:pointer-events-none"
+                                                    title="Move Up"
+                                                >
+                                                    <ChevronUp size={16} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleMoveSlide(index, index + 1)}
+                                                    disabled={index === content.hero_slides.length - 1}
+                                                    className="p-1 rounded text-gray-500 hover:text-charcoal hover:bg-gray-100 disabled:opacity-30 disabled:pointer-events-none"
+                                                    title="Move Down"
+                                                >
+                                                    <ChevronDown size={16} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveSlide(index)}
+                                                    disabled={content.hero_slides.length <= 1}
+                                                    className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:pointer-events-none ml-1"
+                                                    title="Delete Slide"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {/* Tab Name & Label */}
@@ -594,6 +722,21 @@ export const HomeContentTab = () => {
                                             </div>
                                         </div>
 
+                                        {/* Video Source File */}
+                                        <div>
+                                            <label className="text-[11px] font-semibold text-charcoal block mb-1">
+                                                Video Path
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={slide.video || ''}
+                                                onChange={(e) => handleSlideChange(index, 'video', e.target.value)}
+                                                placeholder="/videos/store-video-1.mp4"
+                                                className="w-full text-xs px-3 py-2 border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:border-rose font-mono text-gray-700"
+                                                data-testid={`slide-${index}-video`}
+                                            />
+                                        </div>
+
                                         {/* Media / Photo Upload Block */}
                                         <div className="pt-2">
                                             <label className="text-[11px] font-semibold text-charcoal block mb-2 flex items-center justify-between">
@@ -627,7 +770,7 @@ export const HomeContentTab = () => {
                                                     <div className="flex items-center gap-2">
                                                         <button
                                                             type="button"
-                                                            onClick={() => fileInputRef.current?.click()}
+                                                            onClick={() => fileInputRefs.current[index]?.click()}
                                                             disabled={isUploading}
                                                             className="text-xs text-rose hover:text-rose-hover font-semibold px-2 py-1 rounded hover:bg-rose/5"
                                                         >
@@ -637,7 +780,7 @@ export const HomeContentTab = () => {
                                                             type="button"
                                                             onClick={() => handleRemoveSlideImage(index)}
                                                             className="text-gray-400 hover:text-red-600 p-1 rounded hover:bg-red-50"
-                                                            title="Revert to default video"
+                                                            title="Revert to video"
                                                         >
                                                             <Trash2 size={16} />
                                                         </button>
@@ -650,14 +793,14 @@ export const HomeContentTab = () => {
                                                         <Video size={20} />
                                                     </div>
                                                     <p className="text-xs font-medium text-charcoal">
-                                                        Using default store video ({slide.video})
+                                                        Using video: {slide.video}
                                                     </p>
                                                     <p className="text-[11px] text-[#595959] mb-3">
                                                         Upload a high-res photo to display instead of the video.
                                                     </p>
                                                     <button
                                                         type="button"
-                                                        onClick={() => fileInputRef.current?.click()}
+                                                        onClick={() => fileInputRefs.current[index]?.click()}
                                                         disabled={isUploading}
                                                         className="btn-outline text-xs px-3 py-1.5 inline-flex items-center gap-1.5 cursor-pointer"
                                                         data-testid={`slide-${index}-upload-btn`}
@@ -678,7 +821,7 @@ export const HomeContentTab = () => {
                                             )}
 
                                             <input
-                                                ref={fileInputRef}
+                                                ref={el => { fileInputRefs.current[index] = el; }}
                                                 type="file"
                                                 accept="image/jpeg,image/png,image/webp"
                                                 onChange={(e) => {

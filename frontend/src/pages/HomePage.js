@@ -34,6 +34,34 @@ const defaultHeroSlides = [
         poster: '/videos/store-video-2-poster.jpg',
         image: '',
         objectPosition: 'center 25%'
+    },
+    {
+        id: 3,
+        tabName: 'BOUTIQUE PICKS',
+        label: 'HANDPICKED',
+        title1: 'CURATED',
+        title2: 'COLLECTIONS',
+        description: 'Discover thoughtfully designed pieces crafted to elevate your style.',
+        buttonText: 'EXPLORE SHOP',
+        link: '/shop',
+        video: '/videos/hero-4.mp4',
+        poster: '/videos/hero-4-poster.jpg',
+        image: '',
+        objectPosition: 'center 35%'
+    },
+    {
+        id: 4,
+        tabName: 'OUR COUTURE',
+        label: 'BESPOKE CRAFT',
+        title1: 'FASHION CRAFTED',
+        title2: 'AROUND YOU',
+        description: 'Where timeless Indian elegance meets contemporary design aesthetics.',
+        buttonText: 'VISIT OUR STORE',
+        link: '/our-stores',
+        video: '/videos/hero-5.mp4',
+        poster: '/videos/hero-5-poster.jpg',
+        image: '',
+        objectPosition: 'center 35%'
     }
 ];
 
@@ -41,21 +69,40 @@ const categoryEditorialImages = {
     ethnic: '/images/products/rust-ajrakh-shirt-kurta.jpg',
     traditional: '/images/categories/category-traditional.jpg',
     western: '/images/products/purple-floral-coord-set.jpg',
-    bridal: '/images/categories/category-bridal.jpg'
+    'co-ord-sets': '/images/products/purple-floral-coord-set.jpg'
 };
 
 const defaultCategories = [
-    { id: 'ethnic', name: 'Ethnic Wear', subcategories: ['Sarees', 'Lehengas', 'Salwar Suits', 'Kurtis'], image: '/images/products/rust-ajrakh-shirt-kurta.jpg' },
-    { id: 'traditional', name: 'Traditional Wear', subcategories: ['Anarkalis', 'Sharara Sets', 'Palazzo Sets', 'Gharara Sets'], image: '/images/categories/traditional.jpg' },
-    { id: 'western', name: 'Western Wear', subcategories: ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jumpsuits'], image: '/images/products/purple-floral-coord-set.jpg' },
-    { id: 'bridal', name: 'Bridal Collection', subcategories: ['Bridal Lehengas', 'Reception Gowns', 'Sangeet Outfits', 'Mehendi Outfits'], image: '/images/categories/bridal.jpg' }
+    { id: 'ethnic', name: 'Ethnic Wear', subcategories: ['Sarees', 'Lehengas', 'Salwar Suits', 'Kurtis'], image: '/images/products/rust-ajrakh-shirt-kurta.jpg', href: '/shop?category=ethnic' },
+    { id: 'traditional', name: 'Traditional Wear', subcategories: ['Anarkalis', 'Sharara Sets', 'Palazzo Sets', 'Gharara Sets'], image: '/images/categories/traditional.jpg', href: '/shop?category=traditional' },
+    { id: 'western', name: 'Western Wear', subcategories: ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jumpsuits'], image: '/images/products/purple-floral-coord-set.jpg', href: '/shop?category=western' },
+    { id: 'co-ord-sets', name: 'Co-ord Sets', subcategories: ['Co-ord Sets'], image: '/images/products/purple-floral-coord-set.jpg', href: '/shop?product_type=co-ord-set' }
 ];
 
 const SectionDivider = ({ align = "center" }) => (
-    <div className={`flex items-center gap-2 my-3 ${align === "left" ? "justify-center md:justify-start" : "justify-center"}`}>
+    <div className={`flex items-center gap-2 my-3 ${align === "left" ? "justify-center lg:justify-start" : "justify-center"}`}>
         <div className="w-8 h-[1px] bg-[#3B6FA0]/40"></div>
         <span className="text-[#3B6FA0] text-xs">❖</span>
         <div className="w-8 h-[1px] bg-[#3B6FA0]/40"></div>
+    </div>
+);
+
+const SectionHeader = ({ label, title, align = "center", rightAction = null }) => (
+    <div className={`mb-6 sm:mb-8 ${rightAction ? 'flex items-end justify-between gap-4' : align === 'left' ? 'text-left' : 'text-center'}`}>
+        <div className="space-y-1">
+            {label && (
+                <p className="text-xs uppercase tracking-[0.25em] font-bold text-[#C2255C]">
+                    {label}
+                </p>
+            )}
+            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl text-[#1F2937] uppercase tracking-wide font-bold">
+                {title}
+            </h2>
+            <div className={`w-12 h-0.5 bg-[#C2255C] rounded-full mt-2.5 ${align === 'center' && !rightAction ? 'mx-auto' : ''}`} />
+        </div>
+        {rightAction && (
+            <div className="flex-shrink-0">{rightAction}</div>
+        )}
     </div>
 );
 
@@ -80,15 +127,7 @@ const HomePage = () => {
     const [heroVideoErrors, setHeroVideoErrors] = useState({});
     const heroVideoRetriesRef = useRef({});
     
-    // Slide 0 video refs (mobile, desktop bg, desktop fg)
-    const slide0MobileVideoRef = useRef(null);
-    const slide0BgVideoRef = useRef(null);
-    const slide0FgVideoRef = useRef(null);
-
-    // Slide 1 video refs (mobile, desktop bg, desktop fg)
-    const slide1MobileVideoRef = useRef(null);
-    const slide1BgVideoRef = useRef(null);
-    const slide1FgVideoRef = useRef(null);
+    const heroVideoRefs = useRef({});
 
     // Hero video error handler with retry and visibility check
     const handleHeroVideoError = (slideId, event) => {
@@ -134,26 +173,15 @@ const HomePage = () => {
 
     // Sync play/pause & restart from 0 for active hero videos
     useEffect(() => {
-        const slide0Refs = [slide0MobileVideoRef, slide0BgVideoRef, slide0FgVideoRef];
-        const slide1Refs = [slide1MobileVideoRef, slide1BgVideoRef, slide1FgVideoRef];
-
-        const activeRefs = currentSlide === 0 ? slide0Refs : slide1Refs;
-        const inactiveRefs = currentSlide === 0 ? slide1Refs : slide0Refs;
-
-        inactiveRefs.forEach((ref) => {
-            if (ref.current) {
-                ref.current.pause();
-            }
-        });
-
-        activeRefs.forEach((ref) => {
-            if (ref.current) {
-                ref.current.muted = true;
-                try {
-                    ref.current.load();
-                } catch (_) {}
-                ref.current.currentTime = 0;
-                ref.current.play().catch(() => {});
+        Object.entries(heroVideoRefs.current).forEach(([key, videoEl]) => {
+            if (!videoEl) return;
+            const slideIdx = parseInt(key.split('-')[0], 10);
+            if (slideIdx === currentSlide) {
+                videoEl.muted = true;
+                videoEl.currentTime = 0;
+                videoEl.play().catch(() => {});
+            } else {
+                videoEl.pause();
             }
         });
     }, [currentSlide]);
@@ -207,8 +235,8 @@ const HomePage = () => {
     const fetchSiteContent = async () => {
         try {
             const res = await axios.get(`${API}/site-content`);
-            if (res.data?.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length === 2) {
-                setSlides(res.data.hero_slides);
+            if (res.data?.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length >= 1) {
+                setSlides(res.data.hero_slides.slice(0, 6));
             }
         } catch (err) {
             console.error('Failed to load site content on home page:', err);
@@ -262,7 +290,24 @@ const HomePage = () => {
         setCatError(false);
         try {
             const catRes = await axios.get(`${API}/categories`);
-            setCategories(catRes.data && catRes.data.length > 0 ? catRes.data : defaultCategories);
+            const loadedCats = catRes.data && catRes.data.length > 0 ? catRes.data : defaultCategories;
+            const filteredCats = loadedCats
+                .filter(cat => cat.id !== 'bridal' && !cat.name?.toLowerCase().includes('bridal'))
+                .map(cat => ({
+                    ...cat,
+                    href: cat.href || (cat.id === 'co-ord-sets' ? '/shop?product_type=co-ord-set' : `/shop?category=${cat.id}`)
+                }));
+
+            if (!filteredCats.some(c => c.id === 'co-ord-sets' || c.name === 'Co-ord Sets')) {
+                filteredCats.push({
+                    id: 'co-ord-sets',
+                    name: 'Co-ord Sets',
+                    subcategories: ['Co-ord Sets'],
+                    image: '/images/products/purple-floral-coord-set.jpg',
+                    href: '/shop?product_type=co-ord-set'
+                });
+            }
+            setCategories(filteredCats);
         } catch (error) {
             console.error('Failed to fetch categories:', error);
             setCatError(true);
@@ -281,7 +326,7 @@ const HomePage = () => {
     };
 
     return (
-        <div className="bg-white text-[#1F2937] min-h-screen" data-testid="home-page">
+        <div className="bg-white text-[#1F2937] min-h-screen overflow-x-hidden" data-testid="home-page">
             {/* HERO SECTION - UNTOUCHED */}
             <section 
                 className="relative w-full bg-[#1A1412] overflow-hidden group border-b border-[#1F2937]" 
@@ -294,13 +339,10 @@ const HomePage = () => {
                     {slides.map((slide, index) => {
                         const isActive = currentSlide === index;
                         const hasError = heroVideoErrors[slide.id];
-                        const mobileRef = index === 0 ? slide0MobileVideoRef : slide1MobileVideoRef;
-                        const bgRef = index === 0 ? slide0BgVideoRef : slide1BgVideoRef;
-                        const fgRef = index === 0 ? slide0FgVideoRef : slide1FgVideoRef;
 
                         return (
                             <div 
-                                key={slide.id}
+                                key={slide.id || index}
                                 className={`transition-opacity duration-700 ease-in-out absolute inset-0 w-full h-full ${
                                     isActive ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'
                                 }`}
@@ -325,7 +367,7 @@ const HomePage = () => {
                                                 src={slide.poster} 
                                                 alt={slide.title1 ? `${slide.title1} ${slide.title2 || ''} - Jaridar Fashion Couture`.trim() : 'Jaridar Video Poster'} 
                                                 className="w-full h-full object-cover origin-top"
-                                                style={{ objectPosition: slide.objectPosition }}
+                                                style={{ objectPosition: slide.objectPosition || 'center 35%' }}
                                                 loading={index === 0 ? "eager" : "lazy"}
                                                 decoding={index === 0 ? "sync" : "async"}
                                             />
@@ -335,29 +377,29 @@ const HomePage = () => {
                                         <>
                                             {/* Mobile / Tablet (<1024px): Single full-bleed cover video */}
                                             <video 
-                                                ref={mobileRef}
-                                                src={isActive ? slide.video : undefined}
+                                                ref={el => { heroVideoRefs.current[`${index}-mobile`] = el; }}
+                                                src={slide.video}
                                                 poster={slide.poster}
                                                 autoPlay={isActive}
                                                 muted
                                                 loop
                                                 playsInline
-                                                preload="metadata"
+                                                preload={isActive ? "auto" : "metadata"}
                                                 onError={(e) => handleHeroVideoError(slide.id, e)}
                                                 className="lg:hidden w-full h-full object-cover origin-top scale-[1.12]"
-                                                style={{ objectPosition: slide.objectPosition }}
+                                                style={{ objectPosition: slide.objectPosition || 'center 35%' }}
                                             />
 
                                             {/* Desktop (>=1024px): Background layer */}
                                             <video 
-                                                ref={bgRef}
-                                                src={isActive ? slide.video : undefined}
+                                                ref={el => { heroVideoRefs.current[`${index}-bg`] = el; }}
+                                                src={slide.video}
                                                 poster={slide.poster}
                                                 autoPlay={isActive}
                                                 muted
                                                 loop
                                                 playsInline
-                                                preload="metadata"
+                                                preload={isActive ? "auto" : "metadata"}
                                                 onError={(e) => handleHeroVideoError(slide.id, e)}
                                                 className="hidden lg:block absolute inset-0 w-full h-full object-cover pointer-events-none"
                                                 style={{ 
@@ -371,14 +413,14 @@ const HomePage = () => {
                                                 className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-[70%] -translate-x-1/2 h-[90%] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl items-center justify-center bg-black/20 z-20"
                                             >
                                                 <video 
-                                                    ref={fgRef}
-                                                    src={isActive ? slide.video : undefined}
+                                                    ref={el => { heroVideoRefs.current[`${index}-fg`] = el; }}
+                                                    src={slide.video}
                                                     poster={slide.poster}
                                                     autoPlay={isActive}
                                                     muted
                                                     loop
                                                     playsInline
-                                                    preload="metadata"
+                                                    preload={isActive ? "auto" : "metadata"}
                                                     onError={(e) => handleHeroVideoError(slide.id, e)}
                                                     className="w-full h-full object-contain origin-top scale-[1.08]"
                                                     style={{ 
@@ -467,28 +509,28 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* FEATURES / TRUST STRIP (White Section) */}
-            <section className="bg-white border-b border-[#E5E7EB] py-6 md:py-8" data-testid="features-strip">
+            {/* FEATURES / TRUST STRIP - Compact Light Strip */}
+            <section className="bg-[#F9FAFB] border-b border-[#E5E7EB] py-3.5 sm:py-4 md:py-4.5" data-testid="features-strip">
                 <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-0">
                         {[
                             { icon: Truck, title: 'Free Shipping', desc: 'On orders above ₹2999' },
                             { icon: Award, title: 'Premium Quality', desc: '100% authentic craftsmanship' },
-                            { icon: RotateCcw, title: 'Easy Returns', desc: '7-day hassle-free returns' },
+                            { icon: RotateCcw, title: 'Easy Exchange', desc: '7-day hassle-free exchange' },
                             { icon: Lock, title: 'Secure Payment', desc: '100% protected checkout' }
                         ].map((item, i) => (
                             <div 
                                 key={i} 
-                                className={`flex items-center gap-3.5 group px-2 sm:px-4 ${
+                                className={`flex items-center gap-2.5 sm:gap-3 group px-2 sm:px-3 lg:px-4 ${
                                     i < 3 ? 'lg:border-r lg:border-[#E5E7EB]' : ''
                                 }`}
                             >
-                                <div className="w-12 h-12 rounded-full bg-[#E8F0F8] flex items-center justify-center text-[#3B6FA0] flex-shrink-0 border border-[#E5E7EB]">
-                                    <item.icon size={22} />
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#E8F0F8] flex items-center justify-center text-[#3B6FA0] flex-shrink-0 border border-[#E5E7EB]">
+                                    <item.icon size={16} />
                                 </div>
-                                <div>
-                                    <h3 className="font-heading text-sm sm:text-base font-semibold text-[#1F2937] tracking-wide">{item.title}</h3>
-                                    <p className="text-xs sm:text-sm text-[#4B5563] mt-0.5">{item.desc}</p>
+                                <div className="min-w-0">
+                                    <h3 className="font-heading text-xs sm:text-sm font-semibold text-[#1F2937] tracking-wide truncate">{item.title}</h3>
+                                    <p className="text-[11px] sm:text-xs text-[#4B5563] mt-0.5 truncate">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -496,56 +538,57 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* SHOP BY CATEGORY (White Section) */}
-            <section className="py-14 md:py-16 bg-white border-b border-[#E5E7EB]" data-testid="categories-section">
-                <div className="w-full px-3 sm:px-4 md:px-8 xl:px-[50px]">
-                    <div className="text-center mb-10">
-                        <h2 className="font-heading text-2xl md:text-4xl text-[#1F2937] uppercase tracking-[0.06em] font-bold">Shop by Category</h2>
-                        <SectionDivider />
-                    </div>
+            {/* SHOP BY CATEGORY */}
+            <section className="py-10 md:py-14 lg:py-16 bg-white border-b border-[#E5E7EB]" data-testid="categories-section">
+                <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
+                    <SectionHeader 
+                        label="COLLECTIONS" 
+                        title="Shop by Category" 
+                    />
 
                     {catLoading ? (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                             {[1, 2, 3, 4].map((n) => (
-                                <div key={n} className="aspect-[3/4] bg-[#E5E7EB]/50 animate-pulse rounded-md border border-[#E5E7EB]" />
+                                <div key={n} className="aspect-[3/4] bg-[#E5E7EB]/50 animate-pulse rounded-xl md:rounded-2xl border border-[#E5E7EB]" />
                             ))}
                         </div>
                     ) : catError || categories.length === 0 ? (
-                        <div className="text-center py-12 px-4 bg-white/70 rounded-md border border-[#E5E7EB] max-w-md mx-auto">
+                        <div className="text-center py-12 px-4 bg-white/70 rounded-xl border border-[#E5E7EB] max-w-md mx-auto">
                             <p className="text-[#1F2937] text-base font-medium mb-4">Categories could not be loaded. Please try again.</p>
                             <button 
                                 onClick={fetchCategoriesData}
-                                className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-md hover:bg-[#9C1D49] transition-colors shadow-xs"
+                                className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-xl hover:bg-[#9C1D49] transition-colors shadow-xs"
                             >
                                 Retry
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                             {categories.map((category) => {
                                 const editorialImg = categoryEditorialImages[category.id] || category.image;
+                                const categoryHref = category.href || (category.id === 'co-ord-sets' ? '/shop?product_type=co-ord-set' : `/shop?category=${category.id}`);
                                 return (
                                     <Link 
                                         key={category.id}
-                                        to={`/shop?category=${category.id}`}
-                                        className="block relative aspect-[3/4] overflow-hidden rounded-sm group border border-[#E5E7EB] bg-white shadow-xs hover:shadow-md transition-all"
+                                        to={categoryHref}
+                                        className="group relative block aspect-[3/4] w-full overflow-hidden rounded-xl md:rounded-2xl border border-[#E5E7EB] bg-white shadow-xs hover:shadow-md transition-shadow"
                                         data-testid={`category-${category.id}`}
                                     >
                                         <img 
                                             src={editorialImg}
                                             alt={`${category.name} Collection - Jaridar Fashion Couture`}
-                                            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
+                                            className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
                                             loading="lazy"
                                             decoding="async"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/85 via-[#1F2937]/20 to-transparent"></div>
-                                        <div className="absolute bottom-5 left-4 right-4 text-center text-white space-y-1">
-                                            <h3 className="font-heading text-base md:text-lg font-semibold uppercase tracking-wide text-white">
+                                        {/* Bottom-to-top dark gradient overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+                                        
+                                        {/* Category name placed over gradient at bottom in white */}
+                                        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 text-center pointer-events-none">
+                                            <h3 className="font-heading text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider text-white drop-shadow-sm">
                                                 {category.name}
                                             </h3>
-                                            <p className="text-xs text-white/90 font-semibold uppercase tracking-[0.2em] group-hover:underline">
-                                                SHOP NOW
-                                            </p>
                                         </div>
                                     </Link>
                                 );
@@ -555,75 +598,87 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* NEW ARRIVALS CAROUSEL (White Section) */}
-            <section className="py-14 md:py-16 bg-white border-b border-[#E5E7EB]" data-testid="new-arrivals-section">
-                <div className="w-full px-3 sm:px-4 md:px-8 xl:px-[50px]">
-                    <div className="flex items-center justify-between mb-10">
-                        <div className="w-full text-center relative">
-                            <h2 className="font-heading text-2xl md:text-4xl text-[#1F2937] uppercase tracking-[0.06em] font-bold">New Arrivals</h2>
-                            <SectionDivider />
-                            {/* Carousel Controls on right */}
-                            {!prodLoading && !prodError && products.length > 0 && (
-                                <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2">
-                                    <button 
-                                        onClick={prevProductSlide} 
-                                        className="p-2 rounded-full border border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] hover:border-[#C2255C] transition-colors bg-white shadow-xs"
-                                        aria-label="Previous products"
-                                    >
-                                        <ChevronLeft size={16} />
-                                    </button>
-                                    <button 
-                                        onClick={nextProductSlide} 
-                                        className="p-2 rounded-full border border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] hover:border-[#C2255C] transition-colors bg-white shadow-xs"
-                                        aria-label="Next products"
-                                    >
-                                        <ChevronRight size={16} />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+            {/* NEW ARRIVALS */}
+            <section className="py-10 md:py-14 lg:py-16 bg-white border-b border-[#E5E7EB]" data-testid="new-arrivals-section">
+                <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
+                    <SectionHeader 
+                        label="CURATED PICKS" 
+                        title="New Arrivals"
+                        align="center"
+                    />
+
+                    <div className="relative">
+                        {!prodLoading && !prodError && products.length > 4 && (
+                            <>
+                                <button 
+                                    onClick={prevProductSlide} 
+                                    className="absolute -left-1 sm:-left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] hover:border-[#C2255C] transition-all bg-white/95 shadow-md flex items-center justify-center cursor-pointer"
+                                    aria-label="Previous products"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                    onClick={nextProductSlide} 
+                                    className="absolute -right-1 sm:-right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] hover:border-[#C2255C] transition-all bg-white/95 shadow-md flex items-center justify-center cursor-pointer"
+                                    aria-label="Next products"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </>
+                        )}
+
+                        {prodLoading ? (
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                                {[1, 2, 3, 4].map((n) => (
+                                    <div key={n} className="aspect-[3/4] bg-neutral-100 animate-pulse rounded-xl border border-[#E5E7EB]" />
+                                ))}
+                            </div>
+                        ) : prodError ? (
+                            <div className="text-center py-12 px-4 bg-white rounded-xl border border-[#E5E7EB] max-w-md mx-auto shadow-xs">
+                                <p className="text-[#1F2937] text-base font-medium mb-4">Products could not be loaded. Please try again.</p>
+                                <button 
+                                    onClick={fetchProductsData}
+                                    className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-xl hover:bg-[#9C1D49] transition-colors shadow-xs"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        ) : products.length === 0 ? (
+                            <div className="text-center py-12 px-4 bg-white rounded-xl border border-[#E5E7EB] max-w-md mx-auto shadow-xs">
+                                <p className="text-[#1F2937] text-base font-medium mb-4">No products match these filters.</p>
+                                <Link 
+                                    to="/shop"
+                                    className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-xl hover:bg-[#9C1D49] transition-colors shadow-xs inline-block"
+                                >
+                                    Clear all filters
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                                {products.slice(productSlideIndex, productSlideIndex + 4).map((product) => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    {prodLoading ? (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-                            {[1, 2, 3, 4].map((n) => (
-                                <div key={n} className="aspect-[3/4] bg-neutral-100 animate-pulse rounded-md border border-[#E5E7EB]" />
-                            ))}
-                        </div>
-                    ) : prodError ? (
-                        <div className="text-center py-12 px-4 bg-white rounded-md border border-[#E5E7EB] max-w-md mx-auto shadow-xs">
-                            <p className="text-[#1F2937] text-base font-medium mb-4">Products could not be loaded. Please try again.</p>
-                            <button 
-                                onClick={fetchProductsData}
-                                className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-md hover:bg-[#9C1D49] transition-colors shadow-xs"
-                            >
-                                Retry
-                            </button>
-                        </div>
-                    ) : products.length === 0 ? (
-                        <div className="text-center py-12 px-4 bg-white rounded-md border border-[#E5E7EB] max-w-md mx-auto shadow-xs">
-                            <p className="text-[#1F2937] text-base font-medium mb-4">No products match these filters.</p>
-                            <Link 
-                                to="/shop"
-                                className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-md hover:bg-[#9C1D49] transition-colors shadow-xs inline-block"
-                            >
-                                Clear all filters
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-                            {products.slice(productSlideIndex, productSlideIndex + 4).map((product) => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
-                        </div>
-                    )}
+                    {/* Centred View All button below product row */}
+                    <div className="mt-8 sm:mt-10 text-center">
+                        <Link 
+                            to="/shop?filter=new" 
+                            className="px-7 py-3 border border-[#C2255C] text-[#C2255C] hover:bg-[#C2255C] hover:text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs inline-flex items-center gap-2 group"
+                        >
+                            <span>View All Products</span>
+                            <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
                 </div>
             </section>
 
-            {/* BRAND STORY / OUR ESSENCE SECTION - LIGHT THEME */}
+            {/* BRAND STORY / OUR STORY SECTION */}
             <section 
                 ref={essenceSectionRef}
-                className="relative overflow-hidden py-16 md:py-20 lg:py-24 border-b border-[#E5E7EB] flex items-center justify-center bg-white" 
+                className="relative overflow-hidden py-10 lg:py-16 border-b border-[#E5E7EB] flex items-center justify-center bg-white" 
                 data-testid="brand-story-section"
             >
                 {/* Background Video or Fallback Light Background */}
@@ -651,30 +706,9 @@ const HomePage = () => {
 
                 {/* Main Content Container (Responsive Grid: 1 Col on Mobile, 2 Cols on Desktop) */}
                 <div className="relative z-20 w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
-                    <div className="max-w-[1140px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-14">
+                    <div className="max-w-[1140px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-14">
                         
-                        {/* Mobile Logo Card (On Top for Mobile/Tablet < lg) */}
-                        <div className="lg:hidden w-full flex justify-center">
-                            <div className="bg-white/85 backdrop-blur-xs border border-[#E5E7EB] rounded-2xl shadow-md p-6 max-w-[220px] sm:max-w-[260px] w-full flex items-center justify-center gap-3">
-                                <img 
-                                    src="/images/logo/jaridar-icon.png" 
-                                    alt="Jaridar Fashion Couture Logo" 
-                                    className="h-10 sm:h-12 w-auto object-contain flex-shrink-0" 
-                                    loading="lazy"
-                                    decoding="async"
-                                />
-                                <div className="flex flex-col justify-center text-left">
-                                    <span className="font-heading text-xl sm:text-2xl font-black text-[#C2255C] tracking-tight leading-none">
-                                        JARIDAR
-                                    </span>
-                                    <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.24em] pt-0.5 leading-tight">
-                                        Fashion Couture
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Left Column (60% on Desktop): Text Content */}
+                        {/* Left Column (60% on Desktop): Text Content (stacked first on mobile) */}
                         <div className="w-full lg:w-[60%] text-center lg:text-left space-y-4">
                             <p className="text-xs uppercase tracking-[0.2em] font-bold text-[#3B6FA0]">
                                 OUR STORY
@@ -698,21 +732,21 @@ const HomePage = () => {
                             </div>
                         </div>
 
-                        {/* Right Column (40% on Desktop): Desktop Logo Card (Centered Vertically) */}
-                        <div className="hidden lg:flex w-full lg:w-[40%] justify-center lg:justify-end items-center">
-                            <div className="bg-white/85 backdrop-blur-xs border border-[#E5E7EB] rounded-2xl shadow-lg p-8 lg:p-9 max-w-[340px] xl:max-w-[380px] w-full flex items-center justify-center gap-4 transition-all">
+                        {/* Right Column (40% on Desktop): Logo Card (stacked below text on mobile, right on desktop) */}
+                        <div className="w-full lg:w-[40%] flex justify-center lg:justify-end items-center">
+                            <div className="bg-white/85 backdrop-blur-xs border border-[#E5E7EB] rounded-2xl shadow-md lg:shadow-lg p-6 sm:p-8 lg:p-9 max-w-[280px] sm:max-w-[320px] lg:max-w-[380px] w-full flex items-center justify-center gap-3.5 lg:gap-4 transition-all">
                                 <img 
                                     src="/images/logo/jaridar-icon.png" 
                                     alt="Jaridar Fashion Couture Logo" 
-                                    className="h-14 xl:h-16 w-auto object-contain flex-shrink-0" 
+                                    className="h-11 sm:h-12 lg:h-16 w-auto object-contain flex-shrink-0" 
                                     loading="lazy"
                                     decoding="async"
                                 />
                                 <div className="flex flex-col justify-center text-left">
-                                    <span className="font-heading text-2xl xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
+                                    <span className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
                                         JARIDAR
                                     </span>
-                                    <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.26em] pt-1 leading-tight">
+                                    <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.24em] lg:tracking-[0.26em] pt-0.5 lg:pt-1 leading-tight">
                                         Fashion Couture
                                     </span>
                                 </div>
@@ -723,20 +757,22 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* TESTIMONIALS (White Section) */}
-            <section className="py-14 md:py-16 bg-white border-b border-[#E5E7EB]" data-testid="testimonials-section">
+            {/* TESTIMONIALS */}
+            {/* TODO: Testimonials content will be replaced later */}
+            <section className="py-10 md:py-14 lg:py-16 bg-white border-b border-[#E5E7EB]" data-testid="testimonials-section">
                 <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
-                    <div className="text-center mb-10">
-                        <h2 className="font-heading text-2xl md:text-4xl text-[#1F2937] uppercase tracking-[0.06em] font-bold">What Our Customers Say</h2>
-                        <SectionDivider />
-                    </div>
+                    <SectionHeader 
+                        label="TESTIMONIALS" 
+                        title="What Our Customers Say" 
+                    />
 
-                    <div className="grid md:grid-cols-3 gap-6 items-stretch">
+                    {/* 3 cards per row on desktop, horizontal swipe on mobile */}
+                    <div className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 items-stretch">
                         {[
                             {
                                 name: 'Priya S.',
                                 location: 'Mumbai',
-                                text: 'Absolutely in love with my bridal lehenga! The craftsmanship is magnificent, and the fit was custom perfection.',
+                                text: 'Absolutely in love with my designer lehenga! The craftsmanship is magnificent, and the fit was custom perfection.',
                                 rating: 5
                             },
                             {
@@ -752,14 +788,21 @@ const HomePage = () => {
                                 rating: 5
                             }
                         ].map((testimonial, i) => (
-                            <div key={i} className="bg-white p-6 rounded-md border border-[#E5E7EB] shadow-xs h-full flex flex-col">
-                                <div className="flex gap-1 mb-3 text-[#3B6FA0]">
-                                    {[...Array(testimonial.rating)].map((_, j) => (
-                                        <Star key={j} size={15} className="fill-[#3B6FA0] text-[#3B6FA0]" />
-                                    ))}
+                            <div 
+                                key={i} 
+                                className="flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-full"
+                            >
+                                <div className="space-y-3">
+                                    <div className="flex gap-1 text-[#3B6FA0]">
+                                        {[...Array(testimonial.rating)].map((_, j) => (
+                                            <Star key={j} size={15} className="fill-[#3B6FA0] text-[#3B6FA0]" />
+                                        ))}
+                                    </div>
+                                    <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed">
+                                        "{testimonial.text}"
+                                    </p>
                                 </div>
-                                <p className="text-[#4B5563] text-base not-italic leading-relaxed mb-4">"{testimonial.text}"</p>
-                                <div className="mt-auto pt-2">
+                                <div className="mt-5 pt-3 border-t border-[#F3F4F6]">
                                     <p className="font-heading text-sm font-semibold text-[#1F2937]">{testimonial.name}</p>
                                     <p className="text-xs text-[#C2255C] font-medium uppercase tracking-wider">{testimonial.location}</p>
                                 </div>
@@ -770,11 +813,11 @@ const HomePage = () => {
             </section>
 
             {/* INSTAGRAM (White Section) */}
-            <section className="bg-white border-y border-[#E5E7EB] py-6" data-testid="instagram-section">
-                <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] flex flex-col md:flex-row items-center justify-between gap-4">
+            <section className="bg-white border-b border-[#E5E7EB] py-5 sm:py-6" data-testid="instagram-section">
+                <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <Instagram size={20} className="text-[#C2255C]" />
-                        <span className="font-heading text-xs md:text-sm uppercase tracking-widest text-[#1F2937] font-semibold">
+                        <span className="font-heading text-xs md:text-sm uppercase tracking-widest text-[#1F2937] font-semibold text-center sm:text-left">
                             Get Inspired – Follow Us on Instagram
                         </span>
                     </div>
@@ -782,7 +825,7 @@ const HomePage = () => {
                         href="https://instagram.com/jaridarfashion_1" 
                         target="_blank" 
                         rel="noreferrer"
-                        className="px-5 py-2 bg-[#C2255C] hover:bg-[#9C1D49] text-white text-xs font-semibold rounded-full transition-colors shadow-xs uppercase tracking-wider"
+                        className="px-5 py-2 bg-[#C2255C] hover:bg-[#9C1D49] text-white text-xs font-semibold rounded-full transition-colors shadow-xs uppercase tracking-wider flex-shrink-0"
                     >
                         @jaridarfashion_1
                     </a>

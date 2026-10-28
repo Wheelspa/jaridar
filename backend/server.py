@@ -16,6 +16,7 @@ import jwt
 import razorpay
 import hmac
 import hashlib
+import json
 import re
 import io
 import base64
@@ -35,6 +36,15 @@ db = client[os.environ['DB_NAME']]
 # Razorpay setup
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
+APP_ENV = os.environ.get('APP_ENV', '').lower()
+
+from payment_utils import (
+    verify_razorpay_payment_signature,
+    verify_razorpay_webhook_signature,
+    calculate_cart_totals
+)
+
 razorpay_client = None
 if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
     razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
@@ -181,7 +191,7 @@ class OrderResponse(BaseModel):
     created_at: str
 
 class NewsletterSubscribe(BaseModel):
-    email: EmailStr
+    email: str
 
 class PaymentVerify(BaseModel):
     razorpay_order_id: str
@@ -807,6 +817,34 @@ DEFAULT_SITE_CONTENT = {
             "poster": "/videos/store-video-2-poster.jpg",
             "image": "",
             "objectPosition": "center 25%"
+        },
+        {
+            "id": 3,
+            "tabName": "BOUTIQUE PICKS",
+            "label": "HANDPICKED",
+            "title1": "CURATED",
+            "title2": "COLLECTIONS",
+            "description": "Discover thoughtfully designed pieces crafted to elevate your style.",
+            "buttonText": "EXPLORE SHOP",
+            "link": "/shop",
+            "video": "/videos/hero-4.mp4",
+            "poster": "/videos/hero-4-poster.jpg",
+            "image": "",
+            "objectPosition": "center 35%"
+        },
+        {
+            "id": 4,
+            "tabName": "OUR COUTURE",
+            "label": "BESPOKE CRAFT",
+            "title1": "FASHION CRAFTED",
+            "title2": "AROUND YOU",
+            "description": "Where timeless Indian elegance meets contemporary design aesthetics.",
+            "buttonText": "VISIT OUR STORE",
+            "link": "/our-stores",
+            "video": "/videos/hero-5.mp4",
+            "poster": "/videos/hero-5-poster.jpg",
+            "image": "",
+            "objectPosition": "center 35%"
         }
     ]
 }
@@ -818,7 +856,7 @@ async def get_site_content():
         return DEFAULT_SITE_CONTENT
     if "announcement" not in content:
         content["announcement"] = DEFAULT_SITE_CONTENT["announcement"]
-    if "hero_slides" not in content or not content["hero_slides"]:
+    if "hero_slides" not in content or not content["hero_slides"] or len(content["hero_slides"]) < 4:
         content["hero_slides"] = DEFAULT_SITE_CONTENT["hero_slides"]
     return content
 
@@ -847,25 +885,28 @@ async def update_site_content(
         }
 
     if "hero_slides" in payload and isinstance(payload["hero_slides"], list):
-        raw_slides = payload["hero_slides"]
+        raw_slides = payload["hero_slides"][:6]
         clean_slides = []
-        for i, default_slide in enumerate(DEFAULT_SITE_CONTENT["hero_slides"]):
-            slide_data = raw_slides[i] if i < len(raw_slides) and isinstance(raw_slides[i], dict) else {}
+        for i, slide_data in enumerate(raw_slides):
+            if not isinstance(slide_data, dict):
+                continue
+            default_ref = DEFAULT_SITE_CONTENT["hero_slides"][i] if i < len(DEFAULT_SITE_CONTENT["hero_slides"]) else {}
             clean_slides.append({
-                "id": default_slide["id"],
-                "tabName": str(slide_data.get("tabName", default_slide["tabName"]) or default_slide["tabName"]),
-                "label": str(slide_data.get("label", default_slide["label"]) or default_slide["label"]),
-                "title1": str(slide_data.get("title1", default_slide["title1"]) or default_slide["title1"]),
-                "title2": str(slide_data.get("title2", default_slide["title2"]) or default_slide["title2"]),
-                "description": str(slide_data.get("description", default_slide["description"]) or default_slide["description"]),
-                "buttonText": str(slide_data.get("buttonText", default_slide["buttonText"]) or default_slide["buttonText"]),
-                "link": str(slide_data.get("link", default_slide["link"]) or default_slide["link"]),
-                "video": default_slide["video"],
-                "poster": default_slide["poster"],
+                "id": slide_data.get("id", default_ref.get("id", i + 1)),
+                "tabName": str(slide_data.get("tabName", default_ref.get("tabName", f"Slide {i+1}")) or f"Slide {i+1}"),
+                "label": str(slide_data.get("label", default_ref.get("label", "EXCLUSIVE")) or "EXCLUSIVE"),
+                "title1": str(slide_data.get("title1", default_ref.get("title1", "JARIDAR")) or "JARIDAR"),
+                "title2": str(slide_data.get("title2", default_ref.get("title2", "COLLECTION")) or "COLLECTION"),
+                "description": str(slide_data.get("description", default_ref.get("description", "")) or ""),
+                "buttonText": str(slide_data.get("buttonText", default_ref.get("buttonText", "EXPLORE")) or "EXPLORE"),
+                "link": str(slide_data.get("link", default_ref.get("link", "/shop")) or "/shop"),
+                "video": str(slide_data.get("video", default_ref.get("video", "/videos/store-video-1.mp4")) or "/videos/store-video-1.mp4"),
+                "poster": str(slide_data.get("poster", default_ref.get("poster", "/videos/store-video-1-poster.jpg")) or "/videos/store-video-1-poster.jpg"),
                 "image": str(slide_data.get("image", "") or ""),
-                "objectPosition": default_slide.get("objectPosition", "center 35%")
+                "objectPosition": str(slide_data.get("objectPosition", default_ref.get("objectPosition", "center 35%")) or "center 35%")
             })
-        update_data["hero_slides"] = clean_slides
+        if clean_slides:
+            update_data["hero_slides"] = clean_slides
 
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
 
@@ -1626,43 +1667,84 @@ async def create_order(order_data: OrderCreate, user: dict = Depends(get_current
         raise HTTPException(status_code=400, detail='Cart is empty')
     
     items = []
-    total = 0
     for cart_item in cart:
         product = await db.products.find_one({'id': cart_item['product_id']}, {'_id': 0})
-        if product:
-            item_total = product['price'] * cart_item['quantity']
-            items.append({
-                'product_id': product['id'],
-                'product_name': product['name'],
-                'product_image': product['images'][0] if product['images'] else '',
-                'price': product['price'],
-                'quantity': cart_item['quantity'],
-                'size': cart_item['size'],
-                'color': cart_item['color'],
-                'subtotal': item_total
-            })
-            total += item_total
-    
+        if not product:
+            continue
+        
+        # Verify stock availability on the server
+        requested_qty = int(cart_item.get('quantity', 1))
+        available_stock = int(product.get('stock', 0))
+        if available_stock < requested_qty:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient stock for '{product.get('name', 'Product')}'. Available: {available_stock}"
+            )
+
+        item_price = float(product['price'])
+        item_total = item_price * requested_qty
+        items.append({
+            'product_id': product['id'],
+            'product_name': product['name'],
+            'product_image': product['images'][0] if product.get('images') else '',
+            'price': item_price,
+            'quantity': requested_qty,
+            'size': cart_item.get('size', ''),
+            'color': cart_item.get('color', ''),
+            'subtotal': item_total
+        })
+
+    if not items:
+        raise HTTPException(status_code=400, detail='No valid items in cart')
+
+    # Server-side amount calculation: never trust browser amounts
+    subtotal, shipping_fee, total_amount = calculate_cart_totals(items)
+    amount_in_paise = int(round(total_amount * 100))
+
     order_id = str(uuid.uuid4())
     razorpay_order_id = None
-    
-    if razorpay_client:
+    public_key_id = None
+
+    has_live_keys = bool(RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET)
+
+    if has_live_keys:
         try:
-            razorpay_order = razorpay_client.order.create({
-                'amount': int(total * 100),
+            client_to_use = razorpay_client or razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+            rzp_order = client_to_use.order.create({
+                'amount': amount_in_paise,
                 'currency': 'INR',
                 'receipt': order_id,
                 'payment_capture': 1
             })
-            razorpay_order_id = razorpay_order['id']
+            razorpay_order_id = rzp_order.get('id')
+            public_key_id = RAZORPAY_KEY_ID
         except Exception as e:
-            logger.error(f"Razorpay order creation failed: {e}")
-    
+            logger.error(f"Razorpay order creation error: {type(e).__name__}: {str(e)}")
+            raise HTTPException(
+                status_code=502,
+                detail="Payment gateway communication error. Please try again later."
+            )
+    else:
+        # Live keys missing: check environment
+        if APP_ENV == 'development':
+            # Development fake-mode allowed only if APP_ENV=development
+            razorpay_order_id = f"order_dev_{uuid.uuid4().hex[:12]}"
+            public_key_id = "rzp_dev_mock_key"
+            logger.info(f"[DEV MODE] Created mock Razorpay order {razorpay_order_id} for order {order_id}")
+        else:
+            # Production/Staging: Do not create a paid order or simulate success
+            raise HTTPException(
+                status_code=503,
+                detail="Payments are not available right now. Please check back later."
+            )
+
     order_doc = {
         'id': order_id,
         'user_id': user['id'],
         'items': items,
-        'total_amount': total,
+        'subtotal': subtotal,
+        'shipping_fee': shipping_fee,
+        'total_amount': total_amount,
         'shipping_address': order_data.shipping_address,
         'payment_method': order_data.payment_method,
         'payment_status': 'pending',
@@ -1671,12 +1753,14 @@ async def create_order(order_data: OrderCreate, user: dict = Depends(get_current
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     await db.orders.insert_one(order_doc)
-    
+
+    # Return only the public key id to frontend, never the secret
     return {
         'order_id': order_id,
         'razorpay_order_id': razorpay_order_id,
-        'amount': total,
-        'key_id': RAZORPAY_KEY_ID
+        'amount': total_amount,
+        'currency': 'INR',
+        'key_id': public_key_id
     }
 
 @api_router.post("/orders/verify-payment")
@@ -1688,50 +1772,203 @@ async def verify_payment(payment: PaymentVerify, user: dict = Depends(get_curren
     
     if not order:
         raise HTTPException(status_code=404, detail='Order not found')
-    
+
+    # Idempotent check: if already completed, do not re-process stock or cart
+    if order.get('payment_status') == 'completed':
+        return {
+            'message': 'Payment already verified',
+            'order_id': order['id'],
+            'status': 'completed'
+        }
+
     # Verify signature
+    is_valid = False
     if RAZORPAY_KEY_SECRET:
-        message = f"{payment.razorpay_order_id}|{payment.razorpay_payment_id}"
-        expected_signature = hmac.new(
-            RAZORPAY_KEY_SECRET.encode(),
-            message.encode(),
-            hashlib.sha256
-        ).hexdigest()
-        
-        if payment.razorpay_signature != expected_signature:
-            await db.orders.update_one(
-                {'id': order['id']},
-                {'$set': {'payment_status': 'failed'}}
-            )
-            raise HTTPException(status_code=400, detail='Payment verification failed')
-    
-    # Update order status
-    await db.orders.update_one(
-        {'id': order['id']},
-        {'$set': {
-            'payment_status': 'completed',
-            'order_status': 'confirmed',
-            'razorpay_payment_id': payment.razorpay_payment_id
-        }}
+        is_valid = verify_razorpay_payment_signature(
+            razorpay_order_id=payment.razorpay_order_id,
+            razorpay_payment_id=payment.razorpay_payment_id,
+            signature=payment.razorpay_signature,
+            secret=RAZORPAY_KEY_SECRET
+        )
+    elif APP_ENV == 'development' and str(payment.razorpay_signature).startswith("mock_sig"):
+        is_valid = True
+    else:
+        raise HTTPException(
+            status_code=503,
+            detail="Payments are not available right now. Verification cannot proceed."
+        )
+
+    if not is_valid:
+        # If signature is invalid, return an error and leave the order pending
+        logger.warning(f"Payment verification failed for order {order['id']}: Invalid signature")
+        raise HTTPException(status_code=400, detail='Payment verification failed. Invalid signature.')
+
+    # Atomic update to guarantee an order cannot be marked paid twice
+    now_iso = datetime.now(timezone.utc).isoformat()
+    update_result = await db.orders.update_one(
+        {
+            'id': order['id'],
+            'payment_status': {'$ne': 'completed'}
+        },
+        {
+            '$set': {
+                'payment_status': 'completed',
+                'order_status': 'confirmed',
+                'razorpay_payment_id': payment.razorpay_payment_id,
+                'razorpay_signature': payment.razorpay_signature,
+                'paid_at': now_iso,
+                'paid_via': 'client_verify'
+            }
+        }
     )
-    
-    # Clear cart
-    await db.cart.delete_many({'user_id': user['id']})
-    
-    return {'message': 'Payment verified successfully', 'order_id': order['id']}
+
+    # Only execute post-payment side effects if this invocation transitioned the status
+    if update_result.modified_count == 1:
+        # Reduce product stock
+        for item in order.get('items', []):
+            prod_id = item.get('product_id')
+            qty = int(item.get('quantity', 1))
+            if prod_id and qty > 0:
+                await db.products.update_one(
+                    {'id': prod_id},
+                    {'$inc': {'stock': -qty}}
+                )
+
+        # Clear cart for user
+        await db.cart.delete_many({'user_id': user['id']})
+
+    return {
+        'message': 'Payment verified successfully',
+        'order_id': order['id'],
+        'status': 'completed'
+    }
+
+@api_router.post("/webhooks/razorpay")
+async def razorpay_webhook(request: Request):
+    """
+    Razorpay Webhook Handler.
+    Verifies X-Razorpay-Signature using RAZORPAY_WEBHOOK_SECRET over raw request body.
+    Handles payment.captured / order.paid (idempotent mark paid) and payment.failed.
+    """
+    if not RAZORPAY_WEBHOOK_SECRET:
+        logger.error("Razorpay webhook rejected: RAZORPAY_WEBHOOK_SECRET is not configured.")
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    signature = request.headers.get("X-Razorpay-Signature") or request.headers.get("x-razorpay-signature")
+    if not signature:
+        logger.warning("Razorpay webhook rejected: Missing X-Razorpay-Signature header.")
+        raise HTTPException(status_code=400, detail="Missing X-Razorpay-Signature header")
+
+    raw_body = await request.body()
+    if not verify_razorpay_webhook_signature(raw_body, signature, RAZORPAY_WEBHOOK_SECRET):
+        logger.warning("Razorpay webhook rejected: Invalid signature.")
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+
+    try:
+        event_payload = json.loads(raw_body.decode("utf-8"))
+    except Exception as e:
+        logger.error(f"Razorpay webhook JSON parse failed: {e}")
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    event = event_payload.get("event")
+    logger.info(f"Razorpay webhook validated: event={event}")
+
+    if event in ("payment.captured", "order.paid"):
+        payment_entity = event_payload.get("payload", {}).get("payment", {}).get("entity", {})
+        order_entity = event_payload.get("payload", {}).get("order", {}).get("entity", {})
+
+        razorpay_order_id = payment_entity.get("order_id") or order_entity.get("id")
+        razorpay_payment_id = payment_entity.get("id")
+
+        if not razorpay_order_id:
+            logger.warning(f"Razorpay webhook {event} missing order_id.")
+            return {"status": "ignored", "reason": "Missing razorpay order_id"}
+
+        order = await db.orders.find_one({'razorpay_order_id': razorpay_order_id})
+        if not order:
+            logger.warning(f"Razorpay webhook {event}: Order not found for {razorpay_order_id}")
+            return {"status": "ignored", "reason": "Order not found in database"}
+
+        # Atomic idempotent mark paid
+        now_iso = datetime.now(timezone.utc).isoformat()
+        update_result = await db.orders.update_one(
+            {
+                'id': order['id'],
+                'payment_status': {'$ne': 'completed'}
+            },
+            {
+                '$set': {
+                    'payment_status': 'completed',
+                    'order_status': 'confirmed',
+                    'razorpay_payment_id': razorpay_payment_id or order.get('razorpay_payment_id'),
+                    'paid_at': now_iso,
+                    'paid_via': 'webhook'
+                }
+            }
+        )
+
+        if update_result.modified_count == 1:
+            logger.info(f"Order {order['id']} marked completed via webhook {event}")
+            # Reduce product stock
+            for item in order.get('items', []):
+                prod_id = item.get('product_id')
+                qty = int(item.get('quantity', 1))
+                if prod_id and qty > 0:
+                    await db.products.update_one(
+                        {'id': prod_id},
+                        {'$inc': {'stock': -qty}}
+                    )
+
+            # Clear cart for user
+            await db.cart.delete_many({'user_id': order['user_id']})
+        else:
+            logger.info(f"Order {order['id']} was already marked completed; duplicate webhook {event} ignored.")
+
+        return {"status": "ok", "order_id": order['id']}
+
+    elif event == "payment.failed":
+        payment_entity = event_payload.get("payload", {}).get("payment", {}).get("entity", {})
+        razorpay_order_id = payment_entity.get("order_id")
+        err_msg = payment_entity.get("error_description") or payment_entity.get("error_code") or "Payment failed"
+
+        if razorpay_order_id:
+            order = await db.orders.find_one({'razorpay_order_id': razorpay_order_id})
+            if order and order.get('payment_status') != 'completed':
+                # Leave order pending so the user can retry
+                await db.orders.update_one(
+                    {'id': order['id'], 'payment_status': 'pending'},
+                    {
+                        '$set': {
+                            'last_payment_error': err_msg,
+                            'updated_at': datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                logger.info(f"Recorded payment failure on order {order['id']}: {err_msg}")
+
+        return {"status": "ok", "message": "Payment failure recorded"}
+
+    return {"status": "ignored", "event": event}
 
 # ==================== NEWSLETTER ROUTES ====================
 
 @api_router.post("/newsletter/subscribe")
 async def subscribe_newsletter(data: NewsletterSubscribe):
-    existing = await db.newsletter.find_one({'email': data.email})
-    if existing:
-        return {'message': 'Already subscribed'}
+    email = (data.email or "").strip().lower()
+    email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not email or not re.match(email_regex, email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
     
+    existing = await db.newsletter.find_one({'email': email})
+    if existing:
+        raise HTTPException(status_code=400, detail="You are already subscribed")
+    
+    now = datetime.now(timezone.utc).isoformat()
     await db.newsletter.insert_one({
         'id': str(uuid.uuid4()),
-        'email': data.email,
-        'subscribed_at': datetime.now(timezone.utc).isoformat()
+        'email': email,
+        'subscribed_at': now,
+        'created_at': now
     })
     return {'message': 'Successfully subscribed to newsletter'}
 

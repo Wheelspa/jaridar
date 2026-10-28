@@ -10,7 +10,7 @@ export const KNOWN_ATTRIBUTE_LABELS = {
     'ethnic': 'Ethnic Wear',
     'traditional': 'Traditional Wear',
     'western': 'Western Wear',
-    'bridal': 'Bridal Collection',
+
     // Product Types
     'saree': 'Saree',
     'lehenga': 'Lehenga / Ghagra',

@@ -18,7 +18,7 @@ export default function FaqPage() {
                         <Package className="text-rose" size={20} /> How do I place a custom order?
                     </h3>
                     <p className="text-[#4B5563] text-base leading-relaxed">
-                        [Placeholder Text] You can contact our bridal consultation team directly through our Contact Us page or reach out via email at info@jaridar.com.
+                        [Placeholder Text] You can contact our styling consultation team directly through our Contact Us page or reach out via email at info@jaridar.com.
                     </p>
                 </div>
 
@@ -27,7 +27,7 @@ export default function FaqPage() {
                         <Truck className="text-rose" size={20} /> What are your standard shipping timelines?
                     </h3>
                     <p className="text-[#4B5563] text-base leading-relaxed">
-                        [Placeholder Text] Ready-to-ship garments are dispatched within 2-4 business days. Custom tailored and bridal wear orders typically take 3-6 weeks depending on embroidery detail.
+                        [Placeholder Text] Ready-to-ship garments are dispatched within 2-4 business days. Custom tailored and couture orders typically take 3-6 weeks depending on embroidery detail.
                     </p>
                 </div>
 

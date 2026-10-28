@@ -10,7 +10,7 @@ export default function OurStoresPage() {
                 <p className="text-xs uppercase tracking-[0.3em] text-rose font-semibold">Visit Our Flagship Boutique</p>
                 <h1 className="text-2xl md:text-4xl font-bold tracking-wide text-charcoal">Our Store</h1>
                 <p className="text-[#4B5563] text-base leading-relaxed">
-                    Experience luxury Indian couture, bridal wear, and custom fitting consultations at our boutique in Wakad, Pimpri-Chinchwad, Maharashtra.
+                    Experience luxury Indian couture, bespoke designs, and custom fitting consultations at our boutique in Wakad, Pimpri-Chinchwad, Maharashtra.
                 </p>
             </div>
 

@@ -71,6 +71,10 @@ const CheckoutPage = () => {
 
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
+            if (window.Razorpay) {
+                resolve(true);
+                return;
+            }
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
             script.onload = () => resolve(true);
@@ -83,40 +87,69 @@ const CheckoutPage = () => {
         setLoading(true);
         
         try {
-            // Load Razorpay script
-            const scriptLoaded = await loadRazorpayScript();
-            if (!scriptLoaded) {
-                toast.error('Failed to load payment gateway');
+            // 1. Create order on server (server calculates amount and stock)
+            let orderResponse;
+            try {
+                orderResponse = await axios.post(`${API}/orders`, {
+                    shipping_address: shippingAddress,
+                    payment_method: 'razorpay'
+                });
+            } catch (err) {
+                const detail = err.response?.data?.detail;
+                if (err.response?.status === 503 || (detail && detail.toLowerCase().includes('not available'))) {
+                    toast.error('Payments are not available right now');
+                } else {
+                    toast.error(detail || 'Failed to initialize order. Please try again.');
+                }
                 setLoading(false);
                 return;
             }
 
-            // Create order
-            const orderResponse = await axios.post(`${API}/orders`, {
-                shipping_address: shippingAddress,
-                payment_method: 'razorpay'
-            });
+            const { order_id, razorpay_order_id, amount, key_id } = orderResponse.data || {};
 
-            const { order_id, razorpay_order_id, amount, key_id } = orderResponse.data;
-
-            if (!razorpay_order_id || !key_id) {
-                // If Razorpay is not configured, simulate success
-                toast.success('Order placed successfully!');
-                await fetchCart();
-                navigate(`/account/orders/${order_id}`);
+            if (!order_id || !razorpay_order_id || !key_id) {
+                toast.error('Payments are not available right now');
+                setLoading(false);
                 return;
             }
 
-            // Open Razorpay checkout
+            // Fake-success mode exists only if APP_ENV=development on backend
+            if (key_id === 'rzp_dev_mock_key') {
+                try {
+                    await axios.post(`${API}/orders/verify-payment`, {
+                        razorpay_order_id,
+                        razorpay_payment_id: `pay_dev_${Date.now()}`,
+                        razorpay_signature: 'mock_sig_dev_pass'
+                    });
+                    toast.success('[DEV MODE] Order placed successfully!');
+                    await fetchCart();
+                    navigate(`/account/orders/${order_id}`);
+                } catch (devErr) {
+                    toast.error('[DEV MODE] Mock payment verification failed');
+                    setLoading(false);
+                }
+                return;
+            }
+
+            // 2. Load Razorpay script
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded || !window.Razorpay) {
+                toast.error('Failed to load payment gateway. Please check your internet connection.');
+                setLoading(false);
+                return;
+            }
+
+            // 3. Open Razorpay checkout modal
             const options = {
                 key: key_id,
-                amount: amount * 100,
+                amount: Math.round(amount * 100),
                 currency: 'INR',
                 name: 'Jaridar Fashion Couture',
-                description: 'Order Payment',
+                description: 'Boutique Couture Order',
                 order_id: razorpay_order_id,
                 handler: async (response) => {
                     try {
+                        setLoading(true);
                         await axios.post(`${API}/orders/verify-payment`, {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
@@ -126,7 +159,16 @@ const CheckoutPage = () => {
                         await fetchCart();
                         navigate(`/account/orders/${order_id}`);
                     } catch (error) {
-                        toast.error('Payment verification failed');
+                        console.error('Payment verification failed:', error);
+                        const msg = error.response?.data?.detail || 'Payment verification failed';
+                        toast.error(`${msg}. Your items remain in your cart.`);
+                        setLoading(false);
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        toast.info('Payment was cancelled. Your items remain in your cart and you can retry anytime.');
+                        setLoading(false);
                     }
                 },
                 prefill: {
@@ -135,16 +177,24 @@ const CheckoutPage = () => {
                     contact: shippingAddress.phone
                 },
                 theme: {
-                    color: '#E8A0BF'
+                    color: '#C2255C'
                 }
             };
 
-            const razorpay = new window.Razorpay(options);
-            razorpay.open();
+            const razorpayInstance = new window.Razorpay(options);
+
+            razorpayInstance.on('payment.failed', (response) => {
+                console.error('Razorpay payment failed:', response.error);
+                const reason = response.error?.description || response.error?.reason || 'Payment failed';
+                toast.error(`Payment failed: ${reason}. Your items remain in your cart so you can retry.`);
+                setLoading(false);
+            });
+
+            razorpayInstance.open();
         } catch (error) {
-            console.error('Payment error:', error);
-            toast.error('Failed to process payment');
-        } finally {
+            console.error('Payment processing error:', error);
+            const msg = error.response?.data?.detail || 'Failed to process payment';
+            toast.error(msg);
             setLoading(false);
         }
     };
