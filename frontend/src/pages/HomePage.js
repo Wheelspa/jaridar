@@ -16,8 +16,8 @@ const defaultHeroSlides = [
         description: 'Fresh co-ords, kurtas and dresses, now in store.',
         buttonText: 'SHOP NEW ARRIVALS',
         link: '/shop?filter=new',
-        video: '/videos/store-video-1.mp4',
-        poster: '/videos/store-video-1-poster.jpg',
+        video: '/videos/banner/banner-1-new-season.mp4',
+        poster: '/videos/banner/banner-1-new-season-poster.jpg',
         image: '',
         objectPosition: 'center 35%'
     },
@@ -30,8 +30,8 @@ const defaultHeroSlides = [
         description: 'Kurtas, dresses and co-ords crafted for every moment.',
         buttonText: 'SHOP COLLECTIONS',
         link: '/shop',
-        video: '/videos/store-video-2.mp4',
-        poster: '/videos/store-video-2-poster.jpg',
+        video: '/videos/banner/banner-2-elegance.mp4',
+        poster: '/videos/banner/banner-2-elegance-poster.jpg',
         image: '',
         objectPosition: 'center 25%'
     },
@@ -44,8 +44,8 @@ const defaultHeroSlides = [
         description: 'Discover thoughtfully designed pieces crafted to elevate your style.',
         buttonText: 'EXPLORE SHOP',
         link: '/shop',
-        video: '/videos/hero-4.mp4',
-        poster: '/videos/hero-4-poster.jpg',
+        video: '/videos/banner/banner-3-festive-wear.mp4',
+        poster: '/videos/banner/banner-3-festive-wear-poster.jpg',
         image: '',
         objectPosition: 'center 35%'
     },
@@ -58,8 +58,8 @@ const defaultHeroSlides = [
         description: 'Where timeless Indian elegance meets contemporary design aesthetics.',
         buttonText: 'VISIT OUR STORE',
         link: '/our-stores',
-        video: '/videos/hero-5.mp4',
-        poster: '/videos/hero-5-poster.jpg',
+        video: '/videos/banner/banner-4-crop-top-set.mp4',
+        poster: '/videos/banner/banner-4-crop-top-set-poster.jpg',
         image: '',
         objectPosition: 'center 35%'
     }
@@ -685,7 +685,7 @@ const HomePage = () => {
                 {showEssenceVideo ? (
                     <video 
                         ref={essenceVideoRef}
-                        src="/videos/essence-fabric.mp4" 
+                        src="/videos/our-story/our-story-silk-background.mp4" 
                         autoPlay 
                         muted 
                         loop 

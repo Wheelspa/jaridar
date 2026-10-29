@@ -799,8 +799,8 @@ DEFAULT_SITE_CONTENT = {
             "description": "Fresh co-ords, kurtas and dresses, now in store.",
             "buttonText": "SHOP NEW ARRIVALS",
             "link": "/shop?filter=new",
-            "video": "/videos/store-video-1.mp4",
-            "poster": "/videos/store-video-1-poster.jpg",
+            "video": "/videos/banner/banner-1-new-season.mp4",
+            "poster": "/videos/banner/banner-1-new-season-poster.jpg",
             "image": "",
             "objectPosition": "center 35%"
         },
@@ -813,8 +813,8 @@ DEFAULT_SITE_CONTENT = {
             "description": "Kurtas, dresses and co-ords crafted for every moment.",
             "buttonText": "SHOP COLLECTIONS",
             "link": "/shop",
-            "video": "/videos/store-video-2.mp4",
-            "poster": "/videos/store-video-2-poster.jpg",
+            "video": "/videos/banner/banner-2-elegance.mp4",
+            "poster": "/videos/banner/banner-2-elegance-poster.jpg",
             "image": "",
             "objectPosition": "center 25%"
         },
@@ -827,8 +827,8 @@ DEFAULT_SITE_CONTENT = {
             "description": "Discover thoughtfully designed pieces crafted to elevate your style.",
             "buttonText": "EXPLORE SHOP",
             "link": "/shop",
-            "video": "/videos/hero-4.mp4",
-            "poster": "/videos/hero-4-poster.jpg",
+            "video": "/videos/banner/banner-3-festive-wear.mp4",
+            "poster": "/videos/banner/banner-3-festive-wear-poster.jpg",
             "image": "",
             "objectPosition": "center 35%"
         },
@@ -841,8 +841,8 @@ DEFAULT_SITE_CONTENT = {
             "description": "Where timeless Indian elegance meets contemporary design aesthetics.",
             "buttonText": "VISIT OUR STORE",
             "link": "/our-stores",
-            "video": "/videos/hero-5.mp4",
-            "poster": "/videos/hero-5-poster.jpg",
+            "video": "/videos/banner/banner-4-crop-top-set.mp4",
+            "poster": "/videos/banner/banner-4-crop-top-set-poster.jpg",
             "image": "",
             "objectPosition": "center 35%"
         }
@@ -900,8 +900,8 @@ async def update_site_content(
                 "description": str(slide_data.get("description", default_ref.get("description", "")) or ""),
                 "buttonText": str(slide_data.get("buttonText", default_ref.get("buttonText", "EXPLORE")) or "EXPLORE"),
                 "link": str(slide_data.get("link", default_ref.get("link", "/shop")) or "/shop"),
-                "video": str(slide_data.get("video", default_ref.get("video", "/videos/store-video-1.mp4")) or "/videos/store-video-1.mp4"),
-                "poster": str(slide_data.get("poster", default_ref.get("poster", "/videos/store-video-1-poster.jpg")) or "/videos/store-video-1-poster.jpg"),
+                "video": str(slide_data.get("video", default_ref.get("video", "/videos/banner/banner-1-new-season.mp4")) or "/videos/banner/banner-1-new-season.mp4"),
+                "poster": str(slide_data.get("poster", default_ref.get("poster", "/videos/banner/banner-1-new-season-poster.jpg")) or "/videos/banner/banner-1-new-season-poster.jpg"),
                 "image": str(slide_data.get("image", "") or ""),
                 "objectPosition": str(slide_data.get("objectPosition", default_ref.get("objectPosition", "center 35%")) or "center 35%")
             })

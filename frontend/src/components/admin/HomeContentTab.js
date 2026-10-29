@@ -28,8 +28,8 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Fresh co-ords, kurtas and dresses, now in store.',
             buttonText: 'SHOP NEW ARRIVALS',
             link: '/shop?filter=new',
-            video: '/videos/store-video-1.mp4',
-            poster: '/videos/store-video-1-poster.jpg',
+            video: '/videos/banner/banner-1-new-season.mp4',
+            poster: '/videos/banner/banner-1-new-season-poster.jpg',
             image: '',
             objectPosition: 'center 35%'
         },
@@ -42,8 +42,8 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Kurtas, dresses and co-ords crafted for every moment.',
             buttonText: 'SHOP COLLECTIONS',
             link: '/shop',
-            video: '/videos/store-video-2.mp4',
-            poster: '/videos/store-video-2-poster.jpg',
+            video: '/videos/banner/banner-2-elegance.mp4',
+            poster: '/videos/banner/banner-2-elegance-poster.jpg',
             image: '',
             objectPosition: 'center 25%'
         },
@@ -56,8 +56,8 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Discover thoughtfully designed pieces crafted to elevate your style.',
             buttonText: 'EXPLORE SHOP',
             link: '/shop',
-            video: '/videos/hero-4.mp4',
-            poster: '/videos/hero-4-poster.jpg',
+            video: '/videos/banner/banner-3-festive-wear.mp4',
+            poster: '/videos/banner/banner-3-festive-wear-poster.jpg',
             image: '',
             objectPosition: 'center 35%'
         },
@@ -70,8 +70,8 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Where timeless Indian elegance meets contemporary design aesthetics.',
             buttonText: 'VISIT OUR STORE',
             link: '/our-stores',
-            video: '/videos/hero-5.mp4',
-            poster: '/videos/hero-5-poster.jpg',
+            video: '/videos/banner/banner-4-crop-top-set.mp4',
+            poster: '/videos/banner/banner-4-crop-top-set-poster.jpg',
             image: '',
             objectPosition: 'center 35%'
         }
@@ -184,8 +184,8 @@ export const HomeContentTab = () => {
             description: 'Discover contemporary couture and everyday elegance.',
             buttonText: 'EXPLORE SHOP',
             link: '/shop',
-            video: '/videos/store-video-1.mp4',
-            poster: '/videos/store-video-1-poster.jpg',
+            video: '/videos/banner/banner-1-new-season.mp4',
+            poster: '/videos/banner/banner-1-new-season-poster.jpg',
             image: '',
             objectPosition: 'center 35%'
         };
@@ -731,7 +731,7 @@ export const HomeContentTab = () => {
                                                 type="text"
                                                 value={slide.video || ''}
                                                 onChange={(e) => handleSlideChange(index, 'video', e.target.value)}
-                                                placeholder="/videos/store-video-1.mp4"
+                                                placeholder="/videos/banner/banner-1-new-season.mp4"
                                                 className="w-full text-xs px-3 py-2 border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:border-rose font-mono text-gray-700"
                                                 data-testid={`slide-${index}-video`}
                                             />
