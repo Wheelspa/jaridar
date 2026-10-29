@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { MENU_CONFIG } from '../../config/menuConfig';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -34,56 +35,67 @@ const DEV_MARQUEE_CONFIG = {
     separator: "✦"
 };
 
-const ATTRIBUTE_THUMBNAILS = {
-    // Product types
-    'saree': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300',
-    'lehenga': 'https://images.unsplash.com/photo-1594463750939-ebb28c3f7f75?w=300',
-    'salwar-suit': 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300',
-    'kurta-set': 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=300',
-    'gown': 'https://images.unsplash.com/photo-1519657337289-077653f724ed?w=300',
-    'dress': 'https://images.unsplash.com/photo-1612364557094-98a4b47200f6?w=300',
-    'top-shirt': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300',
-    'jumpsuit': 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=300',
-    'co-ord-set': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300',
-    'dupatta': 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300',
-
-    // Regions
-    'banarasi': '/images/categories/category-traditional.jpg',
-    'kanjivaram': '/images/categories/category-ethnic.jpg',
-    'rajasthani': '/images/categories/category-traditional.jpg',
-    'gujarati': '/images/categories/category-western.jpg',
-    'bengali': '/images/categories/category-traditional.jpg',
-
-    // Fabrics
-    'silk': '/images/fabrics/fabric-silk.jpg',
-    'cotton': '/images/fabrics/fabric-cotton.jpg',
-    'georgette': '/images/fabrics/fabric-georgette.jpg',
-    'velvet': '/images/fabrics/fabric-velvet.jpg',
-    'chiffon': '/images/fabrics/fabric-chiffon.jpg',
-    'net': '/images/fabrics/fabric-net.jpg',
-};
-
 export const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
-    const [isRegionOpen, setIsRegionOpen] = useState(false);
-    const [isFabricsOpen, setIsFabricsOpen] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState(null);
     const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
     const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
     const [announcement, setAnnouncement] = useState(DEFAULT_ANNOUNCEMENT);
-    const [headerAttributes, setHeaderAttributes] = useState({
-        product_type: [],
-        region: [],
-        fabric: []
-    });
+
+    const timeoutRef = useRef(null);
 
     const { user, isAuthenticated, logout, isAdmin } = useAuth();
     const { cartCount } = useCart();
     const { wishlistCount } = useWishlist();
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Hover delay handling (180ms delay to prevent flicker)
+    const handleMouseEnter = (menuId) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        setActiveDropdown(menuId);
+    };
+
+    const handleMouseLeave = () => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+            setActiveDropdown(null);
+        }, 180);
+    };
+
+    // Close on ESC key
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setActiveDropdown(null);
+                setIsSearchOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
+
+    // Close dropdown on route change
+    useEffect(() => {
+        setActiveDropdown(null);
+        setIsMenuOpen(false);
+    }, [location.pathname, location.search]);
 
     // Fetch dynamic site content for announcement bar
     useEffect(() => {
@@ -98,24 +110,6 @@ export const Header = () => {
             }
         };
         fetchSiteContent();
-    }, []);
-
-    useEffect(() => {
-        const fetchHeaderAttributes = async () => {
-            try {
-                const res = await axios.get(`${API}/attributes?with_counts=true`);
-                if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
-                    setHeaderAttributes({
-                        product_type: (res.data.product_type || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1 && item.value !== 'bridal' && !item.label?.toLowerCase().includes('bridal') && item.value !== 'saree' && !item.label?.toLowerCase().includes('saree')),
-                        region: (res.data.region || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1 && item.value !== 'bridal' && !item.label?.toLowerCase().includes('bridal')),
-                        fabric: (res.data.fabric || []).filter(item => (item.count !== undefined ? item.count : 0) >= 1 && item.value !== 'bridal' && !item.label?.toLowerCase().includes('bridal')),
-                    });
-                }
-            } catch (err) {
-                console.error('Failed to fetch header attributes:', err);
-            }
-        };
-        fetchHeaderAttributes();
     }, []);
 
     const announcementMessages = (announcement?.messages && announcement.messages.length > 0)
@@ -140,6 +134,37 @@ export const Header = () => {
     };
 
     const currentMsg = announcementMessages[currentMsgIndex % announcementMessages.length] || announcementMessages[0];
+
+    // Determine whether a main menu item is currently active based on pathname / search params
+    const isMenuItemActive = (item) => {
+        if (activeDropdown === item.id) return true;
+        if (item.id === 'home') return location.pathname === '/' && !location.search;
+        if (item.id === 'about-us') return location.pathname === '/about';
+        if (item.id === 'contact') return location.pathname === '/contact';
+        if (item.id === 'new-arrivals') {
+            return location.pathname === '/shop' && location.search.includes('filter=new');
+        }
+        if (item.id === 'by-region') {
+            return location.pathname === '/shop' && location.search.includes('region=');
+        }
+        if (item.id === 'fabrics') {
+            return location.pathname === '/shop' && location.search.includes('fabric=');
+        }
+        if (item.id === 'shop-by-occasion') {
+            return location.pathname === '/shop' && location.search.includes('occasion=');
+        }
+        if (item.id === 'collections') {
+            return location.pathname === '/shop' && (
+                location.search.includes('category=') ||
+                location.search.includes('product_type=') ||
+                location.search.includes('style=')
+            );
+        }
+        return false;
+    };
+
+    const activeMenu = MENU_CONFIG.find(m => m.id === activeDropdown && m.hasDropdown);
+    const isMoreActive = activeDropdown === 'more' || location.pathname === '/contact' || location.search.includes('occasion=');
 
     return (
         <div className="w-full">
@@ -216,15 +241,15 @@ export const Header = () => {
             )}
 
             {/* Main Sticky Header */}
-            <header className="sticky top-0 z-50 bg-white border-b border-[#E5E7EB] w-full" data-testid="header">
-                <div className="w-full max-w-full px-4 sm:px-6 md:px-8 xl:px-[50px] h-[72px] xl:h-[110px] flex items-center justify-between">
+            <header className="sticky top-0 z-50 bg-white border-b border-[#E5E7EB] w-full relative" data-testid="header">
+                <div className="w-full max-w-full px-4 sm:px-6 min-[1100px]:px-5 xl:px-8 2xl:px-[50px] min-[1800px]:px-[60px] h-[72px] min-[1100px]:h-[80px] xl:h-[96px] 2xl:h-[110px] flex items-center justify-between">
                     
-                    {/* Left Group: Mobile Toggle (below lg) + Logo + Desktop Nav directly next to logo */}
-                    <div className="flex items-center gap-6 xl:gap-8 2xl:gap-10 h-full min-w-0">
+                    {/* Left Group: Mobile Toggle (below 1100px) + Logo + Desktop Nav directly next to logo */}
+                    <div className="flex items-center gap-3 sm:gap-4 min-[1100px]:gap-4 min-[1200px]:gap-5 xl:gap-7 2xl:gap-8 min-[1800px]:gap-10 h-full min-w-0">
                         {/* Mobile Toggle + Logo */}
-                        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+                        <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
                             <button 
-                                className="lg:hidden p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors"
+                                className="min-[1100px]:hidden p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 data-testid="mobile-menu-btn"
                                 aria-label="Toggle Menu"
@@ -232,241 +257,122 @@ export const Header = () => {
                                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
 
-                            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0" data-testid="logo">
+                            <Link to="/" className="flex items-center gap-2 xl:gap-2.5 2xl:gap-3 flex-shrink-0" data-testid="logo">
                                 <img 
                                     src="/images/logo/jaridar-icon.png" 
                                     alt="Jaridar Icon" 
-                                    className="h-12 sm:h-14 xl:h-16 w-auto object-contain flex-shrink-0" 
+                                    className="h-10 sm:h-12 min-[1100px]:h-11 xl:h-14 2xl:h-16 w-auto object-contain flex-shrink-0" 
                                 />
                                 <div className="flex flex-col justify-center">
-                                    <span className="font-heading text-xl sm:text-2xl xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
+                                    <span className="font-heading text-lg sm:text-xl min-[1100px]:text-[20px] xl:text-2xl 2xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
                                         JARIDAR
                                     </span>
-                                    <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.26em] pt-0.5 leading-tight">
+                                    <span className="text-[9px] sm:text-[10px] min-[1100px]:text-[10px] xl:text-[11px] font-bold text-[#3B6FA0] uppercase tracking-[0.22em] pt-0.5 leading-tight">
                                         Fashion Couture
                                     </span>
                                 </div>
                             </Link>
                         </div>
 
-                        {/* Desktop Nav: left-aligned directly next to logo */}
-                        <nav className="hidden lg:flex items-center justify-start gap-4 xl:gap-6 2xl:gap-8 h-full">
-                            {/* 1. HOME */}
-                            <Link 
-                                to="/" 
-                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                    location.pathname === '/' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                }`}
-                            >
-                                HOME
-                            </Link>
+                        {/* Desktop Nav: left-aligned directly next to logo, bold uppercase typography matching HEAD */}
+                        <nav 
+                            className="hidden min-[1100px]:flex items-center justify-start gap-2 min-[1180px]:gap-2.5 xl:gap-3 min-[1366px]:gap-3.5 2xl:gap-5 min-[1800px]:gap-6 h-full whitespace-nowrap flex-shrink-0"
+                            role="navigation"
+                            aria-label="Main Navigation"
+                        >
+                            {MENU_CONFIG.map((item) => {
+                                const isActive = isMenuItemActive(item);
+                                const isItemHiddenOnCompact = item.id === 'shop-by-occasion' || item.id === 'contact';
 
-                            {/* 2. COLLECTIONS Mega Menu Trigger */}
-                            <div 
-                                className="relative h-full flex items-center"
-                                onMouseEnter={() => setIsCollectionsOpen(true)}
-                                onMouseLeave={() => setIsCollectionsOpen(false)}
-                            >
-                                <Link 
-                                    to="/shop" 
-                                    className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                        isCollectionsOpen || location.search.includes('category=') || location.search.includes('product_type=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                    }`}
-                                >
-                                    COLLECTIONS
-                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isCollectionsOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                                </Link>
-
-                                {/* Dropdown Mega Panel */}
-                                {isCollectionsOpen && (
-                                    <div className="absolute top-full left-0 xl:left-1/2 xl:-translate-x-1/2 w-[840px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 lg:p-8 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <div className="border-b border-[#E5E7EB] pb-3 mb-5 flex items-center justify-between">
-                                            <h3 className="font-heading text-sm uppercase tracking-wider font-bold text-charcoal">
-                                                Product Types
-                                            </h3>
+                                if (!item.hasDropdown) {
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className={`relative h-full items-center ${isItemHiddenOnCompact ? 'hidden xl:flex' : 'flex'}`}
+                                        >
                                             <Link 
-                                                to="/shop" 
-                                                onClick={() => setIsCollectionsOpen(false)}
-                                                className="text-xs font-semibold text-[#C2255C] hover:underline"
+                                                to={item.url} 
+                                                onClick={() => setActiveDropdown(null)}
+                                                onFocus={() => setActiveDropdown(null)}
+                                                className={`text-[12px] xl:text-[13.5px] 2xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
+                                                    isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                                }`}
                                             >
-                                                View All Products →
+                                                {item.label}
                                             </Link>
                                         </div>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                                            {headerAttributes.product_type.map((pt) => {
-                                                const imgUrl = ATTRIBUTE_THUMBNAILS[pt.value];
-                                                return (
-                                                    <Link 
-                                                        key={pt.value}
-                                                        to={`/shop?product_type=${pt.value}`} 
-                                                        onClick={() => setIsCollectionsOpen(false)}
-                                                        className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all group"
-                                                    >
-                                                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
-                                                            {imgUrl ? (
-                                                                <img 
-                                                                    src={imgUrl} 
-                                                                    alt={pt.label} 
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
-                                                                    {pt.label ? pt.label.slice(0, 2) : '•'}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors truncate">{pt.label}</h4>
-                                                            <span className="text-xs text-[#4B5563] font-normal">{pt.count !== undefined ? `${pt.count} Items` : 'Explore'}</span>
-                                                        </div>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
+                                    );
+                                }
+
+                                const isDropdownOpen = activeDropdown === item.id;
+
+                                return (
+                                    <div 
+                                        key={item.id}
+                                        className={`relative h-full items-center ${isItemHiddenOnCompact ? 'hidden xl:flex' : 'flex'}`}
+                                        onMouseEnter={() => handleMouseEnter(item.id)}
+                                        onMouseLeave={handleMouseLeave}
+                                    >
+                                        <Link 
+                                            to={item.url} 
+                                            onClick={() => setActiveDropdown(null)}
+                                            onFocus={() => handleMouseEnter(item.id)}
+                                            aria-expanded={isDropdownOpen}
+                                            aria-haspopup="true"
+                                            className={`text-[12px] xl:text-[13.5px] 2xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 xl:gap-1.5 border-b-2 transition-colors whitespace-nowrap ${
+                                                isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                            }`}
+                                        >
+                                            <span>{item.label}</span>
+                                            <ChevronDown 
+                                                size={14} 
+                                                className={`w-[12px] h-[12px] xl:w-[13.5px] xl:h-[13.5px] 2xl:w-[14px] 2xl:h-[14px] transition-transform duration-200 shrink-0 inline-block align-middle ${
+                                                    isDropdownOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
+                                                }`} 
+                                            />
+                                        </Link>
                                     </div>
-                                )}
-                            </div>
+                                );
+                            })}
 
-                            {/* 3. BY REGION Mega Menu Trigger */}
+                            {/* "MORE" Dropdown Trigger: active at 1100px - 1279px where Occasion & Contact move inside */}
                             <div 
-                                className="relative h-full flex items-center"
-                                onMouseEnter={() => setIsRegionOpen(true)}
-                                onMouseLeave={() => setIsRegionOpen(false)}
-                            >
-                                <Link 
-                                    to="/shop" 
-                                    className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                        isRegionOpen || location.search.includes('region=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                    }`}
-                                >
-                                    BY REGION
-                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isRegionOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                                </Link>
-
-                                {/* Dropdown Mega Panel */}
-                                {isRegionOpen && (
-                                    <div className="absolute top-full left-0 xl:left-1/2 xl:-translate-x-1/2 w-[720px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <div className="grid grid-cols-5 gap-4">
-                                            {headerAttributes.region.map((reg) => {
-                                                const imgUrl = ATTRIBUTE_THUMBNAILS[reg.value];
-                                                return (
-                                                    <Link 
-                                                        key={reg.value}
-                                                        to={`/shop?region=${reg.value}`} 
-                                                        onClick={() => setIsRegionOpen(false)}
-                                                        className="flex flex-col items-center text-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-all group"
-                                                    >
-                                                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
-                                                            {imgUrl ? (
-                                                                <img 
-                                                                    src={imgUrl} 
-                                                                    alt={reg.label} 
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
-                                                                    {reg.label ? reg.label.slice(0, 2) : '•'}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-tight">{reg.label}</h4>
-                                                            <span className="text-xs text-[#4B5563]">{reg.count !== undefined ? `${reg.count} Items` : 'Explore'}</span>
-                                                        </div>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* 4. FABRICS Mega Menu Trigger */}
-                            <div 
-                                className="relative h-full flex items-center"
-                                onMouseEnter={() => setIsFabricsOpen(true)}
-                                onMouseLeave={() => setIsFabricsOpen(false)}
+                                className="relative h-full items-center hidden min-[1100px]:max-[1279px]:flex"
+                                onMouseEnter={() => handleMouseEnter('more')}
+                                onMouseLeave={handleMouseLeave}
                             >
                                 <button 
-                                    className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                        isFabricsOpen || location.search.includes('fabric=') ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                    onClick={() => setActiveDropdown(activeDropdown === 'more' ? null : 'more')}
+                                    onFocus={() => handleMouseEnter('more')}
+                                    aria-expanded={activeDropdown === 'more'}
+                                    aria-haspopup="true"
+                                    className={`text-[12px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
+                                        isMoreActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
                                     }`}
                                 >
-                                    FABRICS
-                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isFabricsOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
+                                    <span>MORE</span>
+                                    <ChevronDown 
+                                        size={12} 
+                                        className={`w-[12px] h-[12px] transition-transform duration-200 shrink-0 inline-block align-middle ${
+                                            activeDropdown === 'more' ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
+                                        }`} 
+                                    />
                                 </button>
-
-                                {/* Dropdown Mega Panel */}
-                                {isFabricsOpen && (
-                                    <div className="absolute top-full right-0 xl:left-1/2 xl:-translate-x-1/2 w-[780px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <div className="grid grid-cols-6 gap-4">
-                                            {headerAttributes.fabric.map((fab) => {
-                                                const imgUrl = ATTRIBUTE_THUMBNAILS[fab.value];
-                                                return (
-                                                    <Link 
-                                                        key={fab.value}
-                                                        to={`/shop?fabric=${fab.value}`} 
-                                                        onClick={() => setIsFabricsOpen(false)}
-                                                        className="flex flex-col items-center text-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-all group"
-                                                    >
-                                                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-[#E5E7EB] bg-[#F7F9FC]">
-                                                            {imgUrl ? (
-                                                                <img 
-                                                                    src={imgUrl} 
-                                                                    alt={fab.label} 
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] font-bold text-xs uppercase">
-                                                                    {fab.label ? fab.label.slice(0, 2) : '•'}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-sm font-semibold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-tight">{fab.label}</h4>
-                                                            <span className="text-xs text-[#4B5563]">{fab.count !== undefined ? `${fab.count} Items` : 'Explore'}</span>
-                                                        </div>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
-
-                            {/* 7. ABOUT US */}
-                            <Link 
-                                to="/about" 
-                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                    location.pathname === '/about' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                }`}
-                            >
-                                ABOUT US
-                            </Link>
-
-                            {/* 8. CONTACT */}
-                            <Link 
-                                to="/contact" 
-                                className={`text-sm xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                    location.pathname === '/contact' ? 'text-[#C2255C] border-[#C2255C] font-semibold' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                }`}
-                            >
-                                CONTACT
-                            </Link>
                         </nav>
                     </div>
 
-                    {/* Right Unit: Icons at far right with equal padding */}
-                    <div className="flex items-center gap-2 lg:gap-3.5 xl:gap-[22px] flex-shrink-0">
+                    {/* Right Unit: Icons at far right with equal spacing */}
+                    <div className="flex items-center gap-2.5 min-[1100px]:gap-3 xl:gap-4 2xl:gap-5 flex-shrink-0">
                         {/* 1. Search */}
                         <div className="relative">
                             <button 
                                 onClick={() => setIsSearchOpen(!isSearchOpen)} 
-                                className="p-1 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8]"
+                                className="p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] flex items-center justify-center"
                                 aria-label="Toggle Search"
                                 data-testid="search-toggle-btn"
                             >
-                                <Search size={24} />
+                                <Search size={22} className="w-5 h-5 xl:w-[22px] xl:h-[22px] 2xl:w-6 2xl:h-6" />
                             </button>
 
                             {isSearchOpen && (
@@ -477,13 +383,13 @@ export const Header = () => {
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             placeholder="Search sarees, lehengas..."
-                                            className="w-full px-4 py-2 text-base bg-white rounded-xl border border-[#E5E7EB] focus:outline-none focus:border-[#C2255C] text-[#1F2937]"
+                                            className="w-full px-4 py-2 text-sm bg-white rounded-xl border border-[#E5E7EB] focus:outline-none focus:border-[#C2255C] text-[#1F2937]"
                                             autoFocus
                                             data-testid="search-input"
                                         />
                                         <button 
                                             type="submit" 
-                                            className="px-3.5 py-2 bg-[#C2255C] text-white text-sm font-semibold uppercase tracking-wide rounded-xl hover:bg-[#9C1D49] transition-colors flex-shrink-0"
+                                            className="px-3.5 py-2 bg-[#C2255C] text-white text-xs font-semibold uppercase tracking-wide rounded-xl hover:bg-[#9C1D49] transition-colors flex-shrink-0"
                                         >
                                             Search
                                         </button>
@@ -493,20 +399,20 @@ export const Header = () => {
                         </div>
 
                         {/* 2. Wishlist */}
-                        <Link to="/account/wishlist" className="p-1 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] relative" data-testid="wishlist-btn">
-                            <Heart size={24} />
+                        <Link to="/account/wishlist" className="p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] flex items-center justify-center relative" data-testid="wishlist-btn">
+                            <Heart size={22} className="w-5 h-5 xl:w-[22px] xl:h-[22px] 2xl:w-6 2xl:h-6" />
                             {wishlistCount > 0 && (
-                                <span className="absolute -top-1 -right-1 min-w-[18px] min-h-[18px] bg-[#C2255C] text-white text-xs font-bold rounded-full flex items-center justify-center p-0.5">
+                                <span className="absolute -top-1 -right-1 min-w-[17px] min-h-[17px] xl:min-w-[18px] xl:min-h-[18px] bg-[#C2255C] text-white text-[10px] xl:text-[11px] font-bold rounded-full flex items-center justify-center p-0.5 leading-none">
                                     {wishlistCount}
                                 </span>
                             )}
                         </Link>
 
                         {/* 3. Cart */}
-                        <Link to="/cart" className="p-1 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] relative" data-testid="cart-btn">
-                            <ShoppingBag size={24} />
+                        <Link to="/cart" className="p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] flex items-center justify-center relative" data-testid="cart-btn">
+                            <ShoppingBag size={22} className="w-5 h-5 xl:w-[22px] xl:h-[22px] 2xl:w-6 2xl:h-6" />
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 min-w-[18px] min-h-[18px] bg-[#C2255C] text-white text-xs font-bold rounded-full flex items-center justify-center p-0.5">
+                                <span className="absolute -top-1 -right-1 min-w-[17px] min-h-[17px] xl:min-w-[18px] xl:min-h-[18px] bg-[#C2255C] text-white text-[10px] xl:text-[11px] font-bold rounded-full flex items-center justify-center p-0.5 leading-none">
                                     {cartCount}
                                 </span>
                             )}
@@ -516,8 +422,8 @@ export const Header = () => {
                         {isAuthenticated ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="p-1 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8]" data-testid="user-menu-btn">
-                                        <User size={24} />
+                                    <button className="p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] flex items-center justify-center" data-testid="user-menu-btn">
+                                        <User size={22} className="w-5 h-5 xl:w-[22px] xl:h-[22px] 2xl:w-6 2xl:h-6" />
                                     </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48 bg-white border border-[#E5E7EB]">
@@ -550,193 +456,267 @@ export const Header = () => {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <Link to="/login" className="p-1 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8]" data-testid="login-btn">
-                                <User size={24} />
+                            <Link to="/login" className="p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors rounded-full hover:bg-[#E8F0F8] flex items-center justify-center" data-testid="login-btn">
+                                <User size={22} className="w-5 h-5 xl:w-[22px] xl:h-[22px] 2xl:w-6 2xl:h-6" />
                             </Link>
                         )}
                     </div>
                 </div>
+
+                {/* Full-width white dropdown panel under header */}
+                <AnimatePresence>
+                    {activeMenu && activeMenu.hasDropdown && (
+                        <motion.div
+                            key={activeMenu.id}
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.16, ease: "easeOut" }}
+                            onMouseEnter={() => handleMouseEnter(activeMenu.id)}
+                            onMouseLeave={handleMouseLeave}
+                            className="hidden min-[1100px]:block absolute top-full left-0 right-0 w-full bg-white border-b border-[#E5E7EB] shadow-[0_12px_24px_-4px_rgba(0,0,0,0.12)] z-50"
+                            role="region"
+                            aria-label={`${activeMenu.label} Submenu`}
+                        >
+                            <div className="w-full max-w-7xl mx-auto px-6 lg:px-8 xl:px-12 py-7">
+                                <div className="flex items-center justify-between pb-3.5 mb-5 border-b border-[#E5E7EB]">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-[#C2255C]" />
+                                        <h3 className="font-heading text-xs uppercase tracking-[0.2em] font-bold text-[#1F2937]">
+                                            {activeMenu.label}
+                                        </h3>
+                                        <span className="text-xs text-[#6B7280]">
+                                            ({activeMenu.items.length} items)
+                                        </span>
+                                    </div>
+                                    <Link
+                                        to={activeMenu.url}
+                                        onClick={() => setActiveDropdown(null)}
+                                        className="text-xs font-semibold text-[#C2255C] hover:underline flex items-center gap-1"
+                                    >
+                                        <span>View All {activeMenu.label}</span>
+                                        <span>→</span>
+                                    </Link>
+                                </div>
+
+                                <div
+                                    className={`grid gap-x-8 gap-y-2.5 ${
+                                        activeMenu.columns === 5
+                                            ? 'grid-cols-5'
+                                            : activeMenu.columns === 3
+                                            ? 'grid-cols-3'
+                                            : 'grid-cols-2'
+                                    }`}
+                                >
+                                    {activeMenu.items.map((subItem, idx) => (
+                                        <Link
+                                            key={idx}
+                                            to={subItem.url}
+                                            onClick={() => setActiveDropdown(null)}
+                                            className={`group py-1 px-2.5 rounded-md transition-colors text-xs xl:text-[13px] flex items-center justify-between ${
+                                                subItem.highlight
+                                                    ? 'text-[#C2255C] font-bold bg-[#FBF0EC]/60 hover:bg-[#FBF0EC]'
+                                                    : 'text-[#374151] hover:text-[#C2255C] hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <span className="truncate">{subItem.label}</span>
+                                            <span className="text-[11px] opacity-0 group-hover:opacity-100 transition-opacity text-[#C2255C]">
+                                                ›
+                                            </span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* MORE dropdown panel (shown only for 1100px to 1279px where Occasion & Contact move inside) */}
+                    {activeDropdown === 'more' && (
+                        <motion.div
+                            key="more-dropdown-panel"
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.16, ease: "easeOut" }}
+                            onMouseEnter={() => handleMouseEnter('more')}
+                            onMouseLeave={handleMouseLeave}
+                            className="hidden min-[1100px]:max-[1279px]:block absolute top-full right-6 sm:right-12 md:right-16 bg-white border border-[#E5E7EB] rounded-2xl shadow-[0_16px_36px_-6px_rgba(0,0,0,0.18)] p-5 z-50 w-80"
+                            role="region"
+                            aria-label="More Navigation Menu"
+                        >
+                            <div className="space-y-4">
+                                <div>
+                                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E5E7EB]">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-[#C2255C]" />
+                                            <h4 className="font-heading text-xs uppercase tracking-wider font-bold text-[#1F2937]">
+                                                Shop By Occasion
+                                            </h4>
+                                        </div>
+                                        <Link
+                                            to="/shop"
+                                            onClick={() => setActiveDropdown(null)}
+                                            className="text-[11px] font-semibold text-[#C2255C] hover:underline"
+                                        >
+                                            View All →
+                                        </Link>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-1.5 pt-1">
+                                        {[
+                                            { label: 'Wedding', url: '/shop?occasion=wedding' },
+                                            { label: 'Party', url: '/shop?occasion=party' },
+                                            { label: 'Festive', url: '/shop?occasion=festive' },
+                                            { label: 'Casual', url: '/shop?occasion=casual' },
+                                            { label: 'Workwear', url: '/shop?occasion=workwear' },
+                                            { label: 'Vacation', url: '/shop?occasion=vacation' }
+                                        ].map((occ, idx) => (
+                                            <Link
+                                                key={idx}
+                                                to={occ.url}
+                                                onClick={() => setActiveDropdown(null)}
+                                                className="text-xs text-[#374151] hover:text-[#C2255C] hover:bg-gray-50 py-1.5 px-2 rounded block truncate font-medium transition-colors"
+                                            >
+                                                {occ.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="pt-2 border-t border-[#E5E7EB]">
+                                    <Link
+                                        to="/contact"
+                                        onClick={() => setActiveDropdown(null)}
+                                        className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#1F2937] hover:text-[#C2255C] py-1.5 px-2 rounded hover:bg-gray-50 transition-colors"
+                                    >
+                                        <span>Contact Us</span>
+                                        <span className="text-[#C2255C]">→</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </header>
 
-            {/* Mobile Drawer */}
+            {/* Mobile Drawer (used below 1100px) */}
             <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
-                <div className="p-6 bg-white min-h-screen">
-                    <div className="flex justify-between items-center mb-8">
+                <div className="p-6 bg-white min-h-screen overflow-y-auto">
+                    <div className="flex justify-between items-center mb-6">
                         <Link to="/" onClick={() => setIsMenuOpen(false)}>
-                            <h1 className="font-heading text-2xl text-[#1F2937] font-extrabold">JARIDAR</h1>
+                            <h1 className="font-heading text-2xl text-[#1F2937] font-extrabold tracking-tight">JARIDAR</h1>
                         </Link>
-                        <button onClick={() => setIsMenuOpen(false)}>
+                        <button 
+                            onClick={() => setIsMenuOpen(false)} 
+                            className="p-1 text-[#1F2937] hover:text-[#C2255C] transition-colors"
+                            aria-label="Close Menu"
+                        >
                             <X size={24} />
                         </button>
                     </div>
 
-                    <form onSubmit={(e) => { handleSearch(e); setIsMenuOpen(false); }} className="mb-8">
+                    <form onSubmit={(e) => { handleSearch(e); setIsMenuOpen(false); }} className="mb-6">
                         <div className="relative">
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search products..."
-                                className="w-full pl-4 pr-10 py-3 bg-white rounded-full border border-[#E5E7EB] text-base text-[#1F2937]"
+                                placeholder="Search products, fabrics, styles..."
+                                className="w-full pl-4 pr-10 py-2.5 bg-[#F9FAFB] rounded-full border border-[#E5E7EB] text-sm text-[#1F2937] focus:outline-none focus:border-[#C2255C]"
                             />
-                            <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#C2255C]">
-                                <Search size={20} />
+                            <button type="submit" className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#C2255C]">
+                                <Search size={18} />
                             </button>
                         </div>
                     </form>
 
-                    <nav className="space-y-3">
-                        {/* 1. Home */}
-                        <Link 
-                            to="/" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#E5E7EB] text-[#1F2937] font-medium" 
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Home
-                        </Link>
-                        
-                        {/* 2. Collections Accordion */}
-                        <div className="border-b border-[#E5E7EB] pb-2">
-                            <div 
-                                className="flex items-center justify-between py-2 cursor-pointer"
-                                onClick={() => setExpandedMobileCategory(expandedMobileCategory === 'collections' ? null : 'collections')}
-                            >
-                                <span className="text-base uppercase tracking-wider font-heading text-[#1F2937] font-medium">Collections</span>
-                                <ChevronDown size={18} className={`transition-transform duration-200 ${expandedMobileCategory === 'collections' ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                            </div>
+                    <nav className="space-y-2 pb-10">
+                        {MENU_CONFIG.map((menu) => {
+                            if (!menu.hasDropdown) {
+                                return (
+                                    <Link
+                                        key={menu.id}
+                                        to={menu.url}
+                                        className="block text-sm uppercase tracking-wider font-semibold py-3 border-b border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] transition-colors"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        {menu.label}
+                                    </Link>
+                                );
+                            }
 
-                            {expandedMobileCategory === 'collections' && (
-                                <div className="grid grid-cols-2 gap-2 pt-2 pl-3">
-                                    {headerAttributes.product_type.map((pt) => {
-                                        const imgUrl = ATTRIBUTE_THUMBNAILS[pt.value];
-                                        return (
-                                            <Link
-                                                key={pt.value}
-                                                to={`/shop?product_type=${pt.value}`}
-                                                onClick={() => setIsMenuOpen(false)}
-                                                className="text-xs text-[#4B5563] hover:text-[#C2255C] py-1.5 flex items-center gap-2"
+                            const isExpanded = expandedMobileCategory === menu.id;
+
+                            return (
+                                <div key={menu.id} className="border-b border-[#E5E7EB] pb-2">
+                                    <div
+                                        className="flex items-center justify-between py-3 cursor-pointer select-none"
+                                        onClick={() => setExpandedMobileCategory(isExpanded ? null : menu.id)}
+                                    >
+                                        <span className={`text-sm uppercase tracking-wider font-semibold transition-colors ${
+                                            isExpanded ? 'text-[#C2255C]' : 'text-[#1F2937]'
+                                        }`}>
+                                            {menu.label}
+                                        </span>
+                                        <ChevronDown
+                                            size={16}
+                                            className={`transition-transform duration-200 ${
+                                                isExpanded ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
+                                            }`}
+                                        />
+                                    </div>
+
+                                    {isExpanded && (
+                                        <div className="pt-1 pb-3 pl-2">
+                                            {/* View all link */}
+                                            <div className="mb-2 pb-1.5 border-b border-gray-100 flex items-center justify-between">
+                                                <Link
+                                                    to={menu.url}
+                                                    onClick={() => setIsMenuOpen(false)}
+                                                    className="text-xs font-semibold text-[#C2255C] hover:underline"
+                                                >
+                                                    View All {menu.label} →
+                                                </Link>
+                                            </div>
+
+                                            {/* Subitems: long lists scroll, fabrics in 2 columns */}
+                                            <div
+                                                className={`max-h-64 overflow-y-auto pr-1 ${
+                                                    menu.id === 'fabrics'
+                                                        ? 'grid grid-cols-2 gap-2'
+                                                        : 'space-y-1'
+                                                }`}
                                             >
-                                                <div className="w-6 h-6 rounded overflow-hidden border border-[#E5E7EB] flex-shrink-0 bg-[#F7F9FC]">
-                                                    {imgUrl ? (
-                                                        <img src={imgUrl} alt={pt.label} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] text-[9px] font-bold">
-                                                            {pt.label?.slice(0, 2)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="truncate">{pt.label}</span>
-                                            </Link>
-                                        );
-                                    })}
+                                                {menu.items.map((subItem, idx) => (
+                                                    <Link
+                                                        key={idx}
+                                                        to={subItem.url}
+                                                        onClick={() => setIsMenuOpen(false)}
+                                                        className={`text-xs py-1.5 px-2 rounded block transition-colors ${
+                                                            subItem.highlight
+                                                                ? 'text-[#C2255C] font-bold bg-[#FBF0EC]/60'
+                                                                : 'text-[#4B5563] hover:text-[#C2255C] hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {subItem.label}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                            );
+                        })}
 
-                        {/* 3. By Region Accordion */}
-                        <div className="border-b border-[#E5E7EB] pb-2">
-                            <div 
-                                className="flex items-center justify-between py-2 cursor-pointer"
-                                onClick={() => setExpandedMobileCategory(expandedMobileCategory === 'region' ? null : 'region')}
-                            >
-                                <span className="text-base uppercase tracking-wider font-heading text-[#1F2937] font-medium">By Region</span>
-                                <ChevronDown size={18} className={`transition-transform duration-200 ${expandedMobileCategory === 'region' ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                            </div>
-
-                            {expandedMobileCategory === 'region' && (
-                                <div className="grid grid-cols-2 gap-2 pt-2 pl-3">
-                                    {headerAttributes.region.map((reg) => {
-                                        const imgUrl = ATTRIBUTE_THUMBNAILS[reg.value];
-                                        return (
-                                            <Link
-                                                key={reg.value}
-                                                to={`/shop?region=${reg.value}`}
-                                                onClick={() => setIsMenuOpen(false)}
-                                                className="text-xs text-[#4B5563] hover:text-[#C2255C] py-1.5 flex items-center gap-2"
-                                            >
-                                                <div className="w-6 h-6 rounded overflow-hidden border border-[#E5E7EB] flex-shrink-0 bg-[#F7F9FC]">
-                                                    {imgUrl ? (
-                                                        <img src={imgUrl} alt={reg.label} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] text-[9px] font-bold">
-                                                            {reg.label?.slice(0, 2)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="truncate">{reg.label}</span>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 4. Fabrics Accordion */}
-                        <div className="border-b border-[#E5E7EB] pb-2">
-                            <div 
-                                className="flex items-center justify-between py-2 cursor-pointer"
-                                onClick={() => setExpandedMobileCategory(expandedMobileCategory === 'fabrics' ? null : 'fabrics')}
-                            >
-                                <span className="text-base uppercase tracking-wider font-heading text-[#1F2937] font-medium">Fabrics</span>
-                                <ChevronDown size={18} className={`transition-transform duration-200 ${expandedMobileCategory === 'fabrics' ? 'rotate-180 text-[#C2255C]' : 'text-[#4B5563]'}`} />
-                            </div>
-
-                            {expandedMobileCategory === 'fabrics' && (
-                                <div className="grid grid-cols-2 gap-2 pt-2 pl-3">
-                                    {headerAttributes.fabric.map((fab) => {
-                                        const imgUrl = ATTRIBUTE_THUMBNAILS[fab.value];
-                                        return (
-                                            <Link
-                                                key={fab.value}
-                                                to={`/shop?fabric=${fab.value}`}
-                                                onClick={() => setIsMenuOpen(false)}
-                                                className="text-xs text-[#4B5563] hover:text-[#C2255C] py-1.5 flex items-center gap-2"
-                                            >
-                                                <div className="w-6 h-6 rounded overflow-hidden border border-[#E5E7EB] flex-shrink-0 bg-[#F7F9FC]">
-                                                    {imgUrl ? (
-                                                        <img src={imgUrl} alt={fab.label} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-[#F7F9FC] flex items-center justify-center text-[#4B5563] text-[9px] font-bold">
-                                                            {fab.label?.slice(0, 2)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="truncate">{fab.label}</span>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 7. About Us */}
-                        <Link 
-                            to="/about" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 border-b border-[#E5E7EB] text-[#1F2937] font-medium" 
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            About Us
-                        </Link>
-
-                        {/* Admin Dashboard if Admin */}
+                        {/* Admin Link if Admin */}
                         {isAdmin && (
-                            <Link 
-                                to="/admin" 
-                                className="block text-base uppercase tracking-wider font-heading py-2 text-[#C2255C] border-b border-[#E5E7EB] font-semibold"
+                            <Link
+                                to="/admin"
+                                className="block text-sm uppercase tracking-wider font-semibold py-3 text-[#C2255C] border-b border-[#E5E7EB]"
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 Admin Dashboard
                             </Link>
                         )}
-
-                        {/* 8. Contact at the bottom */}
-                        <Link 
-                            to="/contact" 
-                            className="block text-base uppercase tracking-wider font-heading py-2 text-[#1F2937] font-medium" 
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Contact
-                        </Link>
                     </nav>
                 </div>
             </div>

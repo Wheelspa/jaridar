@@ -789,6 +789,10 @@ DEFAULT_SITE_CONTENT = {
             { "prefix": "FREE SHIPPING ON ORDERS ABOVE ₹2999", "highlight": "", "suffix": "" }
         ]
     },
+    "hero_background": {
+        "video": "/videos/Banner/hero-4.mp4",
+        "poster": ""
+    },
     "hero_slides": [
         {
             "id": 1,
@@ -799,8 +803,8 @@ DEFAULT_SITE_CONTENT = {
             "description": "Fresh co-ords, kurtas and dresses, now in store.",
             "buttonText": "SHOP NEW ARRIVALS",
             "link": "/shop?filter=new",
-            "video": "/videos/banner/banner-1-new-season.mp4",
-            "poster": "/videos/banner/banner-1-new-season-poster.jpg",
+            "video": "/videos/Banner/hero-5.mp4",
+            "poster": "",
             "image": "",
             "objectPosition": "center 35%"
         },
@@ -813,36 +817,22 @@ DEFAULT_SITE_CONTENT = {
             "description": "Kurtas, dresses and co-ords crafted for every moment.",
             "buttonText": "SHOP COLLECTIONS",
             "link": "/shop",
-            "video": "/videos/banner/banner-2-elegance.mp4",
-            "poster": "/videos/banner/banner-2-elegance-poster.jpg",
+            "video": "/videos/Banner/store-video-1.mp4",
+            "poster": "",
             "image": "",
             "objectPosition": "center 25%"
         },
         {
             "id": 3,
-            "tabName": "BOUTIQUE PICKS",
-            "label": "HANDPICKED",
-            "title1": "CURATED",
-            "title2": "COLLECTIONS",
-            "description": "Discover thoughtfully designed pieces crafted to elevate your style.",
-            "buttonText": "EXPLORE SHOP",
+            "tabName": "FESTIVE",
+            "label": "FESTIVE EDIT",
+            "title1": "FESTIVE",
+            "title2": "COLLECTION",
+            "description": "Embroidered sets and festive outfits for every celebration.",
+            "buttonText": "SHOP FESTIVE",
             "link": "/shop",
-            "video": "/videos/banner/banner-3-festive-wear.mp4",
-            "poster": "/videos/banner/banner-3-festive-wear-poster.jpg",
-            "image": "",
-            "objectPosition": "center 35%"
-        },
-        {
-            "id": 4,
-            "tabName": "OUR COUTURE",
-            "label": "BESPOKE CRAFT",
-            "title1": "FASHION CRAFTED",
-            "title2": "AROUND YOU",
-            "description": "Where timeless Indian elegance meets contemporary design aesthetics.",
-            "buttonText": "VISIT OUR STORE",
-            "link": "/our-stores",
-            "video": "/videos/banner/banner-4-crop-top-set.mp4",
-            "poster": "/videos/banner/banner-4-crop-top-set-poster.jpg",
+            "video": "/videos/Banner/store-video-2.mp4",
+            "poster": "",
             "image": "",
             "objectPosition": "center 35%"
         }
@@ -856,8 +846,38 @@ async def get_site_content():
         return DEFAULT_SITE_CONTENT
     if "announcement" not in content:
         content["announcement"] = DEFAULT_SITE_CONTENT["announcement"]
-    if "hero_slides" not in content or not content["hero_slides"] or len(content["hero_slides"]) < 4:
-        content["hero_slides"] = DEFAULT_SITE_CONTENT["hero_slides"]
+
+    # Fill missing hero slides from built-in defaults up to 3 slides without writing to db
+    raw_slides = list(content.get("hero_slides") or [])
+    clean_slides = []
+    for i in range(3):
+        default_slide = DEFAULT_SITE_CONTENT["hero_slides"][i]
+        if i < len(raw_slides) and isinstance(raw_slides[i], dict):
+            slide_dict = dict(raw_slides[i])
+            v = str(slide_dict.get("video") or "").strip()
+            if not v or "banner-" in v or not v.startswith("/videos/Banner/"):
+                slide_dict["video"] = default_slide["video"]
+            p = str(slide_dict.get("poster") or "").strip()
+            if "store-video-" in p or "banner-" in p:
+                slide_dict["poster"] = ""
+            clean_slides.append(slide_dict)
+        else:
+            clean_slides.append(default_slide)
+    content["hero_slides"] = clean_slides
+
+    # Hero background fallback
+    bg = content.get("hero_background")
+    if not bg or not isinstance(bg, dict) or not bg.get("video") or "banner-3" in str(bg.get("video")):
+        content["hero_background"] = DEFAULT_SITE_CONTENT["hero_background"]
+    else:
+        bg_video = str(bg.get("video", "")).strip()
+        if not bg_video or "banner-" in bg_video or not bg_video.startswith("/videos/Banner/"):
+            bg["video"] = DEFAULT_SITE_CONTENT["hero_background"]["video"]
+        bg_poster = str(bg.get("poster", "")).strip()
+        if "store-video-" in bg_poster or "banner-" in bg_poster:
+            bg["poster"] = ""
+        content["hero_background"] = bg
+
     return content
 
 @api_router.put("/admin/site-content")
@@ -866,6 +886,14 @@ async def update_site_content(
     admin: dict = Depends(get_current_admin)
 ):
     update_data = {}
+    if "hero_background" in payload and isinstance(payload["hero_background"], dict):
+        bg = payload["hero_background"]
+        default_bg = DEFAULT_SITE_CONTENT["hero_background"]
+        update_data["hero_background"] = {
+            "video": str(bg.get("video", default_bg["video"]) or default_bg["video"]).strip(),
+            "poster": str(bg.get("poster", default_bg["poster"]) or default_bg["poster"]).strip()
+        }
+
     if "announcement" in payload and isinstance(payload["announcement"], dict):
         ann = payload["announcement"]
         raw_msgs = ann.get("messages", [])
@@ -885,7 +913,7 @@ async def update_site_content(
         }
 
     if "hero_slides" in payload and isinstance(payload["hero_slides"], list):
-        raw_slides = payload["hero_slides"][:6]
+        raw_slides = payload["hero_slides"][:3]
         clean_slides = []
         for i, slide_data in enumerate(raw_slides):
             if not isinstance(slide_data, dict):
@@ -900,8 +928,8 @@ async def update_site_content(
                 "description": str(slide_data.get("description", default_ref.get("description", "")) or ""),
                 "buttonText": str(slide_data.get("buttonText", default_ref.get("buttonText", "EXPLORE")) or "EXPLORE"),
                 "link": str(slide_data.get("link", default_ref.get("link", "/shop")) or "/shop"),
-                "video": str(slide_data.get("video", default_ref.get("video", "/videos/banner/banner-1-new-season.mp4")) or "/videos/banner/banner-1-new-season.mp4"),
-                "poster": str(slide_data.get("poster", default_ref.get("poster", "/videos/banner/banner-1-new-season-poster.jpg")) or "/videos/banner/banner-1-new-season-poster.jpg"),
+                "video": str(slide_data.get("video", default_ref.get("video", f"/videos/Banner/{'hero-5' if i==0 else 'store-video-1' if i==1 else 'store-video-2'}.mp4")) or default_ref.get("video", "")),
+                "poster": str(slide_data.get("poster", "") or ""),
                 "image": str(slide_data.get("image", "") or ""),
                 "objectPosition": str(slide_data.get("objectPosition", default_ref.get("objectPosition", "center 35%")) or "center 35%")
             })
@@ -917,6 +945,22 @@ async def update_site_content(
     )
 
     updated_doc = await db.site_content.find_one({"key": "home"}, {"_id": 0})
+    if updated_doc:
+        raw_slides = list(updated_doc.get("hero_slides") or [])
+        clean_slides = []
+        for i in range(3):
+            default_slide = DEFAULT_SITE_CONTENT["hero_slides"][i]
+            if i < len(raw_slides) and isinstance(raw_slides[i], dict):
+                clean_slides.append(raw_slides[i])
+            else:
+                clean_slides.append(default_slide)
+        updated_doc["hero_slides"] = clean_slides
+
+        bg = updated_doc.get("hero_background")
+        if not bg or not isinstance(bg, dict) or not bg.get("video"):
+            updated_doc["hero_background"] = DEFAULT_SITE_CONTENT["hero_background"]
+        if "announcement" not in updated_doc:
+            updated_doc["announcement"] = DEFAULT_SITE_CONTENT["announcement"]
     return updated_doc
 
 async def ensure_seed_site_content():

@@ -6,6 +6,15 @@ import { ProductCard } from '../components/common/ProductCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Hero ambient background video tuning constants
+export const HERO_BG_OVERLAY = 0.72; // Dark overlay opacity (e.g. 0.72)
+export const HERO_BG_BLUR = '12px';  // Blur filter for ambient background video
+
+const defaultHeroBackground = {
+    video: '/videos/Banner/hero-4.mp4',
+    poster: ''
+};
+
 const defaultHeroSlides = [
     {
         id: 1,
@@ -16,8 +25,8 @@ const defaultHeroSlides = [
         description: 'Fresh co-ords, kurtas and dresses, now in store.',
         buttonText: 'SHOP NEW ARRIVALS',
         link: '/shop?filter=new',
-        video: '/videos/banner/banner-1-new-season.mp4',
-        poster: '/videos/banner/banner-1-new-season-poster.jpg',
+        video: '/videos/Banner/hero-5.mp4',
+        poster: '',
         image: '',
         objectPosition: 'center 35%'
     },
@@ -30,40 +39,77 @@ const defaultHeroSlides = [
         description: 'Kurtas, dresses and co-ords crafted for every moment.',
         buttonText: 'SHOP COLLECTIONS',
         link: '/shop',
-        video: '/videos/banner/banner-2-elegance.mp4',
-        poster: '/videos/banner/banner-2-elegance-poster.jpg',
+        video: '/videos/Banner/store-video-1.mp4',
+        poster: '',
         image: '',
         objectPosition: 'center 25%'
     },
     {
         id: 3,
-        tabName: 'BOUTIQUE PICKS',
-        label: 'HANDPICKED',
-        title1: 'CURATED',
-        title2: 'COLLECTIONS',
-        description: 'Discover thoughtfully designed pieces crafted to elevate your style.',
-        buttonText: 'EXPLORE SHOP',
+        tabName: 'FESTIVE',
+        label: 'FESTIVE EDIT',
+        title1: 'FESTIVE',
+        title2: 'COLLECTION',
+        description: 'Embroidered sets and festive outfits for every celebration.',
+        buttonText: 'SHOP FESTIVE',
         link: '/shop',
-        video: '/videos/banner/banner-3-festive-wear.mp4',
-        poster: '/videos/banner/banner-3-festive-wear-poster.jpg',
-        image: '',
-        objectPosition: 'center 35%'
-    },
-    {
-        id: 4,
-        tabName: 'OUR COUTURE',
-        label: 'BESPOKE CRAFT',
-        title1: 'FASHION CRAFTED',
-        title2: 'AROUND YOU',
-        description: 'Where timeless Indian elegance meets contemporary design aesthetics.',
-        buttonText: 'VISIT OUR STORE',
-        link: '/our-stores',
-        video: '/videos/banner/banner-4-crop-top-set.mp4',
-        poster: '/videos/banner/banner-4-crop-top-set-poster.jpg',
+        video: '/videos/Banner/store-video-2.mp4',
+        poster: '',
         image: '',
         objectPosition: 'center 35%'
     }
 ];
+
+const DEFAULT_SLIDE_VIDEOS = [
+    '/videos/Banner/hero-5.mp4',
+    '/videos/Banner/store-video-1.mp4',
+    '/videos/Banner/store-video-2.mp4'
+];
+
+const resolveSlideVideo = (videoPath, index = 0) => {
+    const fallback = DEFAULT_SLIDE_VIDEOS[index % DEFAULT_SLIDE_VIDEOS.length];
+    if (!videoPath || typeof videoPath !== 'string') {
+        return fallback;
+    }
+    const clean = videoPath.trim();
+    if (!clean) return fallback;
+
+    if (clean === '/videos/Banner/hero-5.mp4' ||
+        clean === '/videos/Banner/store-video-1.mp4' ||
+        clean === '/videos/Banner/store-video-2.mp4' ||
+        clean === '/videos/Banner/hero-4.mp4') {
+        return clean;
+    }
+
+    const lower = clean.toLowerCase();
+    if (lower.endsWith('hero-5.mp4')) return '/videos/Banner/hero-5.mp4';
+    if (lower.endsWith('store-video-1.mp4')) return '/videos/Banner/store-video-1.mp4';
+    if (lower.endsWith('store-video-2.mp4')) return '/videos/Banner/store-video-2.mp4';
+    if (lower.endsWith('hero-4.mp4')) return '/videos/Banner/hero-4.mp4';
+
+    return fallback;
+};
+
+const resolveHeroBgVideo = (bgVideo) => {
+    const fallback = '/videos/Banner/hero-4.mp4';
+    if (!bgVideo || typeof bgVideo !== 'string') return fallback;
+    const clean = bgVideo.trim();
+    if (!clean) return fallback;
+    if (clean === fallback) return fallback;
+    const lower = clean.toLowerCase();
+    if (lower.endsWith('hero-4.mp4')) return fallback;
+    if (lower.endsWith('hero-5.mp4')) return '/videos/Banner/hero-5.mp4';
+    if (lower.endsWith('store-video-1.mp4')) return '/videos/Banner/store-video-1.mp4';
+    if (lower.endsWith('store-video-2.mp4')) return '/videos/Banner/store-video-2.mp4';
+    return fallback;
+};
+
+const resolveSlidePoster = (poster) => {
+    if (!poster || typeof poster !== 'string') return '';
+    const clean = poster.trim();
+    if (!clean || clean.includes('banner-') || clean.includes('store-video-')) return '';
+    return clean;
+};
 
 const categoryEditorialImages = {
     ethnic: '/images/products/rust-ajrakh-shirt-kurta.jpg',
@@ -116,9 +162,11 @@ const HomePage = () => {
 
     // Hero Carousel state
     const [slides, setSlides] = useState(defaultHeroSlides);
+    const [heroBackground, setHeroBackground] = useState(defaultHeroBackground);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
     const [isTabVisible, setIsTabVisible] = useState(true);
+    const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
     // Product Carousel state
     const [productSlideIndex, setProductSlideIndex] = useState(0);
@@ -128,6 +176,24 @@ const HomePage = () => {
     const heroVideoRetriesRef = useRef({});
     
     const heroVideoRefs = useRef({});
+    const heroBgVideoRef = useRef(null);
+
+    // Check mobile screen size to conditionally mount background video
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Ensure background video plays
+    useEffect(() => {
+        if (heroBgVideoRef.current) {
+            heroBgVideoRef.current.muted = true;
+            heroBgVideoRef.current.play().catch(() => {});
+        }
+    }, [isMobile, heroBackground.video]);
 
     // Hero video error handler with retry and visibility check
     const handleHeroVideoError = (slideId, event) => {
@@ -175,7 +241,7 @@ const HomePage = () => {
     useEffect(() => {
         Object.entries(heroVideoRefs.current).forEach(([key, videoEl]) => {
             if (!videoEl) return;
-            const slideIdx = parseInt(key.split('-')[0], 10);
+            const slideIdx = parseInt(String(key).split('-')[0], 10);
             if (slideIdx === currentSlide) {
                 videoEl.muted = true;
                 videoEl.currentTime = 0;
@@ -236,19 +302,26 @@ const HomePage = () => {
         try {
             const res = await axios.get(`${API}/site-content`);
             if (res.data?.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length >= 1) {
-                setSlides(res.data.hero_slides.slice(0, 6));
+                const fetchedSlides = res.data.hero_slides.slice(0, 3);
+                while (fetchedSlides.length < 3) {
+                    fetchedSlides.push(defaultHeroSlides[fetchedSlides.length]);
+                }
+                setSlides(fetchedSlides);
+            }
+            if (res.data?.hero_background && typeof res.data.hero_background === 'object') {
+                setHeroBackground(res.data.hero_background);
             }
         } catch (err) {
             console.error('Failed to load site content on home page:', err);
         }
     };
 
-    // Carousel auto-rotation timer (10s per slide, paused when hovered or tab hidden)
+    // Carousel auto-rotation timer (7s per slide, paused when hovered or tab hidden)
     useEffect(() => {
         if (isHovered || !isTabVisible || !slides.length) return;
         const interval = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 10000);
+        }, 7000);
         return () => clearInterval(interval);
     }, [isHovered, isTabVisible, slides.length]);
 
@@ -327,7 +400,7 @@ const HomePage = () => {
 
     return (
         <div className="bg-white text-[#1F2937] min-h-screen overflow-x-hidden" data-testid="home-page">
-            {/* HERO SECTION - UNTOUCHED */}
+            {/* HERO SECTION */}
             <section 
                 className="relative w-full bg-[#1A1412] overflow-hidden group border-b border-[#1F2937]" 
                 data-testid="hero-section"
@@ -336,9 +409,48 @@ const HomePage = () => {
             >
                 {/* Desktop Full Viewport & Mobile Responsive Container */}
                 <div className="relative w-full h-[540px] md:h-[580px] lg:h-[clamp(560px,42vw,720px)] overflow-hidden">
+                    {/* Full-width persistent background: ambient blurred video with dark gradient overlay, fallback to solid brand color */}
+                    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0 bg-[#1A1412]">
+                        {/* Dark gradient overlay so text stays readable */}
+                        <div 
+                            className="absolute inset-0 z-10 pointer-events-none" 
+                            style={{ 
+                                backgroundColor: `rgba(0, 0, 0, ${HERO_BG_OVERLAY})`,
+                                backgroundImage: `linear-gradient(180deg, rgba(26,20,18,${Math.min(0.96, Number(HERO_BG_OVERLAY) + 0.12)}) 0%, rgba(0,0,0,${HERO_BG_OVERLAY}) 50%, rgba(26,20,18,${Math.min(0.98, Number(HERO_BG_OVERLAY) + 0.16)}) 100%)`
+                            }} 
+                        />
+                        {isMobile && resolveSlidePoster(heroBackground?.poster) ? (
+                            <img
+                                src={resolveSlidePoster(heroBackground.poster)}
+                                alt="Hero Background Poster"
+                                className="w-full h-full object-cover"
+                                style={{
+                                    filter: `blur(${HERO_BG_BLUR})`,
+                                    transform: 'scale(1.08)'
+                                }}
+                            />
+                        ) : (
+                            <video
+                                ref={heroBgVideoRef}
+                                src={resolveHeroBgVideo(heroBackground?.video)}
+                                {...(resolveSlidePoster(heroBackground?.poster) ? { poster: resolveSlidePoster(heroBackground.poster) } : {})}
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                preload="auto"
+                                className="w-full h-full object-cover"
+                                style={{
+                                    filter: `blur(${HERO_BG_BLUR})`,
+                                    transform: 'scale(1.08)'
+                                }}
+                            />
+                        )}
+                    </div>
+
+                    {/* Foreground Slides: exactly 3 slides, text left, portrait video frame right */}
                     {slides.map((slide, index) => {
                         const isActive = currentSlide === index;
-                        const hasError = heroVideoErrors[slide.id];
 
                         return (
                             <div 
@@ -347,93 +459,42 @@ const HomePage = () => {
                                     isActive ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'
                                 }`}
                             >
-                                <div className="w-full h-full relative overflow-hidden bg-[#1A1412]">
-                                    {/* Video / Photo / Error state background */}
+                                <div className="w-full h-full relative overflow-hidden">
+                                    {/* Desktop (>=1024px): Foreground portrait video container */}
                                     {slide.image ? (
-                                        <div className="absolute inset-0 w-full h-full bg-[#1A1412] overflow-hidden pointer-events-none">
+                                        <div 
+                                            className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-[70%] -translate-x-1/2 h-[90%] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl items-center justify-center bg-black/20 z-20"
+                                        >
                                             <img 
                                                 src={slide.image} 
                                                 alt={slide.title1 ? `${slide.title1} ${slide.title2 || ''} - Jaridar Fashion Couture`.trim() : (slide.tabName || 'Jaridar Hero Banner')} 
                                                 className="w-full h-full object-cover origin-top"
                                                 style={{ objectPosition: slide.objectPosition || 'center 35%' }}
                                                 loading={index === 0 ? "eager" : "lazy"}
-                                                decoding={index === 0 ? "sync" : "async"}
                                             />
-                                            <div className="absolute inset-0 bg-black/40" />
-                                        </div>
-                                    ) : hasError ? (
-                                        <div className="absolute inset-0 w-full h-full bg-[#1A1412] overflow-hidden pointer-events-none">
-                                            <img 
-                                                src={slide.poster} 
-                                                alt={slide.title1 ? `${slide.title1} ${slide.title2 || ''} - Jaridar Fashion Couture`.trim() : 'Jaridar Video Poster'} 
-                                                className="w-full h-full object-cover origin-top"
-                                                style={{ objectPosition: slide.objectPosition || 'center 35%' }}
-                                                loading={index === 0 ? "eager" : "lazy"}
-                                                decoding={index === 0 ? "sync" : "async"}
-                                            />
-                                            <div className="absolute inset-0 bg-black/40" />
                                         </div>
                                     ) : (
-                                        <>
-                                            {/* Mobile / Tablet (<1024px): Single full-bleed cover video */}
+                                        <div 
+                                            className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-[70%] -translate-x-1/2 h-[90%] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl items-center justify-center bg-black/20 z-20"
+                                        >
                                             <video 
-                                                ref={el => { heroVideoRefs.current[`${index}-mobile`] = el; }}
-                                                src={slide.video}
-                                                poster={slide.poster}
+                                                ref={el => { heroVideoRefs.current[index] = el; }}
+                                                src={resolveSlideVideo(slide.video, index)}
+                                                {...(resolveSlidePoster(slide.poster) ? { poster: resolveSlidePoster(slide.poster) } : {})}
                                                 autoPlay={isActive}
                                                 muted
                                                 loop
                                                 playsInline
-                                                preload={isActive ? "auto" : "metadata"}
-                                                onError={(e) => handleHeroVideoError(slide.id, e)}
-                                                className="lg:hidden w-full h-full object-cover origin-top scale-[1.12]"
-                                                style={{ objectPosition: slide.objectPosition || 'center 35%' }}
-                                            />
-
-                                            {/* Desktop (>=1024px): Background layer */}
-                                            <video 
-                                                ref={el => { heroVideoRefs.current[`${index}-bg`] = el; }}
-                                                src={slide.video}
-                                                poster={slide.poster}
-                                                autoPlay={isActive}
-                                                muted
-                                                loop
-                                                playsInline
-                                                preload={isActive ? "auto" : "metadata"}
-                                                onError={(e) => handleHeroVideoError(slide.id, e)}
-                                                className="hidden lg:block absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                                preload="metadata"
+                                                onError={(e) => handleHeroVideoError(slide.id || index, e)}
+                                                className={`w-full h-full object-contain origin-top scale-[1.08] ${heroVideoErrors[slide.id || index] ? 'hidden' : 'block'}`}
                                                 style={{ 
-                                                    filter: 'blur(28px) brightness(0.55)', 
-                                                    transform: 'scale(1.2)' 
+                                                    transform: 'scale(1.08)',
+                                                    transformOrigin: 'top center'
                                                 }}
                                             />
-
-                                            {/* Desktop (>=1024px): Foreground portrait video container */}
-                                            <div 
-                                                className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-[70%] -translate-x-1/2 h-[90%] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl items-center justify-center bg-black/20 z-20"
-                                            >
-                                                <video 
-                                                    ref={el => { heroVideoRefs.current[`${index}-fg`] = el; }}
-                                                    src={slide.video}
-                                                    poster={slide.poster}
-                                                    autoPlay={isActive}
-                                                    muted
-                                                    loop
-                                                    playsInline
-                                                    preload={isActive ? "auto" : "metadata"}
-                                                    onError={(e) => handleHeroVideoError(slide.id, e)}
-                                                    className="w-full h-full object-contain origin-top scale-[1.08]"
-                                                    style={{ 
-                                                        transform: 'scale(1.08)',
-                                                        transformOrigin: 'top center'
-                                                    }}
-                                                />
-                                            </div>
-                                        </>
+                                        </div>
                                     )}
-
-                                    {/* Dark Gradient Overlay for Left Text */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent pointer-events-none z-10" />
 
                                     {/* Content Overlay */}
                                     <div className="absolute inset-0 w-full h-full flex items-center pointer-events-none z-20">
@@ -488,19 +549,19 @@ const HomePage = () => {
                         <ChevronRight size={20} />
                     </button>
 
-                    {/* DOT INDICATORS at bottom center */}
+                    {/* DOT INDICATORS / TABS at bottom center */}
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 pointer-events-auto">
                         {slides.map((slide, index) => {
                             const isActive = currentSlide === index;
                             return (
                                 <button
-                                    key={slide.id}
+                                    key={slide.id || index}
                                     onClick={() => setCurrentSlide(index)}
-                                    aria-label={`Go to slide ${index + 1}`}
-                                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                    aria-label={`Go to slide ${index + 1}: ${slide.tabName || slide.title1}`}
+                                    className={`transition-all duration-300 ${
                                         isActive 
-                                            ? 'bg-[#C2255C] scale-110' 
-                                            : 'bg-white/40 hover:bg-white/60'
+                                            ? 'w-8 h-2.5 rounded-full bg-[#C2255C]' 
+                                            : 'w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/80'
                                     }`}
                                 />
                             );

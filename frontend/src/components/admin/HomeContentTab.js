@@ -18,6 +18,10 @@ const DEFAULT_SITE_CONTENT = {
             { prefix: "FREE SHIPPING ON ORDERS ABOVE ₹2999", highlight: "", suffix: "" }
         ]
     },
+    hero_background: {
+        video: '/videos/Banner/hero-4.mp4',
+        poster: ''
+    },
     hero_slides: [
         {
             id: 1,
@@ -28,8 +32,8 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Fresh co-ords, kurtas and dresses, now in store.',
             buttonText: 'SHOP NEW ARRIVALS',
             link: '/shop?filter=new',
-            video: '/videos/banner/banner-1-new-season.mp4',
-            poster: '/videos/banner/banner-1-new-season-poster.jpg',
+            video: '/videos/Banner/hero-5.mp4',
+            poster: '',
             image: '',
             objectPosition: 'center 35%'
         },
@@ -42,36 +46,22 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Kurtas, dresses and co-ords crafted for every moment.',
             buttonText: 'SHOP COLLECTIONS',
             link: '/shop',
-            video: '/videos/banner/banner-2-elegance.mp4',
-            poster: '/videos/banner/banner-2-elegance-poster.jpg',
+            video: '/videos/Banner/store-video-1.mp4',
+            poster: '',
             image: '',
             objectPosition: 'center 25%'
         },
         {
             id: 3,
-            tabName: 'BOUTIQUE PICKS',
-            label: 'HANDPICKED',
-            title1: 'CURATED',
-            title2: 'COLLECTIONS',
-            description: 'Discover thoughtfully designed pieces crafted to elevate your style.',
-            buttonText: 'EXPLORE SHOP',
+            tabName: 'FESTIVE',
+            label: 'FESTIVE EDIT',
+            title1: 'FESTIVE',
+            title2: 'COLLECTION',
+            description: 'Embroidered sets and festive outfits for every celebration.',
+            buttonText: 'SHOP FESTIVE',
             link: '/shop',
-            video: '/videos/banner/banner-3-festive-wear.mp4',
-            poster: '/videos/banner/banner-3-festive-wear-poster.jpg',
-            image: '',
-            objectPosition: 'center 35%'
-        },
-        {
-            id: 4,
-            tabName: 'OUR COUTURE',
-            label: 'BESPOKE CRAFT',
-            title1: 'FASHION CRAFTED',
-            title2: 'AROUND YOU',
-            description: 'Where timeless Indian elegance meets contemporary design aesthetics.',
-            buttonText: 'VISIT OUR STORE',
-            link: '/our-stores',
-            video: '/videos/banner/banner-4-crop-top-set.mp4',
-            poster: '/videos/banner/banner-4-crop-top-set-poster.jpg',
+            video: '/videos/Banner/store-video-2.mp4',
+            poster: '',
             image: '',
             objectPosition: 'center 35%'
         }
@@ -97,9 +87,16 @@ export const HomeContentTab = () => {
             const res = await axios.get(`${API}/site-content`);
             if (res.data) {
                 const safeAnnouncement = res.data.announcement || DEFAULT_SITE_CONTENT.announcement;
-                const safeSlides = (res.data.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length >= 1)
-                    ? res.data.hero_slides.slice(0, 6)
-                    : DEFAULT_SITE_CONTENT.hero_slides;
+                const safeBackground = (res.data.hero_background && typeof res.data.hero_background === 'object' && res.data.hero_background.video)
+                    ? res.data.hero_background
+                    : DEFAULT_SITE_CONTENT.hero_background;
+                const rawSlides = (res.data.hero_slides && Array.isArray(res.data.hero_slides))
+                    ? [...res.data.hero_slides]
+                    : [];
+                while (rawSlides.length < 3) {
+                    rawSlides.push(DEFAULT_SITE_CONTENT.hero_slides[rawSlides.length]);
+                }
+                const safeSlides = rawSlides.slice(0, 3);
 
                 // Ensure at least 3 message slots exist for editing
                 const msgs = [...(safeAnnouncement.messages || [])];
@@ -112,6 +109,7 @@ export const HomeContentTab = () => {
                         enabled: safeAnnouncement.enabled !== false,
                         messages: msgs.slice(0, 3)
                     },
+                    hero_background: safeBackground,
                     hero_slides: safeSlides
                 });
             }
@@ -153,6 +151,18 @@ export const HomeContentTab = () => {
         setSaveSuccess(false);
     };
 
+    // Hero Background Video Handlers
+    const handleBackgroundChange = (field, value) => {
+        setContent(prev => ({
+            ...prev,
+            hero_background: {
+                ...(prev.hero_background || DEFAULT_SITE_CONTENT.hero_background),
+                [field]: value
+            }
+        }));
+        setSaveSuccess(false);
+    };
+
     // Hero Slide Handlers
     const handleSlideChange = (slideIndex, field, value) => {
         setContent(prev => {
@@ -170,24 +180,15 @@ export const HomeContentTab = () => {
     };
 
     const handleAddSlide = () => {
-        if (content.hero_slides.length >= 6) {
-            toast.error('Maximum 6 hero slides allowed.');
+        if (content.hero_slides.length >= 3) {
+            toast.error('Maximum 3 hero slides allowed.');
             return;
         }
         const newSlideNum = content.hero_slides.length + 1;
+        const defaultRef = DEFAULT_SITE_CONTENT.hero_slides[content.hero_slides.length] || DEFAULT_SITE_CONTENT.hero_slides[0];
         const newSlide = {
             id: Date.now(),
-            tabName: `SLIDE ${newSlideNum}`,
-            label: 'EXCLUSIVE',
-            title1: 'NEW',
-            title2: 'COLLECTION',
-            description: 'Discover contemporary couture and everyday elegance.',
-            buttonText: 'EXPLORE SHOP',
-            link: '/shop',
-            video: '/videos/banner/banner-1-new-season.mp4',
-            poster: '/videos/banner/banner-1-new-season-poster.jpg',
-            image: '',
-            objectPosition: 'center 35%'
+            ...defaultRef
         };
         setContent(prev => ({
             ...prev,
@@ -289,7 +290,8 @@ export const HomeContentTab = () => {
                     messages: content.announcement.messages
                         .filter(m => (m.prefix || m.highlight || m.suffix || '').trim() !== '')
                 },
-                hero_slides: content.hero_slides
+                hero_background: content.hero_background || DEFAULT_SITE_CONTENT.hero_background,
+                hero_slides: content.hero_slides.slice(0, 3)
             };
 
             const res = await axios.put(`${API}/admin/site-content`, payload, {
@@ -335,7 +337,7 @@ export const HomeContentTab = () => {
                         Home Page Content Manager
                     </h3>
                     <p className="text-xs text-[#595959] mt-0.5">
-                        Customize the top announcement bar and the 2 hero banner slides shown to visitors.
+                        Customize the top announcement bar and the 3 hero banner slides shown to visitors.
                     </p>
                 </div>
 
@@ -520,22 +522,100 @@ export const HomeContentTab = () => {
                 </div>
             </div>
 
-            {/* SECTION 2: HERO BANNER (UP TO 6 SLIDES) */}
+            {/* SECTION 2: BACKGROUND VIDEO */}
+            <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-xs overflow-hidden" data-testid="hero-background-card">
+                <div className="px-6 py-4 bg-[#FDFBF7] border-b border-[#E5E7EB] flex items-center justify-between">
+                    <div>
+                        <h4 className="font-semibold text-sm text-charcoal flex items-center gap-2">
+                            <Video size={16} className="text-rose" />
+                            <span>2. Background video</span>
+                            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/20">
+                                Hero Background
+                            </span>
+                        </h4>
+                        <p className="text-xs text-[#595959] mt-0.5">
+                            Ambient blurred background video playing behind the hero slides (static poster on mobile).
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider font-semibold shadow-xs"
+                        data-testid="save-bg-video-btn"
+                    >
+                        {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                        <span>Save</span>
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-1.5">
+                                Video Path
+                            </label>
+                            <input
+                                type="text"
+                                value={content.hero_background?.video || ''}
+                                onChange={(e) => handleBackgroundChange('video', e.target.value)}
+                                placeholder="/videos/Banner/hero-4.mp4"
+                                className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-1 focus:ring-rose focus:border-rose font-mono"
+                                data-testid="bg-video-input"
+                            />
+                            <p className="text-[11px] text-[#595959] mt-1">
+                                Default: /videos/Banner/hero-4.mp4
+                            </p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-1.5">
+                                Poster Path (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={content.hero_background?.poster || ''}
+                                onChange={(e) => handleBackgroundChange('poster', e.target.value)}
+                                placeholder=""
+                                className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-1 focus:ring-rose focus:border-rose font-mono"
+                                data-testid="bg-poster-input"
+                            />
+                            <p className="text-[11px] text-[#595959] mt-1">
+                                Optional static poster if available.
+                            </p>
+                        </div>
+                    </div>
+
+                    {content.hero_background?.poster && (
+                        <div className="pt-1 flex items-center gap-3">
+                            <span className="text-xs font-medium text-charcoal">Poster Preview:</span>
+                            <img
+                                src={content.hero_background.poster}
+                                alt="Hero background poster preview"
+                                className="h-14 w-24 object-cover rounded border border-[#E5E7EB]"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* SECTION 3: HERO BANNER (3 SLIDES) */}
             <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-xs overflow-hidden" data-testid="hero-slides-section">
                 <div className="px-6 py-4 bg-[#FDFBF7] border-b border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                         <h4 className="font-semibold text-sm text-charcoal flex items-center gap-2">
-                            <span>2. Hero Banner Slides</span>
+                            <span>3. Hero Banner Slides</span>
                             <span className="text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/20">
-                                {content.hero_slides.length} of 6 Slides
+                                {content.hero_slides.length} of 3 Slides
                             </span>
                         </h4>
                         <p className="text-xs text-[#595959] mt-0.5">
-                            Customize titles, buttons, links, videos, and upload photos. Admin can add, reorder, or remove slides (up to 6).
+                            Customize titles, buttons, links, videos, and upload photos for the 3 hero slides.
                         </p>
                     </div>
 
-                    {content.hero_slides.length < 6 && (
+                    {content.hero_slides.length < 3 && (
                         <button
                             type="button"
                             onClick={handleAddSlide}
@@ -731,7 +811,7 @@ export const HomeContentTab = () => {
                                                 type="text"
                                                 value={slide.video || ''}
                                                 onChange={(e) => handleSlideChange(index, 'video', e.target.value)}
-                                                placeholder="/videos/banner/banner-1-new-season.mp4"
+                                                placeholder={index === 0 ? '/videos/Banner/hero-5.mp4' : index === 1 ? '/videos/Banner/store-video-1.mp4' : '/videos/Banner/store-video-2.mp4'}
                                                 className="w-full text-xs px-3 py-2 border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:border-rose font-mono text-gray-700"
                                                 data-testid={`slide-${index}-video`}
                                             />
