@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowRight, Truck, Award, RotateCcw, Lock, Star, ChevronLeft, ChevronRight, Instagram } from 'lucide-react';
@@ -223,10 +223,45 @@ const HomePage = () => {
         }
     }, []);
 
-    // Slide change tracking and play/pause/sync logic
+    // Slide change tracking, guard and autoplay controls
     const prevSlideIndexRef = useRef(currentSlide);
     const slideElapsedRef = useRef(0);
     const videoPlayingRef = useRef(false);
+
+    // Guard: ensure each slide index can advance only once per active cycle
+    const hasAdvancedRef = useRef(false);
+    const fallbackTimerRef = useRef(null);
+
+    const clearFallbackTimer = useCallback(() => {
+        if (fallbackTimerRef.current) {
+            clearInterval(fallbackTimerRef.current);
+            fallbackTimerRef.current = null;
+        }
+    }, []);
+
+    const nextHeroSlide = useCallback(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, [slides.length]);
+
+    const prevHeroSlide = useCallback(() => {
+        setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+    }, [slides.length]);
+
+    // Advance safely: triggers next slide once, ignoring any subsequent calls for the current slide
+    const triggerSlideAdvance = useCallback((fromIndex) => {
+        if (fromIndex !== undefined && fromIndex !== currentSlide) return;
+        if (hasAdvancedRef.current) return;
+        hasAdvancedRef.current = true;
+        clearFallbackTimer();
+        nextHeroSlide();
+    }, [currentSlide, clearFallbackTimer, nextHeroSlide]);
+
+    const handleDotClick = useCallback((index) => {
+        if (index === currentSlide) return;
+        hasAdvancedRef.current = true;
+        clearFallbackTimer();
+        setCurrentSlide(index);
+    }, [currentSlide, clearFallbackTimer]);
 
     // Sync play/pause & restart from 0 for active hero videos
     useEffect(() => {
@@ -287,23 +322,27 @@ const HomePage = () => {
         }
     };
 
-    // Called when the active slide video finishes naturally
+    // Called when the active right card video finishes naturally
     const handleSlideEnded = (index) => {
         if (index === currentSlide) {
-            nextHeroSlide();
+            triggerSlideAdvance(index);
         }
     };
 
     // Hero video autoplay timer with safety fallbacks (waits for video end; fallback at 7s if error/not playing)
     useEffect(() => {
+        // Reset advance guard and timer for the newly active slide
+        hasAdvancedRef.current = false;
         slideElapsedRef.current = 0;
         videoPlayingRef.current = false;
+
+        clearFallbackTimer();
 
         const currentSlideData = slides[currentSlide];
         const isImageOnly = Boolean(currentSlideData?.image);
         const hasError = Boolean(heroVideoErrors[currentSlideData?.id || currentSlide]);
 
-        const ticker = setInterval(() => {
+        fallbackTimerRef.current = setInterval(() => {
             // Paused when mouse is over hero or tab is hidden
             if (isHovered || !isTabVisible) {
                 return;
@@ -317,10 +356,13 @@ const HomePage = () => {
                 videoPlayingRef.current = true;
             }
 
+            // If already advanced by user click or onEnded, skip
+            if (hasAdvancedRef.current) return;
+
             // Fallback 1: Image-only slide or Video Error -> advance after 7 seconds
             if (isImageOnly || hasError) {
                 if (elapsed >= 7000) {
-                    nextHeroSlide();
+                    triggerSlideAdvance(currentSlide);
                 }
                 return;
             }
@@ -328,7 +370,7 @@ const HomePage = () => {
             // Fallback 2: Video does not start within 5 seconds -> advance after 7 seconds
             if (elapsed >= 5000 && !videoPlayingRef.current) {
                 if (elapsed >= 7000) {
-                    nextHeroSlide();
+                    triggerSlideAdvance(currentSlide);
                 }
                 return;
             }
@@ -336,15 +378,17 @@ const HomePage = () => {
             // Fallback 3: Hard safety guard if video hangs or reaches duration without onEnded
             if (windowEl && windowEl.duration && Number.isFinite(windowEl.duration)) {
                 if (elapsed >= (windowEl.duration + 2) * 1000) {
-                    nextHeroSlide();
+                    triggerSlideAdvance(currentSlide);
                 }
             } else if (elapsed >= 30000) {
-                nextHeroSlide();
+                triggerSlideAdvance(currentSlide);
             }
         }, 200);
 
-        return () => clearInterval(ticker);
-    }, [currentSlide, isHovered, isTabVisible, slides, heroVideoErrors]);
+        return () => {
+            clearFallbackTimer();
+        };
+    }, [currentSlide, isHovered, isTabVisible, slides, heroVideoErrors, clearFallbackTimer, triggerSlideAdvance]);
 
     // IntersectionObserver for Our Essence Video
     const showEssenceVideo = !essenceVideoError && !prefersReducedMotion;
@@ -406,14 +450,6 @@ const HomePage = () => {
         }
     };
 
-    const prevHeroSlide = () => {
-        setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-    };
-
-    const nextHeroSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-    };
-
     // Touch swipe handling for mobile
     const touchStartX = useRef(null);
     const touchStartY = useRef(null);
@@ -438,6 +474,8 @@ const HomePage = () => {
         const diffY = (touchStartY.current || 0) - (touchEndY.current || 0);
 
         if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+            hasAdvancedRef.current = true;
+            clearFallbackTimer();
             if (diffX > 0) {
                 nextHeroSlide();
             } else {
@@ -574,7 +612,6 @@ const HomePage = () => {
                                                 muted
                                                 playsInline
                                                 preload={isActive ? "auto" : "metadata"}
-                                                onEnded={() => handleSlideEnded(index)}
                                                 className="w-full h-full object-cover"
                                                 style={{
                                                     filter: 'blur(8px) saturate(1.1) brightness(1.0)',
@@ -697,7 +734,7 @@ const HomePage = () => {
                             return (
                                 <button
                                     key={slide.id || index}
-                                    onClick={() => setCurrentSlide(index)}
+                                    onClick={() => handleDotClick(index)}
                                     aria-label={`Go to slide ${index + 1}: ${slide.tabName || slide.title1}`}
                                     role="tab"
                                     aria-selected={isActive}

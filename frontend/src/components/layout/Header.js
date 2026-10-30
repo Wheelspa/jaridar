@@ -164,7 +164,6 @@ export const Header = () => {
     };
 
     const activeMenu = MENU_CONFIG.find(m => m.id === activeDropdown && m.hasDropdown);
-    const isMoreActive = activeDropdown === 'more' || location.pathname === '/contact' || location.search.includes('occasion=');
 
     return (
         <div className="w-full">
@@ -242,128 +241,90 @@ export const Header = () => {
 
             {/* Main Sticky Header */}
             <header className="sticky top-0 z-50 bg-white border-b border-[#E5E7EB] w-full relative" data-testid="header">
-                <div className="w-full max-w-full px-4 sm:px-6 min-[1100px]:px-6 xl:px-8 min-[1366px]:px-10 min-[1440px]:px-[65px] 2xl:px-[70px] min-[1800px]:px-[80px] h-[72px] min-[1100px]:h-[95px] flex items-center justify-between">
+                <div className="w-full max-w-full px-4 sm:px-6 xl:px-6 min-[1366px]:px-8 min-[1536px]:px-9 min-[1700px]:px-11 min-[1800px]:px-[65px] h-[72px] xl:h-[95px] flex items-center justify-between">
                     
-                    {/* Left Group: Mobile Toggle (below 1100px) + Logo + Desktop Nav directly next to logo */}
-                    <div className="flex items-center gap-3 sm:gap-4 min-[1100px]:gap-4 min-[1200px]:gap-4.5 xl:gap-5 min-[1366px]:gap-6 min-[1440px]:gap-8 2xl:gap-10 min-[1800px]:gap-12 h-full min-w-0">
-                        {/* Mobile Toggle + Logo */}
-                        <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
-                            <button 
-                                className="min-[1100px]:hidden p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors"
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                data-testid="mobile-menu-btn"
-                                aria-label="Toggle Menu"
-                            >
-                                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                            </button>
-
-                            <Link to="/" className="flex items-center gap-2 xl:gap-2.5 2xl:gap-3 flex-shrink-0" data-testid="logo">
-                                <img 
-                                    src="/images/logo/jaridar-icon.png" 
-                                    alt="Jaridar Icon" 
-                                    className="h-10 sm:h-12 min-[1100px]:h-[52px] xl:h-[58px] min-[1366px]:h-[62px] min-[1440px]:h-[68px] 2xl:h-[76px] w-auto object-contain flex-shrink-0" 
-                                />
-                                <div className="flex flex-col justify-center">
-                                    <span className="font-heading text-lg sm:text-xl min-[1100px]:text-[22px] xl:text-[24px] min-[1366px]:text-[26px] min-[1440px]:text-[28.5px] 2xl:text-[32px] font-black text-[#C2255C] tracking-tight leading-none">
-                                        JARIDAR
-                                    </span>
-                                    <span className="text-[9px] sm:text-[10px] min-[1100px]:text-[10.5px] xl:text-[11px] min-[1366px]:text-[11.5px] min-[1440px]:text-[12.5px] 2xl:text-[13px] font-bold text-[#3B6FA0] uppercase tracking-[0.22em] min-[1440px]:tracking-[0.24em] pt-0.5 leading-tight">
-                                        Fashion Couture
-                                    </span>
-                                </div>
-                            </Link>
-                        </div>
-
-                        {/* Desktop Nav: left-aligned directly next to logo, bold uppercase typography matching HEAD */}
-                        <nav 
-                            className="hidden min-[1100px]:flex items-center justify-start gap-2.5 min-[1180px]:gap-3 xl:gap-3 min-[1366px]:gap-3.5 min-[1440px]:gap-4 2xl:gap-6 min-[1800px]:gap-7 h-full whitespace-nowrap flex-shrink-0"
-                            role="navigation"
-                            aria-label="Main Navigation"
+                    {/* Left: Mobile Toggle (below 1280px) + Logo */}
+                    <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 mr-4 xl:mr-5 min-[1536px]:mr-6 min-[1700px]:mr-8 min-[1800px]:mr-10">
+                        {/* Mobile Toggle below 1280px (xl) */}
+                        <button 
+                            className="xl:hidden p-1.5 text-[#1F2937] hover:text-[#C2255C] transition-colors"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            data-testid="mobile-menu-btn"
+                            aria-label="Toggle Menu"
                         >
-                            {MENU_CONFIG.map((item) => {
-                                const isActive = isMenuItemActive(item);
-                                const isItemHiddenOnCompact = item.id === 'shop-by-occasion' || item.id === 'contact';
+                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
 
-                                if (!item.hasDropdown) {
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            className={`relative h-full items-center ${isItemHiddenOnCompact ? 'hidden xl:flex' : 'flex'}`}
-                                        >
-                                            <Link 
-                                                to={item.url} 
-                                                onClick={() => setActiveDropdown(null)}
-                                                onFocus={() => setActiveDropdown(null)}
-                                                className={`text-[13px] xl:text-[13.5px] min-[1366px]:text-[14px] min-[1440px]:text-[15px] 2xl:text-[16px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
-                                                    isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                                }`}
-                                            >
-                                                {item.label}
-                                            </Link>
-                                        </div>
-                                    );
-                                }
+                        <Link to="/" className="flex items-center gap-2 xl:gap-2.5 min-[1700px]:gap-3 flex-shrink-0" data-testid="logo">
+                            <img 
+                                src="/images/logo/jaridar-icon.png" 
+                                alt="Jaridar Icon" 
+                                className="h-10 sm:h-12 xl:h-[48px] min-[1366px]:h-[52px] min-[1536px]:h-[58px] min-[1700px]:h-[66px] min-[1800px]:h-[72px] w-auto object-contain flex-shrink-0" 
+                            />
+                            <div className="flex flex-col justify-center">
+                                <span className="font-heading text-lg sm:text-xl xl:text-[21px] min-[1366px]:text-[22px] min-[1536px]:text-[24px] min-[1700px]:text-[26px] min-[1800px]:text-[28px] font-black text-[#C2255C] tracking-tight leading-none">
+                                    JARIDAR
+                                </span>
+                                <span className="text-[9px] sm:text-[10px] xl:text-[9.5px] min-[1366px]:text-[10px] min-[1536px]:text-[11px] min-[1700px]:text-[11.5px] min-[1800px]:text-[12px] font-bold text-[#3B6FA0] uppercase tracking-[0.2em] xl:tracking-[0.21em] min-[1536px]:tracking-[0.22em] min-[1800px]:tracking-[0.22em] pt-0.5 leading-tight">
+                                    Fashion Couture
+                                </span>
+                            </div>
+                        </Link>
+                    </div>
 
-                                const isDropdownOpen = activeDropdown === item.id;
+                    {/* Middle: Desktop Navigation (flex-1, min-w-0, left-aligned, no wrapping, min 24px gap to icons via mr-6) */}
+                    <nav 
+                        className="hidden xl:flex flex-1 min-w-0 items-center justify-start h-full whitespace-nowrap mr-6"
+                        role="navigation"
+                        aria-label="Main Navigation"
+                        style={{
+                            gap: 'clamp(12px, 2.34vw - 18px, 27px)',
+                            '--nav-font-size': 'clamp(12.5px, 0.8vw + 2.4px, 17px)',
+                            '--nav-icon-size': 'clamp(12.5px, 0.8vw + 2.4px, 17px)'
+                        }}
+                    >
+                        {MENU_CONFIG.map((item) => {
+                            const isActive = isMenuItemActive(item);
+                            const isDropdownOpen = activeDropdown === item.id;
 
-                                return (
-                                    <div 
-                                        key={item.id}
-                                        className={`relative h-full items-center ${isItemHiddenOnCompact ? 'hidden xl:flex' : 'flex'}`}
-                                        onMouseEnter={() => handleMouseEnter(item.id)}
-                                        onMouseLeave={handleMouseLeave}
+                            return (
+                                <div
+                                    key={item.id}
+                                    className="relative h-full flex items-center flex-shrink-0"
+                                    onMouseEnter={item.hasDropdown ? () => handleMouseEnter(item.id) : undefined}
+                                    onMouseLeave={item.hasDropdown ? handleMouseLeave : undefined}
+                                >
+                                    <Link 
+                                        to={item.url} 
+                                        onClick={() => setActiveDropdown(null)}
+                                        onFocus={() => item.hasDropdown ? handleMouseEnter(item.id) : setActiveDropdown(null)}
+                                        aria-expanded={item.hasDropdown ? isDropdownOpen : undefined}
+                                        aria-haspopup={item.hasDropdown ? "true" : undefined}
+                                        className={`uppercase tracking-[0.02em] font-bold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
+                                            item.hasDropdown ? 'gap-1 min-[1536px]:gap-1.5' : ''
+                                        } ${
+                                            isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
+                                        }`}
+                                        style={{ fontSize: 'var(--nav-font-size)' }}
                                     >
-                                        <Link 
-                                            to={item.url} 
-                                            onClick={() => setActiveDropdown(null)}
-                                            onFocus={() => handleMouseEnter(item.id)}
-                                            aria-expanded={isDropdownOpen}
-                                            aria-haspopup="true"
-                                            className={`text-[13px] xl:text-[13.5px] min-[1366px]:text-[14px] min-[1440px]:text-[15px] 2xl:text-[16px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 xl:gap-1.5 border-b-2 transition-colors whitespace-nowrap ${
-                                                isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                            }`}
-                                        >
-                                            <span>{item.label}</span>
+                                        <span>{item.label}</span>
+                                        {item.hasDropdown && (
                                             <ChevronDown 
-                                                size={15} 
-                                                className={`w-[13px] h-[13px] xl:w-[13.5px] xl:h-[13.5px] min-[1366px]:w-[14px] min-[1366px]:h-[14px] min-[1440px]:w-[15px] min-[1440px]:h-[15px] 2xl:w-[16px] 2xl:h-[16px] transition-transform duration-200 shrink-0 inline-block align-middle ${
+                                                size={17} 
+                                                style={{ width: 'var(--nav-icon-size)', height: 'var(--nav-icon-size)' }}
+                                                className={`transition-transform duration-200 shrink-0 inline-block align-middle ${
                                                     isDropdownOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
                                                 }`} 
                                             />
-                                        </Link>
-                                    </div>
-                                );
-                            })}
-
-                            {/* "MORE" Dropdown Trigger: active at 1100px - 1279px where Occasion & Contact move inside */}
-                            <div 
-                                className="relative h-full items-center hidden min-[1100px]:max-[1279px]:flex"
-                                onMouseEnter={() => handleMouseEnter('more')}
-                                onMouseLeave={handleMouseLeave}
-                            >
-                                <button 
-                                    onClick={() => setActiveDropdown(activeDropdown === 'more' ? null : 'more')}
-                                    onFocus={() => handleMouseEnter('more')}
-                                    aria-expanded={activeDropdown === 'more'}
-                                    aria-haspopup="true"
-                                    className={`text-[13px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
-                                        isMoreActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
-                                    }`}
-                                >
-                                    <span>MORE</span>
-                                    <ChevronDown 
-                                        size={13} 
-                                        className={`w-[13px] h-[13px] transition-transform duration-200 shrink-0 inline-block align-middle ${
-                                            activeDropdown === 'more' ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
-                                        }`} 
-                                    />
-                                </button>
-                            </div>
-                        </nav>
-                    </div>
+                                        )}
+                                    </Link>
+                                </div>
+                            );
+                        })}
+                    </nav>
 
                     {/* Right Unit: Icons at far right with equal spacing */}
-                    <div className="flex items-center gap-2.5 min-[1100px]:gap-3 xl:gap-3.5 min-[1366px]:gap-4 min-[1440px]:gap-5 2xl:gap-6 flex-shrink-0">
+                    <div className="flex items-center gap-2.5 xl:gap-3 min-[1536px]:gap-3.5 min-[1700px]:gap-4.5 min-[1800px]:gap-5 flex-shrink-0">
                         {/* 1. Search */}
                         <div className="relative">
                             <button 
@@ -474,7 +435,7 @@ export const Header = () => {
                             transition={{ duration: 0.16, ease: "easeOut" }}
                             onMouseEnter={() => handleMouseEnter(activeMenu.id)}
                             onMouseLeave={handleMouseLeave}
-                            className="hidden min-[1100px]:block absolute top-full left-0 right-0 w-full bg-white border-b border-[#E5E7EB] shadow-[0_12px_24px_-4px_rgba(0,0,0,0.12)] z-50"
+                            className="hidden xl:block absolute top-full left-0 right-0 w-full bg-white border-b border-[#E5E7EB] shadow-[0_12px_24px_-4px_rgba(0,0,0,0.12)] z-50"
                             role="region"
                             aria-label={`${activeMenu.label} Submenu`}
                         >
@@ -529,76 +490,10 @@ export const Header = () => {
                             </div>
                         </motion.div>
                     )}
-
-                    {/* MORE dropdown panel (shown only for 1100px to 1279px where Occasion & Contact move inside) */}
-                    {activeDropdown === 'more' && (
-                        <motion.div
-                            key="more-dropdown-panel"
-                            initial={{ opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -4 }}
-                            transition={{ duration: 0.16, ease: "easeOut" }}
-                            onMouseEnter={() => handleMouseEnter('more')}
-                            onMouseLeave={handleMouseLeave}
-                            className="hidden min-[1100px]:max-[1279px]:block absolute top-full right-6 sm:right-12 md:right-16 bg-white border border-[#E5E7EB] rounded-2xl shadow-[0_16px_36px_-6px_rgba(0,0,0,0.18)] p-5 z-50 w-80"
-                            role="region"
-                            aria-label="More Navigation Menu"
-                        >
-                            <div className="space-y-4">
-                                <div>
-                                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E5E7EB]">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-[#C2255C]" />
-                                            <h4 className="font-heading text-xs uppercase tracking-wider font-bold text-[#1F2937]">
-                                                Shop By Occasion
-                                            </h4>
-                                        </div>
-                                        <Link
-                                            to="/shop"
-                                            onClick={() => setActiveDropdown(null)}
-                                            className="text-[11px] font-semibold text-[#C2255C] hover:underline"
-                                        >
-                                            View All →
-                                        </Link>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-1.5 pt-1">
-                                        {[
-                                            { label: 'Wedding', url: '/shop?occasion=wedding' },
-                                            { label: 'Party', url: '/shop?occasion=party' },
-                                            { label: 'Festive', url: '/shop?occasion=festive' },
-                                            { label: 'Casual', url: '/shop?occasion=casual' },
-                                            { label: 'Workwear', url: '/shop?occasion=workwear' },
-                                            { label: 'Vacation', url: '/shop?occasion=vacation' }
-                                        ].map((occ, idx) => (
-                                            <Link
-                                                key={idx}
-                                                to={occ.url}
-                                                onClick={() => setActiveDropdown(null)}
-                                                className="text-xs text-[#374151] hover:text-[#C2255C] hover:bg-gray-50 py-1.5 px-2 rounded block truncate font-medium transition-colors"
-                                            >
-                                                {occ.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="pt-2 border-t border-[#E5E7EB]">
-                                    <Link
-                                        to="/contact"
-                                        onClick={() => setActiveDropdown(null)}
-                                        className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#1F2937] hover:text-[#C2255C] py-1.5 px-2 rounded hover:bg-gray-50 transition-colors"
-                                    >
-                                        <span>Contact Us</span>
-                                        <span className="text-[#C2255C]">→</span>
-                                    </Link>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
                 </AnimatePresence>
             </header>
 
-            {/* Mobile Drawer (used below 1100px) */}
+            {/* Mobile Drawer (used below 1280px) */}
             <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
                 <div className="p-6 bg-white min-h-screen overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
