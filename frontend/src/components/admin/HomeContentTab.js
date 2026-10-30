@@ -19,12 +19,39 @@ const DEFAULT_SITE_CONTENT = {
         ]
     },
     hero_background: {
-        video: '/videos/Banner/hero-4.mp4',
-        poster: ''
+        mode: 'slide'
     },
     hero_slides: [
         {
             id: 1,
+            tabName: 'FESTIVE',
+            label: 'FESTIVE EDIT',
+            title1: 'CELEBRATE IN',
+            title2: 'STYLE',
+            description: 'Elegant festive pieces for weddings, sangeet and every celebration.',
+            buttonText: 'SHOP FESTIVE',
+            link: '/shop?style=festive-wear',
+            video: '/videos/banner/banner-3-festive-wear.mp4',
+            poster: 'banner-3-festive-wear-poster.jpg',
+            image: '',
+            objectPosition: 'center 35%'
+        },
+        {
+            id: 2,
+            tabName: 'CO-ORD SETS',
+            label: 'TRENDING NOW',
+            title1: 'CROP TOP',
+            title2: 'SETS',
+            description: 'Fresh, easy-to-style co-ord and crop top sets for every day.',
+            buttonText: 'SHOP CO-ORD SETS',
+            link: '/shop?product_type=co-ord-set',
+            video: '/videos/banner/banner-4-crop-top-set.mp4',
+            poster: 'banner-4-crop-top-set-poster.jpg',
+            image: '',
+            objectPosition: 'center 35%'
+        },
+        {
+            id: 3,
             tabName: 'NEW SEASON',
             label: 'JUST IN',
             title1: 'NEW SEASON',
@@ -32,13 +59,13 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Fresh co-ords, kurtas and dresses, now in store.',
             buttonText: 'SHOP NEW ARRIVALS',
             link: '/shop?filter=new',
-            video: '/videos/Banner/hero-5.mp4',
-            poster: '',
+            video: '/videos/banner/banner-1-new-season.mp4',
+            poster: 'banner-1-new-season-poster.jpg',
             image: '',
             objectPosition: 'center 35%'
         },
         {
-            id: 2,
+            id: 4,
             tabName: 'ELEGANCE',
             label: 'TIMELESS ELEGANCE',
             title1: 'EVERY OCCASION',
@@ -46,24 +73,10 @@ const DEFAULT_SITE_CONTENT = {
             description: 'Kurtas, dresses and co-ords crafted for every moment.',
             buttonText: 'SHOP COLLECTIONS',
             link: '/shop',
-            video: '/videos/Banner/store-video-1.mp4',
-            poster: '',
+            video: '/videos/banner/banner-2-elegance.mp4',
+            poster: 'banner-2-elegance-poster.jpg',
             image: '',
             objectPosition: 'center 25%'
-        },
-        {
-            id: 3,
-            tabName: 'FESTIVE',
-            label: 'FESTIVE EDIT',
-            title1: 'FESTIVE',
-            title2: 'COLLECTION',
-            description: 'Embroidered sets and festive outfits for every celebration.',
-            buttonText: 'SHOP FESTIVE',
-            link: '/shop',
-            video: '/videos/Banner/store-video-2.mp4',
-            poster: '',
-            image: '',
-            objectPosition: 'center 35%'
         }
     ]
 };
@@ -87,16 +100,13 @@ export const HomeContentTab = () => {
             const res = await axios.get(`${API}/site-content`);
             if (res.data) {
                 const safeAnnouncement = res.data.announcement || DEFAULT_SITE_CONTENT.announcement;
-                const safeBackground = (res.data.hero_background && typeof res.data.hero_background === 'object' && res.data.hero_background.video)
+                const safeBackground = (res.data.hero_background && typeof res.data.hero_background === 'object' && res.data.hero_background.mode)
                     ? res.data.hero_background
                     : DEFAULT_SITE_CONTENT.hero_background;
-                const rawSlides = (res.data.hero_slides && Array.isArray(res.data.hero_slides))
+                const rawSlides = (res.data.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length >= 1)
                     ? [...res.data.hero_slides]
-                    : [];
-                while (rawSlides.length < 3) {
-                    rawSlides.push(DEFAULT_SITE_CONTENT.hero_slides[rawSlides.length]);
-                }
-                const safeSlides = rawSlides.slice(0, 3);
+                    : [...DEFAULT_SITE_CONTENT.hero_slides];
+                const safeSlides = rawSlides.slice(0, 6);
 
                 // Ensure at least 3 message slots exist for editing
                 const msgs = [...(safeAnnouncement.messages || [])];
@@ -151,13 +161,12 @@ export const HomeContentTab = () => {
         setSaveSuccess(false);
     };
 
-    // Hero Background Video Handlers
-    const handleBackgroundChange = (field, value) => {
+    // Hero Background Handlers
+    const handleBackgroundModeChange = (mode) => {
         setContent(prev => ({
             ...prev,
             hero_background: {
-                ...(prev.hero_background || DEFAULT_SITE_CONTENT.hero_background),
-                [field]: value
+                mode
             }
         }));
         setSaveSuccess(false);
@@ -180,12 +189,12 @@ export const HomeContentTab = () => {
     };
 
     const handleAddSlide = () => {
-        if (content.hero_slides.length >= 3) {
-            toast.error('Maximum 3 hero slides allowed.');
+        if (content.hero_slides.length >= 6) {
+            toast.error('Maximum 6 hero slides allowed.');
             return;
         }
         const newSlideNum = content.hero_slides.length + 1;
-        const defaultRef = DEFAULT_SITE_CONTENT.hero_slides[content.hero_slides.length] || DEFAULT_SITE_CONTENT.hero_slides[0];
+        const defaultRef = DEFAULT_SITE_CONTENT.hero_slides[content.hero_slides.length % DEFAULT_SITE_CONTENT.hero_slides.length];
         const newSlide = {
             id: Date.now(),
             ...defaultRef
@@ -290,8 +299,10 @@ export const HomeContentTab = () => {
                     messages: content.announcement.messages
                         .filter(m => (m.prefix || m.highlight || m.suffix || '').trim() !== '')
                 },
-                hero_background: content.hero_background || DEFAULT_SITE_CONTENT.hero_background,
-                hero_slides: content.hero_slides.slice(0, 3)
+                hero_background: {
+                    mode: content.hero_background?.mode === 'gradient' ? 'gradient' : 'slide'
+                },
+                hero_slides: content.hero_slides.slice(0, 6)
             };
 
             const res = await axios.put(`${API}/admin/site-content`, payload, {
@@ -522,19 +533,19 @@ export const HomeContentTab = () => {
                 </div>
             </div>
 
-            {/* SECTION 2: BACKGROUND VIDEO */}
+            {/* SECTION 2: BACKGROUND */}
             <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-xs overflow-hidden" data-testid="hero-background-card">
                 <div className="px-6 py-4 bg-[#FDFBF7] border-b border-[#E5E7EB] flex items-center justify-between">
                     <div>
                         <h4 className="font-semibold text-sm text-charcoal flex items-center gap-2">
                             <Video size={16} className="text-rose" />
-                            <span>2. Background video</span>
+                            <span>2. Hero Background</span>
                             <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/20">
-                                Hero Background
+                                {content.hero_background?.mode === 'gradient' ? 'Gradient' : 'Slide Video'}
                             </span>
                         </h4>
                         <p className="text-xs text-[#595959] mt-0.5">
-                            Ambient blurred background video playing behind the hero slides (static poster on mobile).
+                            Choose whether the hero background follows the active slide video or uses a luxury radial gradient.
                         </p>
                     </div>
 
@@ -550,72 +561,82 @@ export const HomeContentTab = () => {
                     </button>
                 </div>
 
-                <div className="p-6 space-y-4">
+                <div className="p-6">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-3">
+                        Background Mode
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-1.5">
-                                Video Path
-                            </label>
+                        <label 
+                            className={`relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                                content.hero_background?.mode !== 'gradient'
+                                    ? 'border-[#C2255C] bg-[#FFF5F8]/40 shadow-xs'
+                                    : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                            }`}
+                        >
                             <input
-                                type="text"
-                                value={content.hero_background?.video || ''}
-                                onChange={(e) => handleBackgroundChange('video', e.target.value)}
-                                placeholder="/videos/Banner/hero-4.mp4"
-                                className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-1 focus:ring-rose focus:border-rose font-mono"
-                                data-testid="bg-video-input"
+                                type="radio"
+                                name="hero_background_mode"
+                                value="slide"
+                                checked={content.hero_background?.mode !== 'gradient'}
+                                onChange={() => handleBackgroundModeChange('slide')}
+                                className="mt-1 h-4 w-4 text-[#C2255C] border-gray-300 focus:ring-[#C2255C]"
+                                data-testid="bg-mode-slide"
                             />
-                            <p className="text-[11px] text-[#595959] mt-1">
-                                Default: /videos/Banner/hero-4.mp4
-                            </p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] mb-1.5">
-                                Poster Path (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                value={content.hero_background?.poster || ''}
-                                onChange={(e) => handleBackgroundChange('poster', e.target.value)}
-                                placeholder=""
-                                className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-1 focus:ring-rose focus:border-rose font-mono"
-                                data-testid="bg-poster-input"
-                            />
-                            <p className="text-[11px] text-[#595959] mt-1">
-                                Optional static poster if available.
-                            </p>
-                        </div>
-                    </div>
+                            <div className="ml-3">
+                                <span className="block text-xs font-bold text-charcoal">
+                                    Same as slide video (recommended)
+                                </span>
+                                <span className="block text-[11px] text-[#595959] mt-1 leading-relaxed">
+                                    Full-width ambient background plays the active slide's video with a soft blur and saturation boost. On mobile, uses the active slide's poster.
+                                </span>
+                            </div>
+                        </label>
 
-                    {content.hero_background?.poster && (
-                        <div className="pt-1 flex items-center gap-3">
-                            <span className="text-xs font-medium text-charcoal">Poster Preview:</span>
-                            <img
-                                src={content.hero_background.poster}
-                                alt="Hero background poster preview"
-                                className="h-14 w-24 object-cover rounded border border-[#E5E7EB]"
-                                onError={(e) => { e.target.style.display = 'none'; }}
+                        <label 
+                            className={`relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                                content.hero_background?.mode === 'gradient'
+                                    ? 'border-[#C2255C] bg-[#FFF5F8]/40 shadow-xs'
+                                    : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                            }`}
+                        >
+                            <input
+                                type="radio"
+                                name="hero_background_mode"
+                                value="gradient"
+                                checked={content.hero_background?.mode === 'gradient'}
+                                onChange={() => handleBackgroundModeChange('gradient')}
+                                className="mt-1 h-4 w-4 text-[#C2255C] border-gray-300 focus:ring-[#C2255C]"
+                                data-testid="bg-mode-gradient"
                             />
-                        </div>
-                    )}
+                            <div className="ml-3">
+                                <span className="block text-xs font-bold text-charcoal">
+                                    Gradient
+                                </span>
+                                <span className="block text-[11px] text-[#595959] mt-1 leading-relaxed">
+                                    Deep wine to near-black luxury radial gradient without background video.
+                                </span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            {/* SECTION 3: HERO BANNER (3 SLIDES) */}
+            {/* SECTION 3: HERO BANNER SLIDES */}
             <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-xs overflow-hidden" data-testid="hero-slides-section">
                 <div className="px-6 py-4 bg-[#FDFBF7] border-b border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                         <h4 className="font-semibold text-sm text-charcoal flex items-center gap-2">
                             <span>3. Hero Banner Slides</span>
                             <span className="text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/20">
-                                {content.hero_slides.length} of 3 Slides
+                                {content.hero_slides.length} of 6 Slides
                             </span>
                         </h4>
                         <p className="text-xs text-[#595959] mt-0.5">
-                            Customize titles, buttons, links, videos, and upload photos for the 3 hero slides.
+                            Customize titles, buttons, links, videos, and upload photos for the hero slides.
                         </p>
                     </div>
 
-                    {content.hero_slides.length < 3 && (
+                    {content.hero_slides.length < 6 && (
                         <button
                             type="button"
                             onClick={handleAddSlide}
@@ -811,7 +832,7 @@ export const HomeContentTab = () => {
                                                 type="text"
                                                 value={slide.video || ''}
                                                 onChange={(e) => handleSlideChange(index, 'video', e.target.value)}
-                                                placeholder={index === 0 ? '/videos/Banner/hero-5.mp4' : index === 1 ? '/videos/Banner/store-video-1.mp4' : '/videos/Banner/store-video-2.mp4'}
+                                                placeholder={DEFAULT_SITE_CONTENT.hero_slides[index % DEFAULT_SITE_CONTENT.hero_slides.length]?.video || '/videos/banner/banner-3-festive-wear.mp4'}
                                                 className="w-full text-xs px-3 py-2 border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:border-rose font-mono text-gray-700"
                                                 data-testid={`slide-${index}-video`}
                                             />

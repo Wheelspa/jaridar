@@ -242,10 +242,10 @@ export const Header = () => {
 
             {/* Main Sticky Header */}
             <header className="sticky top-0 z-50 bg-white border-b border-[#E5E7EB] w-full relative" data-testid="header">
-                <div className="w-full max-w-full px-4 sm:px-6 min-[1100px]:px-5 xl:px-8 2xl:px-[50px] min-[1800px]:px-[60px] h-[72px] min-[1100px]:h-[80px] xl:h-[96px] 2xl:h-[110px] flex items-center justify-between">
+                <div className="w-full max-w-full px-4 sm:px-6 min-[1100px]:px-6 xl:px-8 min-[1366px]:px-10 min-[1440px]:px-[65px] 2xl:px-[70px] min-[1800px]:px-[80px] h-[72px] min-[1100px]:h-[95px] flex items-center justify-between">
                     
                     {/* Left Group: Mobile Toggle (below 1100px) + Logo + Desktop Nav directly next to logo */}
-                    <div className="flex items-center gap-3 sm:gap-4 min-[1100px]:gap-4 min-[1200px]:gap-5 xl:gap-7 2xl:gap-8 min-[1800px]:gap-10 h-full min-w-0">
+                    <div className="flex items-center gap-3 sm:gap-4 min-[1100px]:gap-4 min-[1200px]:gap-4.5 xl:gap-5 min-[1366px]:gap-6 min-[1440px]:gap-8 2xl:gap-10 min-[1800px]:gap-12 h-full min-w-0">
                         {/* Mobile Toggle + Logo */}
                         <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
                             <button 
@@ -261,13 +261,13 @@ export const Header = () => {
                                 <img 
                                     src="/images/logo/jaridar-icon.png" 
                                     alt="Jaridar Icon" 
-                                    className="h-10 sm:h-12 min-[1100px]:h-11 xl:h-14 2xl:h-16 w-auto object-contain flex-shrink-0" 
+                                    className="h-10 sm:h-12 min-[1100px]:h-[52px] xl:h-[58px] min-[1366px]:h-[62px] min-[1440px]:h-[68px] 2xl:h-[76px] w-auto object-contain flex-shrink-0" 
                                 />
                                 <div className="flex flex-col justify-center">
-                                    <span className="font-heading text-lg sm:text-xl min-[1100px]:text-[20px] xl:text-2xl 2xl:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
+                                    <span className="font-heading text-lg sm:text-xl min-[1100px]:text-[22px] xl:text-[24px] min-[1366px]:text-[26px] min-[1440px]:text-[28.5px] 2xl:text-[32px] font-black text-[#C2255C] tracking-tight leading-none">
                                         JARIDAR
                                     </span>
-                                    <span className="text-[9px] sm:text-[10px] min-[1100px]:text-[10px] xl:text-[11px] font-bold text-[#3B6FA0] uppercase tracking-[0.22em] pt-0.5 leading-tight">
+                                    <span className="text-[9px] sm:text-[10px] min-[1100px]:text-[10.5px] xl:text-[11px] min-[1366px]:text-[11.5px] min-[1440px]:text-[12.5px] 2xl:text-[13px] font-bold text-[#3B6FA0] uppercase tracking-[0.22em] min-[1440px]:tracking-[0.24em] pt-0.5 leading-tight">
                                         Fashion Couture
                                     </span>
                                 </div>
@@ -276,7 +276,7 @@ export const Header = () => {
 
                         {/* Desktop Nav: left-aligned directly next to logo, bold uppercase typography matching HEAD */}
                         <nav 
-                            className="hidden min-[1100px]:flex items-center justify-start gap-2 min-[1180px]:gap-2.5 xl:gap-3 min-[1366px]:gap-3.5 2xl:gap-5 min-[1800px]:gap-6 h-full whitespace-nowrap flex-shrink-0"
+                            className="hidden min-[1100px]:flex items-center justify-start gap-2.5 min-[1180px]:gap-3 xl:gap-3 min-[1366px]:gap-3.5 min-[1440px]:gap-4 2xl:gap-6 min-[1800px]:gap-7 h-full whitespace-nowrap flex-shrink-0"
                             role="navigation"
                             aria-label="Main Navigation"
                         >
@@ -294,7 +294,7 @@ export const Header = () => {
                                                 to={item.url} 
                                                 onClick={() => setActiveDropdown(null)}
                                                 onFocus={() => setActiveDropdown(null)}
-                                                className={`text-[12px] xl:text-[13.5px] 2xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
+                                                className={`text-[13px] xl:text-[13.5px] min-[1366px]:text-[14px] min-[1440px]:text-[15px] 2xl:text-[16px] uppercase tracking-normal font-semibold h-full flex items-center border-b-2 transition-colors whitespace-nowrap ${
                                                     isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
                                                 }`}
                                             >
@@ -319,14 +319,14 @@ export const Header = () => {
                                             onFocus={() => handleMouseEnter(item.id)}
                                             aria-expanded={isDropdownOpen}
                                             aria-haspopup="true"
-                                            className={`text-[12px] xl:text-[13.5px] 2xl:text-[15px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 xl:gap-1.5 border-b-2 transition-colors whitespace-nowrap ${
+                                            className={`text-[13px] xl:text-[13.5px] min-[1366px]:text-[14px] min-[1440px]:text-[15px] 2xl:text-[16px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 xl:gap-1.5 border-b-2 transition-colors whitespace-nowrap ${
                                                 isActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
                                             }`}
                                         >
                                             <span>{item.label}</span>
                                             <ChevronDown 
-                                                size={14} 
-                                                className={`w-[12px] h-[12px] xl:w-[13.5px] xl:h-[13.5px] 2xl:w-[14px] 2xl:h-[14px] transition-transform duration-200 shrink-0 inline-block align-middle ${
+                                                size={15} 
+                                                className={`w-[13px] h-[13px] xl:w-[13.5px] xl:h-[13.5px] min-[1366px]:w-[14px] min-[1366px]:h-[14px] min-[1440px]:w-[15px] min-[1440px]:h-[15px] 2xl:w-[16px] 2xl:h-[16px] transition-transform duration-200 shrink-0 inline-block align-middle ${
                                                     isDropdownOpen ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
                                                 }`} 
                                             />
@@ -346,14 +346,14 @@ export const Header = () => {
                                     onFocus={() => handleMouseEnter('more')}
                                     aria-expanded={activeDropdown === 'more'}
                                     aria-haspopup="true"
-                                    className={`text-[12px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
+                                    className={`text-[13px] uppercase tracking-normal font-semibold h-full flex items-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
                                         isMoreActive ? 'text-[#C2255C] border-[#C2255C]' : 'text-[#1F2937] border-transparent hover:text-[#C2255C]'
                                     }`}
                                 >
                                     <span>MORE</span>
                                     <ChevronDown 
-                                        size={12} 
-                                        className={`w-[12px] h-[12px] transition-transform duration-200 shrink-0 inline-block align-middle ${
+                                        size={13} 
+                                        className={`w-[13px] h-[13px] transition-transform duration-200 shrink-0 inline-block align-middle ${
                                             activeDropdown === 'more' ? 'rotate-180 text-[#C2255C]' : 'text-[#6B7280]'
                                         }`} 
                                     />
@@ -363,7 +363,7 @@ export const Header = () => {
                     </div>
 
                     {/* Right Unit: Icons at far right with equal spacing */}
-                    <div className="flex items-center gap-2.5 min-[1100px]:gap-3 xl:gap-4 2xl:gap-5 flex-shrink-0">
+                    <div className="flex items-center gap-2.5 min-[1100px]:gap-3 xl:gap-3.5 min-[1366px]:gap-4 min-[1440px]:gap-5 2xl:gap-6 flex-shrink-0">
                         {/* 1. Search */}
                         <div className="relative">
                             <button 

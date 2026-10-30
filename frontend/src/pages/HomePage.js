@@ -11,13 +11,40 @@ export const HERO_BG_OVERLAY = 0.72; // Dark overlay opacity (e.g. 0.72)
 export const HERO_BG_BLUR = '12px';  // Blur filter for ambient background video
 
 const defaultHeroBackground = {
-    video: '/videos/Banner/hero-4.mp4',
-    poster: ''
+    mode: 'slide'
 };
 
 const defaultHeroSlides = [
     {
         id: 1,
+        tabName: 'FESTIVE',
+        label: 'FESTIVE EDIT',
+        title1: 'CELEBRATE IN',
+        title2: 'STYLE',
+        description: 'Elegant festive pieces for weddings, sangeet and every celebration.',
+        buttonText: 'SHOP FESTIVE',
+        link: '/shop?style=festive-wear',
+        video: '/videos/banner/banner-3-festive-wear.mp4',
+        poster: 'banner-3-festive-wear-poster.jpg',
+        image: '',
+        objectPosition: 'center 35%'
+    },
+    {
+        id: 2,
+        tabName: 'CO-ORD SETS',
+        label: 'TRENDING NOW',
+        title1: 'CROP TOP',
+        title2: 'SETS',
+        description: 'Fresh, easy-to-style co-ord and crop top sets for every day.',
+        buttonText: 'SHOP CO-ORD SETS',
+        link: '/shop?product_type=co-ord-set',
+        video: '/videos/banner/banner-4-crop-top-set.mp4',
+        poster: 'banner-4-crop-top-set-poster.jpg',
+        image: '',
+        objectPosition: 'center 35%'
+    },
+    {
+        id: 3,
         tabName: 'NEW SEASON',
         label: 'JUST IN',
         title1: 'NEW SEASON',
@@ -25,13 +52,13 @@ const defaultHeroSlides = [
         description: 'Fresh co-ords, kurtas and dresses, now in store.',
         buttonText: 'SHOP NEW ARRIVALS',
         link: '/shop?filter=new',
-        video: '/videos/Banner/hero-5.mp4',
-        poster: '',
+        video: '/videos/banner/banner-1-new-season.mp4',
+        poster: 'banner-1-new-season-poster.jpg',
         image: '',
         objectPosition: 'center 35%'
     },
     {
-        id: 2,
+        id: 4,
         tabName: 'ELEGANCE',
         label: 'TIMELESS ELEGANCE',
         title1: 'EVERY OCCASION',
@@ -39,28 +66,15 @@ const defaultHeroSlides = [
         description: 'Kurtas, dresses and co-ords crafted for every moment.',
         buttonText: 'SHOP COLLECTIONS',
         link: '/shop',
-        video: '/videos/Banner/store-video-1.mp4',
-        poster: '',
+        video: '/videos/banner/banner-2-elegance.mp4',
+        poster: 'banner-2-elegance-poster.jpg',
         image: '',
         objectPosition: 'center 25%'
-    },
-    {
-        id: 3,
-        tabName: 'FESTIVE',
-        label: 'FESTIVE EDIT',
-        title1: 'FESTIVE',
-        title2: 'COLLECTION',
-        description: 'Embroidered sets and festive outfits for every celebration.',
-        buttonText: 'SHOP FESTIVE',
-        link: '/shop',
-        video: '/videos/Banner/store-video-2.mp4',
-        poster: '',
-        image: '',
-        objectPosition: 'center 35%'
     }
 ];
 
 const DEFAULT_SLIDE_VIDEOS = [
+    '/videos/Banner/hero-4.mp4',
     '/videos/Banner/hero-5.mp4',
     '/videos/Banner/store-video-1.mp4',
     '/videos/Banner/store-video-2.mp4'
@@ -74,41 +88,21 @@ const resolveSlideVideo = (videoPath, index = 0) => {
     const clean = videoPath.trim();
     if (!clean) return fallback;
 
-    if (clean === '/videos/Banner/hero-5.mp4' ||
-        clean === '/videos/Banner/store-video-1.mp4' ||
-        clean === '/videos/Banner/store-video-2.mp4' ||
-        clean === '/videos/Banner/hero-4.mp4') {
-        return clean;
+    if (!clean.startsWith('/') && !clean.startsWith('http://') && !clean.startsWith('https://')) {
+        return `/videos/banner/${clean}`;
     }
 
-    const lower = clean.toLowerCase();
-    if (lower.endsWith('hero-5.mp4')) return '/videos/Banner/hero-5.mp4';
-    if (lower.endsWith('store-video-1.mp4')) return '/videos/Banner/store-video-1.mp4';
-    if (lower.endsWith('store-video-2.mp4')) return '/videos/Banner/store-video-2.mp4';
-    if (lower.endsWith('hero-4.mp4')) return '/videos/Banner/hero-4.mp4';
-
-    return fallback;
-};
-
-const resolveHeroBgVideo = (bgVideo) => {
-    const fallback = '/videos/Banner/hero-4.mp4';
-    if (!bgVideo || typeof bgVideo !== 'string') return fallback;
-    const clean = bgVideo.trim();
-    if (!clean) return fallback;
-    if (clean === fallback) return fallback;
-    const lower = clean.toLowerCase();
-    if (lower.endsWith('hero-4.mp4')) return fallback;
-    if (lower.endsWith('hero-5.mp4')) return '/videos/Banner/hero-5.mp4';
-    if (lower.endsWith('store-video-1.mp4')) return '/videos/Banner/store-video-1.mp4';
-    if (lower.endsWith('store-video-2.mp4')) return '/videos/Banner/store-video-2.mp4';
-    return fallback;
+    return clean;
 };
 
 const resolveSlidePoster = (poster) => {
     if (!poster || typeof poster !== 'string') return '';
     const clean = poster.trim();
-    if (!clean || clean.includes('banner-') || clean.includes('store-video-')) return '';
-    return clean;
+    if (!clean) return '';
+    if (clean.startsWith('/') || clean.startsWith('http://') || clean.startsWith('https://')) {
+        return clean;
+    }
+    return `/videos/banner/${clean}`;
 };
 
 const categoryEditorialImages = {
@@ -175,8 +169,8 @@ const HomePage = () => {
     const [heroVideoErrors, setHeroVideoErrors] = useState({});
     const heroVideoRetriesRef = useRef({});
     
-    const heroVideoRefs = useRef({});
-    const heroBgVideoRef = useRef(null);
+    const heroWindowVideoRefs = useRef({});
+    const heroBgVideoRefs = useRef({});
 
     // Check mobile screen size to conditionally mount background video
     useEffect(() => {
@@ -186,14 +180,6 @@ const HomePage = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
-    // Ensure background video plays
-    useEffect(() => {
-        if (heroBgVideoRef.current) {
-            heroBgVideoRef.current.muted = true;
-            heroBgVideoRef.current.play().catch(() => {});
-        }
-    }, [isMobile, heroBackground.video]);
 
     // Hero video error handler with retry and visibility check
     const handleHeroVideoError = (slideId, event) => {
@@ -237,20 +223,128 @@ const HomePage = () => {
         }
     }, []);
 
+    // Slide change tracking and play/pause/sync logic
+    const prevSlideIndexRef = useRef(currentSlide);
+    const slideElapsedRef = useRef(0);
+    const videoPlayingRef = useRef(false);
+
     // Sync play/pause & restart from 0 for active hero videos
     useEffect(() => {
-        Object.entries(heroVideoRefs.current).forEach(([key, videoEl]) => {
-            if (!videoEl) return;
-            const slideIdx = parseInt(String(key).split('-')[0], 10);
-            if (slideIdx === currentSlide) {
-                videoEl.muted = true;
-                videoEl.currentTime = 0;
-                videoEl.play().catch(() => {});
+        const isNewSlide = prevSlideIndexRef.current !== currentSlide;
+        prevSlideIndexRef.current = currentSlide;
+
+        slides.forEach((_, index) => {
+            const windowEl = heroWindowVideoRefs.current[index];
+            const bgEl = heroBgVideoRefs.current[index];
+
+            if (index === currentSlide) {
+                if (isNewSlide) {
+                    if (windowEl) {
+                        windowEl.muted = true;
+                        windowEl.currentTime = 0;
+                    }
+                    if (!isMobile && bgEl && heroBackground?.mode !== 'gradient') {
+                        bgEl.muted = true;
+                        bgEl.currentTime = 0;
+                    }
+                }
+
+                if (isHovered || !isTabVisible) {
+                    if (windowEl) windowEl.pause();
+                    if (bgEl) bgEl.pause();
+                } else {
+                    if (windowEl) {
+                        windowEl.muted = true;
+                        windowEl.play().catch(() => {});
+                    }
+                    if (!isMobile && bgEl && heroBackground?.mode !== 'gradient') {
+                        bgEl.muted = true;
+                        bgEl.play().catch(() => {});
+                    }
+                }
             } else {
-                videoEl.pause();
+                if (windowEl) {
+                    windowEl.pause();
+                    windowEl.currentTime = 0;
+                }
+                if (bgEl) {
+                    bgEl.pause();
+                    bgEl.currentTime = 0;
+                }
             }
         });
-    }, [currentSlide]);
+    }, [currentSlide, isHovered, isTabVisible, isMobile, heroBackground?.mode, slides]);
+
+    // Keep currentTime in sync between background and window video
+    const handleTimeUpdate = (index) => {
+        if (index !== currentSlide || isMobile || heroBackground?.mode === 'gradient') return;
+        const windowEl = heroWindowVideoRefs.current[index];
+        const bgEl = heroBgVideoRefs.current[index];
+        if (windowEl && bgEl && !bgEl.paused && !windowEl.paused) {
+            if (Math.abs(bgEl.currentTime - windowEl.currentTime) > 0.25) {
+                bgEl.currentTime = windowEl.currentTime;
+            }
+        }
+    };
+
+    // Called when the active slide video finishes naturally
+    const handleSlideEnded = (index) => {
+        if (index === currentSlide) {
+            nextHeroSlide();
+        }
+    };
+
+    // Hero video autoplay timer with safety fallbacks (waits for video end; fallback at 7s if error/not playing)
+    useEffect(() => {
+        slideElapsedRef.current = 0;
+        videoPlayingRef.current = false;
+
+        const currentSlideData = slides[currentSlide];
+        const isImageOnly = Boolean(currentSlideData?.image);
+        const hasError = Boolean(heroVideoErrors[currentSlideData?.id || currentSlide]);
+
+        const ticker = setInterval(() => {
+            // Paused when mouse is over hero or tab is hidden
+            if (isHovered || !isTabVisible) {
+                return;
+            }
+
+            slideElapsedRef.current += 200;
+            const elapsed = slideElapsedRef.current;
+
+            const windowEl = heroWindowVideoRefs.current[currentSlide];
+            if (windowEl && !windowEl.paused && windowEl.currentTime > 0.1) {
+                videoPlayingRef.current = true;
+            }
+
+            // Fallback 1: Image-only slide or Video Error -> advance after 7 seconds
+            if (isImageOnly || hasError) {
+                if (elapsed >= 7000) {
+                    nextHeroSlide();
+                }
+                return;
+            }
+
+            // Fallback 2: Video does not start within 5 seconds -> advance after 7 seconds
+            if (elapsed >= 5000 && !videoPlayingRef.current) {
+                if (elapsed >= 7000) {
+                    nextHeroSlide();
+                }
+                return;
+            }
+
+            // Fallback 3: Hard safety guard if video hangs or reaches duration without onEnded
+            if (windowEl && windowEl.duration && Number.isFinite(windowEl.duration)) {
+                if (elapsed >= (windowEl.duration + 2) * 1000) {
+                    nextHeroSlide();
+                }
+            } else if (elapsed >= 30000) {
+                nextHeroSlide();
+            }
+        }, 200);
+
+        return () => clearInterval(ticker);
+    }, [currentSlide, isHovered, isTabVisible, slides, heroVideoErrors]);
 
     // IntersectionObserver for Our Essence Video
     const showEssenceVideo = !essenceVideoError && !prefersReducedMotion;
@@ -302,11 +396,7 @@ const HomePage = () => {
         try {
             const res = await axios.get(`${API}/site-content`);
             if (res.data?.hero_slides && Array.isArray(res.data.hero_slides) && res.data.hero_slides.length >= 1) {
-                const fetchedSlides = res.data.hero_slides.slice(0, 3);
-                while (fetchedSlides.length < 3) {
-                    fetchedSlides.push(defaultHeroSlides[fetchedSlides.length]);
-                }
-                setSlides(fetchedSlides);
+                setSlides(res.data.hero_slides);
             }
             if (res.data?.hero_background && typeof res.data.hero_background === 'object') {
                 setHeroBackground(res.data.hero_background);
@@ -316,21 +406,48 @@ const HomePage = () => {
         }
     };
 
-    // Carousel auto-rotation timer (7s per slide, paused when hovered or tab hidden)
-    useEffect(() => {
-        if (isHovered || !isTabVisible || !slides.length) return;
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 7000);
-        return () => clearInterval(interval);
-    }, [isHovered, isTabVisible, slides.length]);
-
     const prevHeroSlide = () => {
         setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
     };
 
     const nextHeroSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
+    };
+
+    // Touch swipe handling for mobile
+    const touchStartX = useRef(null);
+    const touchStartY = useRef(null);
+    const touchEndX = useRef(null);
+    const touchEndY = useRef(null);
+
+    const handleTouchStart = (e) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        touchEndX.current = null;
+        touchEndY.current = null;
+    };
+
+    const handleTouchMove = (e) => {
+        touchEndX.current = e.touches[0].clientX;
+        touchEndY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+        if (touchStartX.current === null || touchEndX.current === null) return;
+        const diffX = touchStartX.current - touchEndX.current;
+        const diffY = (touchStartY.current || 0) - (touchEndY.current || 0);
+
+        if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) {
+                nextHeroSlide();
+            } else {
+                prevHeroSlide();
+            }
+        }
+        touchStartX.current = null;
+        touchStartY.current = null;
+        touchEndX.current = null;
+        touchEndY.current = null;
     };
 
     const fetchProductsData = async () => {
@@ -406,49 +523,80 @@ const HomePage = () => {
                 data-testid="hero-section"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
             >
                 {/* Desktop Full Viewport & Mobile Responsive Container */}
                 <div className="relative w-full h-[540px] md:h-[580px] lg:h-[clamp(560px,42vw,720px)] overflow-hidden">
-                    {/* Full-width persistent background: ambient blurred video with dark gradient overlay, fallback to solid brand color */}
-                    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0 bg-[#1A1412]">
-                        {/* Dark gradient overlay so text stays readable */}
+                    {/* Background layer */}
+                    {heroBackground?.mode === 'gradient' ? (
                         <div 
-                            className="absolute inset-0 z-10 pointer-events-none" 
-                            style={{ 
-                                backgroundColor: `rgba(0, 0, 0, ${HERO_BG_OVERLAY})`,
-                                backgroundImage: `linear-gradient(180deg, rgba(26,20,18,${Math.min(0.96, Number(HERO_BG_OVERLAY) + 0.12)}) 0%, rgba(0,0,0,${HERO_BG_OVERLAY}) 50%, rgba(26,20,18,${Math.min(0.98, Number(HERO_BG_OVERLAY) + 0.16)}) 100%)`
-                            }} 
+                            className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                            style={{
+                                background: 'radial-gradient(circle at 60% 40%, #3D0C22 0%, #200511 45%, #0D0207 100%)'
+                            }}
                         />
-                        {isMobile && resolveSlidePoster(heroBackground?.poster) ? (
-                            <img
-                                src={resolveSlidePoster(heroBackground.poster)}
-                                alt="Hero Background Poster"
-                                className="w-full h-full object-cover"
-                                style={{
-                                    filter: `blur(${HERO_BG_BLUR})`,
-                                    transform: 'scale(1.08)'
-                                }}
-                            />
-                        ) : (
-                            <video
-                                ref={heroBgVideoRef}
-                                src={resolveHeroBgVideo(heroBackground?.video)}
-                                {...(resolveSlidePoster(heroBackground?.poster) ? { poster: resolveSlidePoster(heroBackground.poster) } : {})}
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                preload="auto"
-                                className="w-full h-full object-cover"
-                                style={{
-                                    filter: `blur(${HERO_BG_BLUR})`,
-                                    transform: 'scale(1.08)'
-                                }}
-                            />
-                        )}
-                    </div>
+                    ) : (
+                        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0 bg-[#1A1412]">
+                            {slides.map((slide, index) => {
+                                const isActive = currentSlide === index;
+                                const videoSrc = resolveSlideVideo(slide.video, index);
+                                const posterSrc = resolveSlidePoster(slide.poster);
+                                return (
+                                    <div
+                                        key={`bg-${slide.id || index}`}
+                                        className={`absolute inset-0 w-full h-full transition-opacity duration-[600ms] ease-in-out ${
+                                            isActive ? 'opacity-100 z-1' : 'opacity-0 z-0'
+                                        }`}
+                                    >
+                                        {isMobile ? (
+                                            posterSrc ? (
+                                                <img
+                                                    src={posterSrc}
+                                                    alt=""
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                    className="w-full h-full object-cover"
+                                                    style={{
+                                                        filter: 'blur(8px) saturate(1.1) brightness(1.0)',
+                                                        transform: 'scale(1.1)'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-[#1A1412]" />
+                                            )
+                                        ) : (
+                                            <video
+                                                ref={el => { heroBgVideoRefs.current[index] = el; }}
+                                                src={videoSrc}
+                                                {...(posterSrc ? { poster: posterSrc } : {})}
+                                                autoPlay={isActive}
+                                                muted
+                                                playsInline
+                                                preload={isActive ? "auto" : "metadata"}
+                                                onEnded={() => handleSlideEnded(index)}
+                                                className="w-full h-full object-cover"
+                                                style={{
+                                                    filter: 'blur(8px) saturate(1.1) brightness(1.0)',
+                                                    transform: 'scale(1.1)'
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                    {/* Foreground Slides: exactly 3 slides, text left, portrait video frame right */}
+                    {/* Left-to-right gradient overlay behind the text: ~rgba(0,0,0,0.55) at the far left fading to fully transparent by ~55% of width */}
+                    <div 
+                        className="absolute inset-0 pointer-events-none z-10" 
+                        style={{ 
+                            background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.35) 25%, rgba(0, 0, 0, 0.12) 42%, rgba(0, 0, 0, 0) 55%)'
+                        }} 
+                    />
+
+                    {/* Foreground Slides */}
                     {slides.map((slide, index) => {
                         const isActive = currentSlide === index;
 
@@ -456,14 +604,14 @@ const HomePage = () => {
                             <div 
                                 key={slide.id || index}
                                 className={`transition-opacity duration-700 ease-in-out absolute inset-0 w-full h-full ${
-                                    isActive ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'
+                                    isActive ? 'opacity-100 pointer-events-auto z-20' : 'opacity-0 pointer-events-none z-0'
                                 }`}
                             >
                                 <div className="w-full h-full relative overflow-hidden">
-                                    {/* Desktop (>=1024px): Foreground portrait video container */}
+                                    {/* Right Window: framed portrait video window */}
                                     {slide.image ? (
                                         <div 
-                                            className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-[70%] -translate-x-1/2 h-[90%] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl items-center justify-center bg-black/20 z-20"
+                                            className="flex absolute top-1/2 -translate-y-1/2 right-3 sm:right-6 lg:left-[72%] lg:right-auto lg:-translate-x-1/2 h-[68%] sm:h-[78%] lg:h-[85%] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl items-center justify-center border border-white/20 bg-black/20 z-20 pointer-events-auto"
                                         >
                                             <img 
                                                 src={slide.image} 
@@ -475,22 +623,22 @@ const HomePage = () => {
                                         </div>
                                     ) : (
                                         <div 
-                                            className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-[70%] -translate-x-1/2 h-[90%] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl items-center justify-center bg-black/20 z-20"
+                                            className="flex absolute top-1/2 -translate-y-1/2 right-3 sm:right-6 lg:left-[72%] lg:right-auto lg:-translate-x-1/2 h-[68%] sm:h-[78%] lg:h-[85%] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl items-center justify-center border border-white/20 bg-black/20 z-20 pointer-events-auto"
                                         >
                                             <video 
-                                                ref={el => { heroVideoRefs.current[index] = el; }}
+                                                ref={el => { heroWindowVideoRefs.current[index] = el; }}
                                                 src={resolveSlideVideo(slide.video, index)}
                                                 {...(resolveSlidePoster(slide.poster) ? { poster: resolveSlidePoster(slide.poster) } : {})}
                                                 autoPlay={isActive}
                                                 muted
-                                                loop
                                                 playsInline
-                                                preload="metadata"
+                                                preload={isActive ? "auto" : "metadata"}
+                                                onTimeUpdate={() => handleTimeUpdate(index)}
+                                                onEnded={() => handleSlideEnded(index)}
                                                 onError={(e) => handleHeroVideoError(slide.id || index, e)}
-                                                className={`w-full h-full object-contain origin-top scale-[1.08] ${heroVideoErrors[slide.id || index] ? 'hidden' : 'block'}`}
+                                                className={`w-full h-full object-cover origin-top ${heroVideoErrors[slide.id || index] ? 'hidden' : 'block'}`}
                                                 style={{ 
-                                                    transform: 'scale(1.08)',
-                                                    transformOrigin: 'top center'
+                                                    objectPosition: slide.objectPosition || 'center 35%'
                                                 }}
                                             />
                                         </div>
@@ -499,20 +647,29 @@ const HomePage = () => {
                                     {/* Content Overlay */}
                                     <div className="absolute inset-0 w-full h-full flex items-center pointer-events-none z-20">
                                         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[50px] pb-12 md:pb-0">
-                                            <div className="max-w-[540px] lg:max-w-[45%] pointer-events-auto text-left space-y-4">
+                                            <div className="max-w-[62%] sm:max-w-[55%] lg:max-w-[45%] pointer-events-auto text-left space-y-4">
                                                 {/* BADGE / TAG */}
                                                 <div>
-                                                    <span className="border border-white/40 bg-white/10 backdrop-blur-xs text-white text-xs uppercase tracking-[0.2em] font-medium px-3.5 py-1 rounded-full inline-block">
+                                                    <span 
+                                                        className="border border-white/40 bg-black/25 backdrop-blur-xs text-white text-xs uppercase tracking-[0.2em] font-semibold px-3.5 py-1 rounded-full inline-block"
+                                                        style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}
+                                                    >
                                                         {slide.label}
                                                     </span>
                                                 </div>
                                                 {/* HEADLINE: Two-tone */}
-                                                <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-[1.05] uppercase tracking-tight font-black">
+                                                <h1 
+                                                    className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-[1.05] uppercase tracking-tight font-black"
+                                                    style={{ textShadow: '0 2px 10px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.9)' }}
+                                                >
                                                     <span className="block text-white">{slide.title1}</span>
                                                     <span className="block text-[#F3D9A0]">{slide.title2}</span>
                                                 </h1>
                                                 {/* SUBTEXT */}
-                                                <p className="text-white/90 text-sm md:text-base leading-relaxed max-w-md font-normal">
+                                                <p 
+                                                    className="text-white/95 text-sm md:text-base leading-relaxed max-w-md font-medium"
+                                                    style={{ textShadow: '0 1px 6px rgba(0,0,0,0.85)' }}
+                                                >
                                                     {slide.description}
                                                 </p>
                                                 {/* BUTTON */}
@@ -533,24 +690,8 @@ const HomePage = () => {
                         );
                     })}
 
-                    {/* Navigation Arrows */}
-                    <button 
-                        onClick={prevHeroSlide}
-                        aria-label="Previous Slide"
-                        className="flex absolute left-3 md:left-4 lg:left-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white shadow-md border border-white/20 items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 z-30"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <button 
-                        onClick={nextHeroSlide}
-                        aria-label="Next Slide"
-                        className="flex absolute right-3 md:right-4 lg:right-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white shadow-md border border-white/20 items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 z-30"
-                    >
-                        <ChevronRight size={20} />
-                    </button>
-
-                    {/* DOT INDICATORS / TABS at bottom center */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 pointer-events-auto">
+                    {/* Hero Slide Controls: Dots only in bottom pill */}
+                    <div className="absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-auto bg-black/45 backdrop-blur-md px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full border border-white/20 shadow-lg select-none" role="tablist" aria-label="Hero slide indicators">
                         {slides.map((slide, index) => {
                             const isActive = currentSlide === index;
                             return (
@@ -558,10 +699,12 @@ const HomePage = () => {
                                     key={slide.id || index}
                                     onClick={() => setCurrentSlide(index)}
                                     aria-label={`Go to slide ${index + 1}: ${slide.tabName || slide.title1}`}
-                                    className={`transition-all duration-300 ${
+                                    role="tab"
+                                    aria-selected={isActive}
+                                    className={`transition-all duration-300 cursor-pointer ${
                                         isActive 
-                                            ? 'w-8 h-2.5 rounded-full bg-[#C2255C]' 
-                                            : 'w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/80'
+                                            ? 'w-7 sm:w-8 h-2 sm:h-2.5 rounded-full bg-[#C2255C]' 
+                                            : 'w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white/50 hover:bg-white/80'
                                     }`}
                                 />
                             );
