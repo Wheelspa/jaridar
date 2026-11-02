@@ -972,10 +972,17 @@ async def ensure_seed_site_content():
         logger.info("Default site content seeded into db.site_content")
 
 CATEGORY_EDITORIAL_IMAGES = {
-    'ethnic': '/images/products/rust-ajrakh-shirt-kurta.jpg',
+    'ethnic': '/images/categories/ethnic-wear/ethnic-01-navy-kurta-floral-pants.jpg',
+    'ethnic-wear': '/images/categories/ethnic-wear/ethnic-01-navy-kurta-floral-pants.jpg',
+    'casual-wear': '/images/categories/casual/casual-01-green-floral-shirt-set.jpg',
+    'formal-wear': '/images/categories/formal/formal-04-black-coat-dress.jpg',
     'traditional': '/images/categories/category-traditional.jpg',
-    'western': '/images/products/purple-floral-coord-set.jpg',
-    'bridal': '/images/categories/category-bridal.jpg'
+    'western': '/images/categories/western/western-06-blue-wrap-crop-top.jpg',
+    'western-wear': '/images/categories/western/western-06-blue-wrap-crop-top.jpg',
+    'bridal': '/images/categories/category-bridal.jpg',
+    'party-wear': '/images/categories/party/party-01-maroon-cowl-dress-web.jpg',
+    'wedding-wear': '/images/categories/wedding/wedding-01-magenta-ruffle-gown.jpg',
+    'festive-wear': '/images/categories/festive/festive-01-multicolour-kaftan-drape-set-web.jpg'
 }
 
 CATEGORY_DEFAULT_SUBCATS = {

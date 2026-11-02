@@ -88,3 +88,5 @@ backend/test_atlas_connection.py
 backend/test_results.json
 *.bak
 frontend/src_backup_before_white/
+backup_*
+frontend/public/images/products/_old-backup/

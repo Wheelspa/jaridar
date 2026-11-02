@@ -76,7 +76,8 @@ export const ProductCard = ({ product }) => {
                     <img 
                         src={product.images[0]} 
                         alt={product.name ? `${product.name} - Jaridar Fashion Couture` : 'Jaridar Couture Product'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
+                        style={{ objectPosition: 'center top' }}
                         loading="lazy"
                         decoding="async"
                     />

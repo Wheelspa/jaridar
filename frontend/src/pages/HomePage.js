@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowRight, Truck, Award, RotateCcw, Lock, Star, ChevronLeft, ChevronRight, Instagram } from 'lucide-react';
+import { ArrowRight, Truck, Award, RotateCcw, Lock, Star, Instagram } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -106,17 +106,30 @@ const resolveSlidePoster = (poster) => {
 };
 
 const categoryEditorialImages = {
-    ethnic: '/images/products/rust-ajrakh-shirt-kurta.jpg',
-    traditional: '/images/categories/category-traditional.jpg',
-    western: '/images/products/purple-floral-coord-set.jpg',
-    'co-ord-sets': '/images/products/purple-floral-coord-set.jpg'
+    'formal-wear': '/images/categories/formal/formal-04-black-coat-dress.jpg',
+    formal: '/images/categories/formal/formal-04-black-coat-dress.jpg',
+    'casual-wear': '/images/categories/casual/casual-01-green-floral-shirt-set.jpg',
+    casual: '/images/categories/casual/casual-01-green-floral-shirt-set.jpg',
+    'ethnic-wear': '/images/categories/ethnic-wear/ethnic-01-navy-kurta-floral-pants.jpg',
+    ethnic: '/images/categories/ethnic-wear/ethnic-01-navy-kurta-floral-pants.jpg',
+    western: '/images/categories/western/western-06-blue-wrap-crop-top.jpg',
+    'western-wear': '/images/categories/western/western-06-blue-wrap-crop-top.jpg',
+    'party-wear': '/images/categories/party/party-01-maroon-cowl-dress-web.jpg',
+    party: '/images/categories/party/party-01-maroon-cowl-dress-web.jpg',
+    'wedding-wear': '/images/categories/wedding/wedding-01-magenta-ruffle-gown.jpg',
+    wedding: '/images/categories/wedding/wedding-01-magenta-ruffle-gown.jpg',
+    'festive-wear': '/images/categories/festive/festive-01-multicolour-kaftan-drape-set-web.jpg',
+    festive: '/images/categories/festive/festive-01-multicolour-kaftan-drape-set-web.jpg'
 };
 
 const defaultCategories = [
-    { id: 'ethnic', name: 'Ethnic Wear', subcategories: ['Sarees', 'Lehengas', 'Salwar Suits', 'Kurtis'], image: '/images/products/rust-ajrakh-shirt-kurta.jpg', href: '/shop?category=ethnic' },
-    { id: 'traditional', name: 'Traditional Wear', subcategories: ['Anarkalis', 'Sharara Sets', 'Palazzo Sets', 'Gharara Sets'], image: '/images/categories/traditional.jpg', href: '/shop?category=traditional' },
-    { id: 'western', name: 'Western Wear', subcategories: ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jumpsuits'], image: '/images/products/purple-floral-coord-set.jpg', href: '/shop?category=western' },
-    { id: 'co-ord-sets', name: 'Co-ord Sets', subcategories: ['Co-ord Sets'], image: '/images/products/purple-floral-coord-set.jpg', href: '/shop?product_type=co-ord-set' }
+    { id: 'formal-wear', name: 'Formal Wear', subcategories: ['Shirt Dresses', 'Dresses', 'Two-Piece Sets'], image: '/images/categories/formal/formal-04-black-coat-dress.jpg', href: '/shop?category=formal-wear' },
+    { id: 'casual-wear', name: 'Casual Wear', subcategories: ['Co-ord Sets', 'Shirt Sets'], image: '/images/categories/casual/casual-01-green-floral-shirt-set.jpg', href: '/shop?category=casual-wear' },
+    { id: 'ethnic', name: 'Ethnic Wear', subcategories: ['Sarees', 'Lehengas', 'Salwar Suits', 'Kurtis'], image: '/images/categories/ethnic-wear/ethnic-01-navy-kurta-floral-pants.jpg', href: '/shop?category=ethnic' },
+    { id: 'western', name: 'Western Wear', subcategories: ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jumpsuits'], image: '/images/categories/western/western-06-blue-wrap-crop-top.jpg', href: '/shop?category=western' },
+    { id: 'party-wear', name: 'Party Wear', subcategories: ['Mini Dresses', 'Dresses', 'Blouses', 'Corset Tops', 'Maxi Dresses'], image: '/images/categories/party/party-01-maroon-cowl-dress-web.jpg', href: '/shop?category=party-wear' },
+    { id: 'wedding-wear', name: 'Wedding Wear', subcategories: ['Gowns', 'Lehenga Sets'], image: '/images/categories/wedding/wedding-01-magenta-ruffle-gown.jpg', href: '/shop?category=wedding-wear' },
+    { id: 'festive-wear', name: 'Festive Wear', subcategories: ['Kaftans', 'Blouses', 'Waistcoats', 'Three-Piece Sets'], image: '/images/categories/festive/festive-01-multicolour-kaftan-drape-set-web.jpg', href: '/shop?category=festive-wear' }
 ];
 
 const SectionDivider = ({ align = "center" }) => (
@@ -161,9 +174,6 @@ const HomePage = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [isTabVisible, setIsTabVisible] = useState(true);
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-
-    // Product Carousel state
-    const [productSlideIndex, setProductSlideIndex] = useState(0);
 
     // Hero Video slide state & refs
     const [heroVideoErrors, setHeroVideoErrors] = useState({});
@@ -488,23 +498,105 @@ const HomePage = () => {
         touchEndY.current = null;
     };
 
+    const normalizeProductCategory = (category) => {
+        if (!category) return '';
+        const c = String(category).toLowerCase().trim();
+        if (c === 'ethnic' || c === 'ethnic-wear') return 'ethnic';
+        if (c === 'western' || c === 'western-wear') return 'western';
+        if (c === 'casual' || c === 'casual-wear') return 'casual-wear';
+        if (c === 'party' || c === 'party-wear') return 'party-wear';
+        if (c === 'festive' || c === 'festive-wear') return 'festive-wear';
+        if (c === 'formal' || c === 'formal-wear') return 'formal-wear';
+        if (c === 'wedding' || c === 'wedding-wear') return 'wedding-wear';
+        return c;
+    };
+
     const fetchProductsData = async () => {
         setProdLoading(true);
         setProdError(false);
         try {
-            const prodRes = await axios.get(`${API}/products`);
-            const rawProducts = prodRes.data && prodRes.data.length > 0 ? prodRes.data : [];
-            const sortedProducts = [...rawProducts].sort((a, b) => {
-                const isNewA = a.is_new ? 1 : 0;
-                const isNewB = b.is_new ? 1 : 0;
-                if (isNewA !== isNewB) {
-                    return isNewB - isNewA;
+            const prodRes = await axios.get(`${API}/products?limit=200`);
+            const rawProducts = prodRes.data && Array.isArray(prodRes.data) ? prodRes.data : [];
+
+            // Primary categories in exact order: Ethnic Wear, Western Wear, Casual Wear, Party Wear
+            const PRIMARY_CATEGORIES = ['ethnic', 'western', 'casual-wear', 'party-wear'];
+            // Fallback categories in exact priority order
+            const FALLBACK_CATEGORIES = ['festive-wear', 'formal-wear', 'wedding-wear'];
+
+            // Index each product to preserve insertion sequence for tie-breaking
+            const indexedProducts = rawProducts.map((p, idx) => ({ ...p, _rawIndex: idx }));
+
+            const isValidProduct = (p) => {
+                if (!p) return false;
+                const isActive = p.active !== false && p.is_active !== false;
+                const hasWorkingImage = Boolean(
+                    p.images &&
+                    Array.isArray(p.images) &&
+                    p.images.length > 0 &&
+                    typeof p.images[0] === 'string' &&
+                    p.images[0].trim() !== ''
+                );
+                return isActive && hasWorkingImage;
+            };
+
+            const getNewestForCategory = (catSlug) => {
+                const candidates = indexedProducts.filter((p) => {
+                    const normCat = normalizeProductCategory(p.category);
+                    return normCat === catSlug && isValidProduct(p);
+                });
+
+                if (candidates.length === 0) return null;
+
+                candidates.sort((a, b) => {
+                    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+                    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+                    if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+                        return timeB - timeA;
+                    }
+                    return b._rawIndex - a._rawIndex;
+                });
+
+                return candidates[0];
+            };
+
+            const selected = [];
+            const usedCategories = new Set();
+            let fallbackIdx = 0;
+
+            PRIMARY_CATEGORIES.forEach((catSlug) => {
+                const prod = getNewestForCategory(catSlug);
+                if (prod) {
+                    selected.push(prod);
+                    usedCategories.add(catSlug);
+                } else {
+                    // Fallback to next available fallback category
+                    while (fallbackIdx < FALLBACK_CATEGORIES.length) {
+                        const fbCat = FALLBACK_CATEGORIES[fallbackIdx++];
+                        if (!usedCategories.has(fbCat)) {
+                            const fbProd = getNewestForCategory(fbCat);
+                            if (fbProd) {
+                                selected.push(fbProd);
+                                usedCategories.add(fbCat);
+                                break;
+                            }
+                        }
+                    }
                 }
-                const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
-                const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
-                return timeB - timeA;
             });
-            setProducts(sortedProducts);
+
+            // If still fewer than 4 products, fill remaining slots from fallback categories
+            while (selected.length < 4 && fallbackIdx < FALLBACK_CATEGORIES.length) {
+                const fbCat = FALLBACK_CATEGORIES[fallbackIdx++];
+                if (!usedCategories.has(fbCat)) {
+                    const fbProd = getNewestForCategory(fbCat);
+                    if (fbProd) {
+                        selected.push(fbProd);
+                        usedCategories.add(fbCat);
+                    }
+                }
+            }
+
+            setProducts(selected.slice(0, 4));
         } catch (error) {
             console.error('Failed to fetch products:', error);
             setProdError(true);
@@ -517,25 +609,104 @@ const HomePage = () => {
         setCatLoading(true);
         setCatError(false);
         try {
-            const catRes = await axios.get(`${API}/categories`);
-            const loadedCats = catRes.data && catRes.data.length > 0 ? catRes.data : defaultCategories;
-            const filteredCats = loadedCats
-                .filter(cat => cat.id !== 'bridal' && !cat.name?.toLowerCase().includes('bridal'))
-                .map(cat => ({
-                    ...cat,
-                    href: cat.href || (cat.id === 'co-ord-sets' ? '/shop?product_type=co-ord-set' : `/shop?category=${cat.id}`)
-                }));
+            const [catRes, attrRes] = await Promise.all([
+                axios.get(`${API}/categories`).catch(() => ({ data: [] })),
+                axios.get(`${API}/attributes?with_counts=true`).catch(() => ({ data: {} }))
+            ]);
 
-            if (!filteredCats.some(c => c.id === 'co-ord-sets' || c.name === 'Co-ord Sets')) {
-                filteredCats.push({
-                    id: 'co-ord-sets',
-                    name: 'Co-ord Sets',
-                    subcategories: ['Co-ord Sets'],
-                    image: '/images/products/purple-floral-coord-set.jpg',
-                    href: '/shop?product_type=co-ord-set'
+            const loadedCats = catRes.data && catRes.data.length > 0 ? catRes.data : defaultCategories;
+
+            // Map product counts by category value
+            const countMap = {};
+            if (attrRes.data && attrRes.data.category) {
+                attrRes.data.category.forEach(c => {
+                    countMap[c.value] = c.count || 0;
                 });
             }
-            setCategories(filteredCats);
+
+            const canonicalNames = {
+                'formal-wear': 'Formal Wear',
+                'casual-wear': 'Casual Wear',
+                'ethnic': 'Ethnic Wear',
+                'western': 'Western Wear',
+                'party-wear': 'Party Wear',
+                'wedding-wear': 'Wedding Wear',
+                'festive-wear': 'Festive Wear'
+            };
+
+            const OFFICIAL_ORDER = [
+                'formal-wear',
+                'casual-wear',
+                'ethnic',
+                'western',
+                'party-wear',
+                'wedding-wear',
+                'festive-wear'
+            ];
+
+            const resolvedCats = loadedCats
+                .filter(cat => {
+                    const norm = (cat.id || '').toLowerCase();
+                    const nameNorm = (cat.name || '').toLowerCase();
+                    // Hide Bridal Collection and Traditional Wear on Home page
+                    if (norm === 'bridal' || nameNorm.includes('bridal')) return false;
+                    if (norm === 'traditional' || nameNorm.includes('traditional')) return false;
+                    return true;
+                })
+                .map(cat => {
+                    const resolvedId = (cat.id === 'ethnic-wear' || cat.id === 'ethnic') ? 'ethnic'
+                        : (cat.id === 'casual' || cat.id === 'casual-wear') ? 'casual-wear'
+                        : (cat.id === 'formal' || cat.id === 'formal-wear') ? 'formal-wear'
+                        : (cat.id === 'western' || cat.id === 'western-wear') ? 'western'
+                        : (cat.id === 'party' || cat.id === 'party-wear') ? 'party-wear'
+                        : (cat.id === 'wedding' || cat.id === 'wedding-wear') ? 'wedding-wear'
+                        : (cat.id === 'festive' || cat.id === 'festive-wear') ? 'festive-wear'
+                        : cat.id;
+
+                    const resolvedHref = resolvedId === 'formal-wear' ? '/shop?category=formal-wear'
+                        : resolvedId === 'casual-wear' ? '/shop?category=casual-wear'
+                        : resolvedId === 'ethnic' ? '/shop?category=ethnic'
+                        : resolvedId === 'western' ? '/shop?category=western'
+                        : resolvedId === 'party-wear' ? '/shop?category=party-wear'
+                        : resolvedId === 'wedding-wear' ? '/shop?category=wedding-wear'
+                        : resolvedId === 'festive-wear' ? '/shop?category=festive-wear'
+                        : cat.href || `/shop?category=${resolvedId}`;
+
+                    return {
+                        ...cat,
+                        id: resolvedId,
+                        name: canonicalNames[resolvedId] || cat.name,
+                        href: resolvedHref
+                    };
+                });
+
+            // Keep only the 7 official categories, ensure at least 1 product
+            const catMap = new Map();
+            resolvedCats.forEach(cat => {
+                if (!OFFICIAL_ORDER.includes(cat.id)) return;
+                const count = countMap[cat.id] !== undefined ? countMap[cat.id] : 1;
+                if (count > 0 && !catMap.has(cat.id)) {
+                    catMap.set(cat.id, cat);
+                }
+            });
+
+            // Ensure fallbacks for any missing official category with products
+            OFFICIAL_ORDER.forEach(id => {
+                if (!catMap.has(id)) {
+                    const fallback = defaultCategories.find(c => c.id === id);
+                    const count = countMap[id] !== undefined ? countMap[id] : 1;
+                    if (fallback && count > 0) {
+                        catMap.set(id, fallback);
+                    }
+                }
+            });
+
+            // Strict sort in OFFICIAL_ORDER
+            const sortedCats = OFFICIAL_ORDER
+                .map(id => catMap.get(id))
+                .filter(Boolean);
+
+            setCategories(sortedCats);
         } catch (error) {
             console.error('Failed to fetch categories:', error);
             setCatError(true);
@@ -543,14 +714,6 @@ const HomePage = () => {
         } finally {
             setCatLoading(false);
         }
-    };
-
-    const prevProductSlide = () => {
-        setProductSlideIndex((prev) => (prev === 0 ? Math.max(0, products.length - 4) : prev - 1));
-    };
-
-    const nextProductSlide = () => {
-        setProductSlideIndex((prev) => (prev >= products.length - 4 ? 0 : prev + 1));
     };
 
     return (
@@ -788,9 +951,11 @@ const HomePage = () => {
                     />
 
                     {catLoading ? (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                        <div className="flex flex-wrap justify-center -m-1.5 sm:-m-2 md:-m-2.5">
                             {[1, 2, 3, 4].map((n) => (
-                                <div key={n} className="aspect-[3/4] bg-[#E5E7EB]/50 animate-pulse rounded-xl md:rounded-2xl border border-[#E5E7EB]" />
+                                <div key={n} className="w-1/2 lg:w-1/4 p-1.5 sm:p-2 md:p-2.5 flex-none">
+                                    <div className="aspect-[3/4] bg-[#E5E7EB]/50 animate-pulse rounded-xl md:rounded-2xl border border-[#E5E7EB]" />
+                                </div>
                             ))}
                         </div>
                     ) : catError || categories.length === 0 ? (
@@ -804,34 +969,44 @@ const HomePage = () => {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                        <div className="flex flex-wrap justify-center -m-1.5 sm:-m-2 md:-m-2.5">
                             {categories.map((category) => {
                                 const editorialImg = categoryEditorialImages[category.id] || category.image;
-                                const categoryHref = category.href || (category.id === 'co-ord-sets' ? '/shop?product_type=co-ord-set' : `/shop?category=${category.id}`);
+                                const categoryHref = (
+                                    (category.id === 'formal' || category.id === 'formal-wear') ? '/shop?category=formal-wear' :
+                                    (category.id === 'casual' || category.id === 'casual-wear') ? '/shop?category=casual-wear' :
+                                    (category.id === 'ethnic' || category.id === 'ethnic-wear') ? '/shop?category=ethnic' :
+                                    (category.id === 'western' || category.id === 'western-wear') ? '/shop?category=western' :
+                                    (category.id === 'party' || category.id === 'party-wear') ? '/shop?category=party-wear' :
+                                    (category.id === 'wedding' || category.id === 'wedding-wear') ? '/shop?category=wedding-wear' :
+                                    (category.id === 'festive' || category.id === 'festive-wear') ? '/shop?category=festive-wear' :
+                                    category.href || `/shop?category=${category.id}`
+                                );
                                 return (
-                                    <Link 
-                                        key={category.id}
-                                        to={categoryHref}
-                                        className="group relative block aspect-[3/4] w-full overflow-hidden rounded-xl md:rounded-2xl border border-[#E5E7EB] bg-white shadow-xs hover:shadow-md transition-shadow"
-                                        data-testid={`category-${category.id}`}
-                                    >
-                                        <img 
-                                            src={editorialImg}
-                                            alt={`${category.name} Collection - Jaridar Fashion Couture`}
-                                            className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                        {/* Bottom-to-top dark gradient overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
-                                        
-                                        {/* Category name placed over gradient at bottom in white */}
-                                        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 text-center pointer-events-none">
-                                            <h3 className="font-heading text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider text-white drop-shadow-sm">
-                                                {category.name}
-                                            </h3>
-                                        </div>
-                                    </Link>
+                                    <div key={category.id} className="w-1/2 lg:w-1/4 p-1.5 sm:p-2 md:p-2.5 flex-none">
+                                        <Link 
+                                            to={categoryHref}
+                                            className="group relative block aspect-[3/4] w-full overflow-hidden rounded-xl md:rounded-2xl border border-[#E5E7EB] bg-white shadow-xs hover:shadow-md transition-shadow"
+                                            data-testid={`category-${category.id}`}
+                                        >
+                                            <img 
+                                                src={editorialImg}
+                                                alt={`${category.name} Collection - Jaridar Fashion Couture`}
+                                                className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                            {/* Bottom-to-top dark gradient overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+                                            
+                                            {/* Category name placed over gradient at bottom in white */}
+                                            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 text-center pointer-events-none">
+                                                <h3 className="font-heading text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider text-white drop-shadow-sm">
+                                                    {category.name}
+                                                </h3>
+                                            </div>
+                                        </Link>
+                                    </div>
                                 );
                             })}
                         </div>
@@ -849,25 +1024,6 @@ const HomePage = () => {
                     />
 
                     <div className="relative">
-                        {!prodLoading && !prodError && products.length > 4 && (
-                            <>
-                                <button 
-                                    onClick={prevProductSlide} 
-                                    className="absolute -left-1 sm:-left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] hover:border-[#C2255C] transition-all bg-white/95 shadow-md flex items-center justify-center cursor-pointer"
-                                    aria-label="Previous products"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <button 
-                                    onClick={nextProductSlide} 
-                                    className="absolute -right-1 sm:-right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#E5E7EB] text-[#1F2937] hover:text-[#C2255C] hover:border-[#C2255C] transition-all bg-white/95 shadow-md flex items-center justify-center cursor-pointer"
-                                    aria-label="Next products"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </>
-                        )}
-
                         {prodLoading ? (
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                                 {[1, 2, 3, 4].map((n) => (
@@ -896,7 +1052,7 @@ const HomePage = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-                                {products.slice(productSlideIndex, productSlideIndex + 4).map((product) => (
+                                {products.map((product) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>

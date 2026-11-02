@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -51,6 +51,7 @@ const ProductDetailPage = () => {
 
     const fetchProduct = async () => {
         setLoading(true);
+        setActiveImage(0);
         try {
             const [productRes, reviewsRes] = await Promise.all([
                 axios.get(`${API}/products/${id}`),
@@ -76,6 +77,57 @@ const ProductDetailPage = () => {
             navigate('/shop');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Touch swipe handling for mobile
+    const touchStartX = useRef(null);
+    const touchStartY = useRef(null);
+    const touchEndX = useRef(null);
+    const touchEndY = useRef(null);
+
+    const handleTouchStart = (e) => {
+        if (!product?.images?.length || product.images.length <= 1) return;
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        touchEndX.current = null;
+        touchEndY.current = null;
+    };
+
+    const handleTouchMove = (e) => {
+        if (!product?.images?.length || product.images.length <= 1) return;
+        touchEndX.current = e.touches[0].clientX;
+        touchEndY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+        if (!product?.images?.length || product.images.length <= 1) return;
+        if (touchStartX.current === null || touchEndX.current === null) return;
+        const diffX = touchStartX.current - touchEndX.current;
+        const diffY = touchStartY.current - touchEndY.current;
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+            if (diffX > 0 && activeImage < product.images.length - 1) {
+                // Swiped left -> next
+                setActiveImage((prev) => prev + 1);
+            } else if (diffX < 0 && activeImage > 0) {
+                // Swiped right -> prev
+                setActiveImage((prev) => prev - 1);
+            }
+        }
+        touchStartX.current = null;
+        touchStartY.current = null;
+        touchEndX.current = null;
+        touchEndY.current = null;
+    };
+
+    const handleGalleryKeyDown = (e) => {
+        if (!product?.images?.length || product.images.length <= 1) return;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setActiveImage((prev) => Math.max(0, prev - 1));
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setActiveImage((prev) => Math.min(product.images.length - 1, prev + 1));
         }
     };
 
@@ -244,38 +296,125 @@ const ProductDetailPage = () => {
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
+                        className="flex flex-col"
                     >
+                        {/* Main Photo Slider Area */}
                         <div 
-                            className="aspect-[3/4] bg-white rounded-md border border-[#E5E7EB] mb-4 overflow-hidden shadow-xs relative cursor-zoom-in group"
-                            onMouseEnter={() => setIsHovered(true)}
-                            onMouseLeave={() => setIsHovered(false)}
-                            onMouseMove={handleMouseMove}
+                            tabIndex={0}
+                            onKeyDown={handleGalleryKeyDown}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            className="aspect-[3/4] w-full bg-[#F9FAFB] rounded-md border border-[#E5E7EB] mb-2.5 overflow-hidden shadow-xs relative cursor-zoom-in group select-none outline-none focus-visible:ring-2 focus-visible:ring-rose/50"
                             onClick={() => openLightbox(activeImage)}
                             data-testid="product-main-image-container"
+                            aria-label={`${product.name} gallery. Use left and right arrow keys to change photo.`}
                         >
-                            <img 
-                                src={product.images[activeImage]}
-                                alt={product.name}
-                                className="w-full h-full object-cover transition-transform duration-150 ease-out pointer-events-none"
-                                style={{
-                                    transform: isHovered ? 'scale(2)' : 'scale(1)',
-                                    transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`
-                                }}
-                                data-testid="product-main-image"
-                            />
-                            <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-xs p-2 rounded-full text-charcoal shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            {/* Sliding Track */}
+                            <div 
+                                className="flex w-full h-full transition-transform duration-300 ease-out"
+                                style={{ transform: `translateX(-${activeImage * 100}%)` }}
+                            >
+                                {product.images.map((img, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className="w-full h-full flex-shrink-0 flex items-center justify-center bg-[#F9FAFB]"
+                                    >
+                                        <img 
+                                            src={img} 
+                                            alt={`${product.name} - View ${idx + 1}`}
+                                            className="w-full h-full object-contain pointer-events-none"
+                                            loading={idx === 0 ? "eager" : "lazy"}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Left Nav Arrow (Hidden at first photo or if single image) */}
+                            {product.images.length > 1 && activeImage > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveImage((prev) => Math.max(0, prev - 1));
+                                    }}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/85 hover:bg-white text-[#1F2937] hover:text-[#C2255C] shadow-md flex items-center justify-center transition-all cursor-pointer border border-[#E5E7EB]"
+                                    aria-label="Previous photo"
+                                    data-testid="gallery-prev-btn"
+                                >
+                                    <ChevronLeft size={18} />
+                                </button>
+                            )}
+
+                            {/* Right Nav Arrow (Hidden at last photo or if single image) */}
+                            {product.images.length > 1 && activeImage < product.images.length - 1 && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveImage((prev) => Math.min(product.images.length - 1, prev + 1));
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/85 hover:bg-white text-[#1F2937] hover:text-[#C2255C] shadow-md flex items-center justify-center transition-all cursor-pointer border border-[#E5E7EB]"
+                                    aria-label="Next photo"
+                                    data-testid="gallery-next-btn"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
+                            )}
+
+                            {/* Zoom hint icon (bottom right) */}
+                            <div className="absolute bottom-3 right-3 bg-white/85 backdrop-blur-xs p-2 rounded-full text-charcoal shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                 <Search size={16} />
                             </div>
+
+                            {/* Photo counter badge (top right, visible on multi-image) */}
+                            {product.images.length > 1 && (
+                                <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-full z-10 pointer-events-none">
+                                    {activeImage + 1} / {product.images.length}
+                                </div>
+                            )}
                         </div>
+
+                        {/* Slider Dots (Only shown if more than 1 image) */}
                         {product.images.length > 1 && (
-                            <div className="flex gap-3">
+                            <div className="flex items-center justify-center gap-2 my-2.5" data-testid="gallery-dots">
+                                {product.images.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => setActiveImage(idx)}
+                                        aria-label={`Go to photo ${idx + 1}`}
+                                        className={`transition-all duration-300 cursor-pointer ${
+                                            activeImage === idx 
+                                                ? 'w-6 h-2 rounded-full bg-[#C2255C]' 
+                                                : 'w-2 h-2 rounded-full bg-[#D1D5DB] hover:bg-[#9CA3AF]'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Thumbnails Row (Only shown if more than 1 image) */}
+                        {product.images.length > 1 && (
+                            <div className="flex gap-3 overflow-x-auto pb-1 pt-1" data-testid="gallery-thumbnails">
                                 {product.images.map((img, i) => (
                                     <button 
                                         key={i}
+                                        type="button"
                                         onClick={() => setActiveImage(i)}
-                                        className={`w-20 h-24 rounded-md overflow-hidden border-2 transition-all ${activeImage === i ? 'border-rose' : 'border-[#E5E7EB] bg-white'}`}
+                                        className={`w-20 h-24 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer bg-[#F9FAFB] ${
+                                            activeImage === i 
+                                                ? 'border-[#C2255C] shadow-sm ring-1 ring-[#C2255C]/40' 
+                                                : 'border-[#E5E7EB] opacity-75 hover:opacity-100 hover:border-[#9CA3AF]'
+                                        }`}
+                                        aria-label={`View photo ${i + 1}`}
+                                        data-testid={`gallery-thumb-${i}`}
                                     >
-                                        <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                                        <img 
+                                            src={img} 
+                                            alt={`${product.name} thumbnail ${i + 1}`} 
+                                            className="w-full h-full object-contain" 
+                                        />
                                     </button>
                                 ))}
                             </div>
