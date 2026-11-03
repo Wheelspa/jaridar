@@ -90,3 +90,5 @@ backend/test_results.json
 frontend/src_backup_before_white/
 backup_*
 frontend/public/images/products/_old-backup/
+
+atlas_products_backup_*.json

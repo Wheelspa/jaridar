@@ -116,6 +116,8 @@ class ProductBase(BaseModel):
     stock: int = 0
     featured: bool = False
     is_new: bool = False
+    is_active: Optional[bool] = True
+    active: Optional[bool] = None
 
 class ProductResponse(ProductBase):
     id: str
@@ -141,6 +143,8 @@ class ProductUpdate(BaseModel):
     stock: Optional[int] = None
     featured: Optional[bool] = None
     is_new: Optional[bool] = None
+    is_active: Optional[bool] = None
+    active: Optional[bool] = None
 
 class CartItem(BaseModel):
     product_id: str
@@ -471,7 +475,8 @@ async def get_products(
     max_price: Optional[float] = None,
     search: Optional[str] = None,
     limit: int = 50,
-    skip: int = 0
+    skip: int = 0,
+    include_inactive: bool = False
 ):
     query = {}
     if category:
@@ -530,12 +535,30 @@ async def get_products(
         else:
             query['$or'] = search_or
     
+    if not include_inactive:
+        active_conditions = [
+            {'active': {'$ne': False}},
+            {'is_active': {'$ne': False}}
+        ]
+        if '$and' in query:
+            query['$and'].extend(active_conditions)
+        elif '$or' in query:
+            existing_or = query.pop('$or')
+            query['$and'] = [{'$or': existing_or}] + active_conditions
+        else:
+            query['active'] = {'$ne': False}
+            query['is_active'] = {'$ne': False}
+
     products = await db.products.find(query, {'_id': 0}).skip(skip).limit(limit).to_list(limit)
     return products
 
 @api_router.get("/products/{product_id}", response_model=ProductResponse)
-async def get_product(product_id: str):
-    product = await db.products.find_one({'id': product_id}, {'_id': 0})
+async def get_product(product_id: str, include_inactive: bool = False):
+    query = {'id': product_id}
+    if not include_inactive:
+        query['active'] = {'$ne': False}
+        query['is_active'] = {'$ne': False}
+    product = await db.products.find_one(query, {'_id': 0})
     if not product:
         raise HTTPException(status_code=404, detail='Product not found')
     return product
@@ -1003,16 +1026,26 @@ async def get_categories():
     for cat in active_cats:
         val = cat.get("value")
         label = cat.get("label")
-        subcats = await db.products.distinct("subcategory", {"category": val})
+        subcats = await db.products.distinct("subcategory", {
+            "category": val,
+            "active": {"$ne": False},
+            "is_active": {"$ne": False}
+        })
         clean_subcats = [s for s in subcats if s and str(s).strip()]
         if not clean_subcats:
             clean_subcats = CATEGORY_DEFAULT_SUBCATS.get(val, [])
         img = CATEGORY_EDITORIAL_IMAGES.get(val, 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600')
+        count = await db.products.count_documents({
+            "category": val,
+            "active": {"$ne": False},
+            "is_active": {"$ne": False}
+        })
         categories.append({
             'id': val,
             'name': label,
             'subcategories': clean_subcats,
-            'image': img
+            'image': img,
+            'count': count
         })
     return categories
 
@@ -1298,14 +1331,18 @@ async def admin_get_customers(admin: dict = Depends(get_current_admin)):
     return customers
 
 # Helper to attach counts and normalize fields
-async def attach_product_counts(attributes_list: List[dict]) -> List[dict]:
+async def attach_product_counts(attributes_list: List[dict], include_inactive: bool = False) -> List[dict]:
     for attr in attributes_list:
         attr_type = attr.get("type")
         attr_val = attr.get("value")
         if attr_type and attr_val:
-            c = await db.products.count_documents({
+            query = {
                 attr_type: {"$regex": f"^{re.escape(attr_val)}$", "$options": "i"}
-            })
+            }
+            if not include_inactive:
+                query["active"] = {"$ne": False}
+                query["is_active"] = {"$ne": False}
+            c = await db.products.count_documents(query)
             attr["count"] = c
         else:
             attr["count"] = 0
@@ -1368,7 +1405,7 @@ async def admin_get_attributes(type: Optional[str] = None, admin: dict = Depends
     if type:
         query["type"] = type.strip().lower()
     attributes = await db.attributes.find(query, {"_id": 0}).sort([("display_order", 1), ("sort_order", 1), ("label", 1)]).to_list(1000)
-    await attach_product_counts(attributes)
+    await attach_product_counts(attributes, include_inactive=True)
     return attributes
 
 @api_router.post("/admin/attributes", response_model=AttributeResponse, status_code=status.HTTP_201_CREATED)
