@@ -20,9 +20,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const DEFAULT_ANNOUNCEMENT = {
     enabled: true,
     messages: [
-        { prefix: "BUY 1 GET ", highlight: "20% OFF", suffix: "" },
-        { prefix: "BUY 2 GET EXTRA ", highlight: "₹500 OFF", suffix: "" },
-        { prefix: "FREE SHIPPING ON ORDERS ABOVE ₹2999", highlight: "", suffix: "" }
+        { prefix: "EXCLUSIVE FESTIVE OFFER: ", highlight: "20% OFF", suffix: " ON ALL COUTURE" },
+        { prefix: "FREE SHIPPING ON ORDERS ABOVE ", highlight: "₹2999", suffix: "" },
+        { prefix: "NEW DESIGNS ADDED TO ", highlight: "FESTIVE COLLECTION", suffix: "", link: "/shop?category=festive-wear" }
     ]
 };
 
@@ -173,16 +173,27 @@ export const Header = () => {
                     <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px] text-center">
                         {/* Desktop: all three centered in one line separated by | */}
                         <div className="hidden md:flex items-center justify-center gap-4 text-sm uppercase tracking-wide">
-                            {announcementMessages.map((msg, idx) => (
-                                <span key={idx} className="flex items-center gap-4">
-                                    {idx > 0 && <span className="text-white/40 font-normal">|</span>}
-                                    <span>
+                            {announcementMessages.map((msg, idx) => {
+                                const content = (
+                                    <>
                                         <span className="font-medium text-white">{msg.prefix || ''}</span>
                                         {msg.highlight && <span className="font-bold text-[#F3D9A0]">{msg.highlight}</span>}
                                         {msg.suffix && <span className="font-medium text-white">{msg.suffix}</span>}
+                                    </>
+                                );
+                                return (
+                                    <span key={idx} className="flex items-center gap-4">
+                                        {idx > 0 && <span className="text-white/40 font-normal">|</span>}
+                                        {msg.link ? (
+                                            <Link to={msg.link} className="hover:underline hover:opacity-95 transition-all">
+                                                {content}
+                                            </Link>
+                                        ) : (
+                                            <span>{content}</span>
+                                        )}
                                     </span>
-                                </span>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Mobile: rotate 1 at a time every 3s */}
@@ -196,12 +207,26 @@ export const Header = () => {
                                     transition={{ duration: 0.35, ease: "easeInOut" }}
                                     className="text-sm uppercase tracking-wide whitespace-nowrap"
                                 >
-                                    <span className="font-medium text-white">{currentMsg.prefix || ''}</span>
-                                    {currentMsg.highlight && (
-                                        <span className="font-bold text-[#F3D9A0]">{currentMsg.highlight}</span>
-                                    )}
-                                    {currentMsg.suffix && (
-                                        <span className="font-medium text-white">{currentMsg.suffix}</span>
+                                    {currentMsg.link ? (
+                                        <Link to={currentMsg.link} className="hover:underline">
+                                            <span className="font-medium text-white">{currentMsg.prefix || ''}</span>
+                                            {currentMsg.highlight && (
+                                                <span className="font-bold text-[#F3D9A0]">{currentMsg.highlight}</span>
+                                            )}
+                                            {currentMsg.suffix && (
+                                                <span className="font-medium text-white">{currentMsg.suffix}</span>
+                                            )}
+                                        </Link>
+                                    ) : (
+                                        <>
+                                            <span className="font-medium text-white">{currentMsg.prefix || ''}</span>
+                                            {currentMsg.highlight && (
+                                                <span className="font-bold text-[#F3D9A0]">{currentMsg.highlight}</span>
+                                            )}
+                                            {currentMsg.suffix && (
+                                                <span className="font-medium text-white">{currentMsg.suffix}</span>
+                                            )}
+                                        </>
                                     )}
                                 </motion.p>
                             </AnimatePresence>

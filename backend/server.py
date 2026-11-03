@@ -2333,10 +2333,17 @@ images_dir = ROOT_DIR.parent / "frontend" / "public" / "images"
 if images_dir.exists():
     app.mount("/images", StaticFiles(directory=str(images_dir)), name="images")
 
+cors_origins_raw = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+cors_origins = [o.strip() for o in cors_origins_raw.split(',') if o.strip()]
+if 'http://localhost:3000' not in cors_origins:
+    cors_origins.append('http://localhost:3000')
+if 'http://127.0.0.1:3000' not in cors_origins:
+    cors_origins.append('http://127.0.0.1:3000')
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -14,16 +14,16 @@ export const MENU_CONFIG = [
         items: [
             { label: 'Ethnic Wear', url: '/shop?category=ethnic' },
             { label: 'Western Wear', url: '/shop?category=western' },
-            { label: 'Dresses & Gowns', url: '/shop?product_type=dresses-gowns' },
-            { label: 'Co-ord Sets', url: '/shop?product_type=co-ord-set' },
-            { label: 'Tops & Shirts', url: '/shop?product_type=tops-shirts' },
-            { label: 'Trousers & Pants', url: '/shop?product_type=trousers-pants' },
-            { label: 'Kurta & Suits', url: '/shop?product_type=kurta-suits' },
+            { label: 'Dresses & Gowns', url: '/shop?product_type=dresses,gowns,shirt-dresses' },
+            { label: 'Co-ord Sets', url: '/shop?product_type=co-ord-sets' },
+            { label: 'Tops & Shirts', url: '/shop?product_type=tops,crop-tops,shirts' },
+            { label: 'Trousers & Pants', url: '/shop?product_type=pants,palazzo-pants' },
+            { label: 'Kurta & Suits', url: '/shop?product_type=kurta-sets,salwar-suits' },
             { label: 'Party Wear', url: '/shop?style=party-wear' },
             { label: 'Festive Collection', url: '/shop?style=festive-wear' },
             { label: 'Custom Couture', url: '/contact' },
-            { label: 'Designer Blouses', url: '/shop?product_type=designer-blouses' },
-            { label: 'Shrugs & Jackets', url: '/shop?product_type=shrugs-jackets' },
+            { label: 'Designer Blouses', url: '/shop?product_type=blouses' },
+            { label: 'Shrugs & Jackets', url: '/shop?product_type=jackets,waistcoats' },
             { label: 'One-Piece Dresses', url: '/shop?product_type=one-piece-dresses' },
             { label: 'Fusion Wear', url: '/shop?style=fusion-wear' },
             { label: 'Exclusive Jaridar Collection', url: '/shop?style=exclusive-jaridar-collection', highlight: true }
@@ -61,8 +61,8 @@ export const MENU_CONFIG = [
             { label: 'Latest Collection', url: '/shop?filter=new&sort=newest' },
             { label: 'Trending Now', url: '/shop?featured=true' },
             { label: 'New Season Styles', url: '/shop?filter=new' },
-            { label: 'Latest Co-ord Sets', url: '/shop?filter=new&product_type=co-ord-set' },
-            { label: 'New Dresses & Gowns', url: '/shop?filter=new&product_type=dresses-gowns' },
+            { label: 'Latest Co-ord Sets', url: '/shop?filter=new&product_type=co-ord-sets' },
+            { label: 'New Dresses & Gowns', url: '/shop?filter=new&product_type=dresses,gowns,shirt-dresses' },
             { label: 'New Festive Collection', url: '/shop?filter=new&style=festive-wear' },
             { label: 'New Statement Pieces', url: '/shop?filter=new&featured=true' },
             { label: 'Explore What\'s New', url: '/shop?filter=new' }
@@ -115,12 +115,11 @@ export const MENU_CONFIG = [
         hasDropdown: true,
         columns: 2,
         items: [
-            { label: 'Wedding', url: '/shop?occasion=wedding' },
-            { label: 'Party', url: '/shop?occasion=party' },
-            { label: 'Festive', url: '/shop?occasion=festive' },
-            { label: 'Casual', url: '/shop?occasion=casual' },
-            { label: 'Workwear', url: '/shop?occasion=workwear' },
-            { label: 'Vacation', url: '/shop?occasion=vacation' }
+            { label: 'Wedding', url: '/shop?category=wedding-wear' },
+            { label: 'Party', url: '/shop?category=party-wear' },
+            { label: 'Festive', url: '/shop?category=festive-wear' },
+            { label: 'Casual', url: '/shop?category=casual-wear' },
+            { label: 'Workwear', url: '/shop?category=formal-wear' }
         ]
     },
     {

@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowRight, Truck, Award, RotateCcw, Lock, Star, Instagram } from 'lucide-react';
+import { ArrowRight, Truck, Award, RotateCcw, Lock, Instagram, Scissors, Camera, Store, Sparkles } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
+import { clientReviews } from '../data/clientReviews';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+const API = `${BACKEND_URL}/api`;
 
 // Hero ambient background video tuning constants
 export const HERO_BG_OVERLAY = 0.72; // Dark overlay opacity (e.g. 0.72)
@@ -518,10 +520,10 @@ const HomePage = () => {
             const prodRes = await axios.get(`${API}/products?limit=200`);
             const rawProducts = prodRes.data && Array.isArray(prodRes.data) ? prodRes.data : [];
 
-            // Primary categories in exact order: Ethnic Wear, Western Wear, Casual Wear, Party Wear
-            const PRIMARY_CATEGORIES = ['ethnic', 'western', 'casual-wear', 'party-wear'];
+            // Primary categories in exact order: Casual Wear, Ethnic Wear, Formal Wear, Western Wear
+            const PRIMARY_CATEGORIES = ['casual-wear', 'ethnic', 'formal-wear', 'western'];
             // Fallback categories in exact priority order
-            const FALLBACK_CATEGORIES = ['festive-wear', 'formal-wear', 'wedding-wear'];
+            const FALLBACK_CATEGORIES = ['party-wear', 'festive-wear', 'wedding-wear'];
 
             // Index each product to preserve insertion sequence for tie-breaking
             const indexedProducts = rawProducts.map((p, idx) => ({ ...p, _rawIndex: idx }));
@@ -529,6 +531,7 @@ const HomePage = () => {
             const isValidProduct = (p) => {
                 if (!p) return false;
                 const isActive = p.active !== false && p.is_active !== false;
+                const isNew = p.is_new === true;
                 const hasWorkingImage = Boolean(
                     p.images &&
                     Array.isArray(p.images) &&
@@ -536,7 +539,7 @@ const HomePage = () => {
                     typeof p.images[0] === 'string' &&
                     p.images[0].trim() !== ''
                 );
-                return isActive && hasWorkingImage;
+                return isActive && isNew && hasWorkingImage;
             };
 
             const getNewestForCategory = (catSlug) => {
@@ -1105,8 +1108,8 @@ const HomePage = () => {
                 <div className="relative z-20 w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
                     <div className="max-w-[1140px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-14">
                         
-                        {/* Left Column (60% on Desktop): Text Content (stacked first on mobile) */}
-                        <div className="w-full lg:w-[60%] text-center lg:text-left space-y-4">
+                        {/* Left Column (58% on Desktop): Text Content (stacked first on mobile) */}
+                        <div className="w-full lg:w-[58%] text-center lg:text-left space-y-4">
                             <p className="text-xs uppercase tracking-[0.2em] font-bold text-[#3B6FA0]">
                                 OUR STORY
                             </p>
@@ -1119,7 +1122,13 @@ const HomePage = () => {
                             <p className="text-[#1F2937]/90 text-base md:text-lg leading-relaxed font-medium max-w-[680px] mx-auto lg:mx-0">
                                 Jaridar Fashion Couture is a boutique in Wakad, Pimpri-Chinchwad, where everyday kurtas, co-ord sets, dresses and festive wear are chosen with care for fabric, fit and comfort. Visit our store or shop online, and find something that feels like you.
                             </p>
-                            <div className="pt-2">
+                            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-5">
+                                <Link 
+                                    to="/about"
+                                    className="px-6 sm:px-7 py-3 bg-[#C2255C] text-white text-xs sm:text-sm uppercase tracking-wider font-semibold rounded-xl hover:bg-[#9C1D49] transition-all shadow-xs inline-flex items-center justify-center"
+                                >
+                                    READ OUR STORY
+                                </Link>
                                 <Link 
                                     to="/our-stores" 
                                     className="text-xs uppercase tracking-[0.18em] font-semibold text-[#C2255C] hover:text-[#9C1D49] underline decoration-[#C2255C] underline-offset-4 transition-colors inline-flex items-center gap-1"
@@ -1129,24 +1138,18 @@ const HomePage = () => {
                             </div>
                         </div>
 
-                        {/* Right Column (40% on Desktop): Logo Card (stacked below text on mobile, right on desktop) */}
-                        <div className="w-full lg:w-[40%] flex justify-center lg:justify-end items-center">
-                            <div className="bg-white/85 backdrop-blur-xs border border-[#E5E7EB] rounded-2xl shadow-md lg:shadow-lg p-6 sm:p-8 lg:p-9 max-w-[280px] sm:max-w-[320px] lg:max-w-[380px] w-full flex items-center justify-center gap-3.5 lg:gap-4 transition-all">
+                        {/* Right Column (42% on Desktop): Photo Card (stacked below text on mobile, right on desktop) */}
+                        <div className="w-full lg:w-[42%] flex justify-center lg:justify-end items-center">
+                            <div className="w-full max-w-[480px] aspect-[4/3] rounded-2xl overflow-hidden shadow-md lg:shadow-lg border border-white/90 bg-white">
                                 <img 
-                                    src="/images/logo/jaridar-icon.png" 
-                                    alt="Jaridar Fashion Couture Logo" 
-                                    className="h-11 sm:h-12 lg:h-16 w-auto object-contain flex-shrink-0" 
+                                    src="/images/story/story-design-sketchbook.jpg" 
+                                    alt="Jaridar Fashion Couture Design Sketchbook" 
+                                    width="736"
+                                    height="552"
+                                    className="w-full h-full object-cover"
                                     loading="lazy"
                                     decoding="async"
                                 />
-                                <div className="flex flex-col justify-center text-left">
-                                    <span className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-[#C2255C] tracking-tight leading-none">
-                                        JARIDAR
-                                    </span>
-                                    <span className="text-xs font-bold text-[#3B6FA0] uppercase tracking-[0.24em] lg:tracking-[0.26em] pt-0.5 lg:pt-1 leading-tight">
-                                        Fashion Couture
-                                    </span>
-                                </div>
                             </div>
                         </div>
 
@@ -1154,60 +1157,151 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* TESTIMONIALS */}
-            {/* TODO: Testimonials content will be replaced later */}
-            <section className="py-10 md:py-14 lg:py-16 bg-white border-b border-[#E5E7EB]" data-testid="testimonials-section">
+            {/* WHY JARIDAR */}
+            <section className="py-10 md:py-14 lg:py-16 bg-white border-b border-[#E5E7EB]" data-testid="why-jaridar-section">
                 <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
                     <SectionHeader 
-                        label="TESTIMONIALS" 
-                        title="What Our Customers Say" 
+                        label="THE JARIDAR DIFFERENCE" 
+                        title="Why Jaridar" 
+                        align="center"
                     />
 
-                    {/* 3 cards per row on desktop, horizontal swipe on mobile */}
-                    <div className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 items-stretch">
-                        {[
-                            {
-                                name: 'Priya S.',
-                                location: 'Mumbai',
-                                text: 'Absolutely in love with my designer lehenga! The craftsmanship is magnificent, and the fit was custom perfection.',
-                                rating: 5
-                            },
-                            {
-                                name: 'Ananya M.',
-                                location: 'Delhi',
-                                text: 'Found the perfect zari embroidered saree for my sister\'s wedding. The silk quality far exceeded my expectations!',
-                                rating: 5
-                            },
-                            {
-                                name: 'Kavita R.',
-                                location: 'Bangalore',
-                                text: 'Gorgeous fusion western gowns too! Love how Jaridar blends timeless heritage with modern chic silhouettes.',
-                                rating: 5
-                            }
-                        ].map((testimonial, i) => (
-                            <div 
-                                key={i} 
-                                className="flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-full"
-                            >
-                                <div className="space-y-3">
-                                    <div className="flex gap-1 text-[#3B6FA0]">
-                                        {[...Array(testimonial.rating)].map((_, j) => (
-                                            <Star key={j} size={15} className="fill-[#3B6FA0] text-[#3B6FA0]" />
-                                        ))}
-                                    </div>
-                                    <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed">
-                                        "{testimonial.text}"
-                                    </p>
-                                </div>
-                                <div className="mt-5 pt-3 border-t border-[#F3F4F6]">
-                                    <p className="font-heading text-sm font-semibold text-[#1F2937]">{testimonial.name}</p>
-                                    <p className="text-xs text-[#C2255C] font-medium uppercase tracking-wider">{testimonial.location}</p>
-                                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 max-w-6xl mx-auto">
+                        {/* 1. Custom Stitching & Designing */}
+                        <Link 
+                            to="/contact" 
+                            className="group bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-[#C2255C] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-start space-y-3.5 block"
+                        >
+                            <div className="w-11 h-11 rounded-xl bg-[#E8F0F8] text-[#3B6FA0] group-hover:bg-[#C2255C]/10 group-hover:text-[#C2255C] transition-colors flex items-center justify-center flex-shrink-0">
+                                <Scissors size={20} className="stroke-[1.75]" />
                             </div>
-                        ))}
+                            <div className="space-y-1.5 text-left">
+                                <h3 className="font-heading text-base md:text-lg font-bold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-snug">
+                                    Custom Stitching & Designing
+                                </h3>
+                                <p className="text-sm text-[#4B5563] leading-relaxed">
+                                    Outfits stitched and designed as per your style and fit.
+                                </p>
+                            </div>
+                        </Link>
+
+                        {/* 2. Reference Pictures Welcome */}
+                        <Link 
+                            to="/contact" 
+                            className="group bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-[#C2255C] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-start space-y-3.5 block"
+                        >
+                            <div className="w-11 h-11 rounded-xl bg-[#E8F0F8] text-[#3B6FA0] group-hover:bg-[#C2255C]/10 group-hover:text-[#C2255C] transition-colors flex items-center justify-center flex-shrink-0">
+                                <Camera size={20} className="stroke-[1.75]" />
+                            </div>
+                            <div className="space-y-1.5 text-left">
+                                <h3 className="font-heading text-base md:text-lg font-bold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-snug">
+                                    Reference Pictures Welcome
+                                </h3>
+                                <p className="text-sm text-[#4B5563] leading-relaxed">
+                                    Share your idea or reference photos, we make it for you.
+                                </p>
+                            </div>
+                        </Link>
+
+                        {/* 3. Visit Our Wakad Boutique */}
+                        <Link 
+                            to="/our-stores" 
+                            className="group bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-[#C2255C] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-start space-y-3.5 block"
+                        >
+                            <div className="w-11 h-11 rounded-xl bg-[#E8F0F8] text-[#3B6FA0] group-hover:bg-[#C2255C]/10 group-hover:text-[#C2255C] transition-colors flex items-center justify-center flex-shrink-0">
+                                <Store size={20} className="stroke-[1.75]" />
+                            </div>
+                            <div className="space-y-1.5 text-left">
+                                <h3 className="font-heading text-base md:text-lg font-bold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-snug">
+                                    Visit Our Wakad Boutique
+                                </h3>
+                                <p className="text-sm text-[#4B5563] leading-relaxed">
+                                    Come see fabrics and designs in person.
+                                </p>
+                            </div>
+                        </Link>
+
+                        {/* 4. Made for Every Occasion */}
+                        <Link 
+                            to="/shop" 
+                            className="group bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-[#C2255C] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-start space-y-3.5 block"
+                        >
+                            <div className="w-11 h-11 rounded-xl bg-[#E8F0F8] text-[#3B6FA0] group-hover:bg-[#C2255C]/10 group-hover:text-[#C2255C] transition-colors flex items-center justify-center flex-shrink-0">
+                                <Sparkles size={20} className="stroke-[1.75]" />
+                            </div>
+                            <div className="space-y-1.5 text-left">
+                                <h3 className="font-heading text-base md:text-lg font-bold text-[#1F2937] group-hover:text-[#C2255C] transition-colors leading-snug">
+                                    Made for Every Occasion
+                                </h3>
+                                <p className="text-sm text-[#4B5563] leading-relaxed">
+                                    Casual, festive, party and wedding wear.
+                                </p>
+                            </div>
+                        </Link>
                     </div>
                 </div>
             </section>
+
+            {/* CLIENT EDITS */}
+            {(() => {
+                const activeClientReviews = (clientReviews || []).filter(
+                    (c) => c && typeof c.review === 'string' && c.review.trim().length > 0
+                );
+                if (activeClientReviews.length === 0) return null;
+
+                return (
+                    <section className="py-10 md:py-14 lg:py-16 bg-white border-b border-[#E5E7EB]" data-testid="client-edits-section">
+                        <div className="w-full px-4 sm:px-6 md:px-8 xl:px-[50px]">
+                            <SectionHeader 
+                                label="CLIENT DIARIES" 
+                                title="Client Edits" 
+                                align="center" 
+                            />
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch">
+                                {activeClientReviews.map((item, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className="bg-white p-6 sm:p-7 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-[#C2255C] hover:shadow-md transition-all flex flex-col justify-between h-full"
+                                    >
+                                        <div className="space-y-3">
+                                            {item.photo && item.photo.trim() !== '' && (
+                                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#C2255C]/30 mb-2">
+                                                    <img 
+                                                        src={item.photo} 
+                                                        alt={item.name} 
+                                                        className="w-full h-full object-cover" 
+                                                        loading="lazy" 
+                                                        decoding="async" 
+                                                    />
+                                                </div>
+                                            )}
+                                            <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed">
+                                                "{item.review.trim()}"
+                                            </p>
+                                        </div>
+                                        <div className="mt-5 pt-4 border-t border-[#F3F4F6] flex items-center justify-between">
+                                            <div>
+                                                <p className="font-heading text-sm md:text-base font-bold text-[#1F2937]">
+                                                    {item.name}
+                                                </p>
+                                                {item.city && item.city.trim() !== '' && (
+                                                    <p className="text-xs text-[#C2255C] font-semibold uppercase tracking-wider">
+                                                        {item.city}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="w-9 h-9 rounded-full bg-[#FBF0EC] text-[#C2255C] font-heading font-bold text-sm flex items-center justify-center flex-shrink-0">
+                                                {item.name ? item.name.charAt(0).toUpperCase() : 'J'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                );
+            })()}
 
             {/* INSTAGRAM (White Section) */}
             <section className="bg-white border-b border-[#E5E7EB] py-5 sm:py-6" data-testid="instagram-section">

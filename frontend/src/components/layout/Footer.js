@@ -147,7 +147,6 @@ export const Footer = () => {
                         </h4>
                         <ul className="space-y-2 text-sm text-[#4B5563]">
                             <li><Link to="/shop?category=ethnic" className="hover:text-[#C2255C] transition-colors">Ethnic Wear</Link></li>
-                            <li><Link to="/shop?category=traditional" className="hover:text-[#C2255C] transition-colors">Traditional Wear</Link></li>
                             <li><Link to="/shop?category=western" className="hover:text-[#C2255C] transition-colors">Western Wear</Link></li>
                             <li><Link to="/shop?filter=new" className="hover:text-[#C2255C] transition-colors">New Arrivals</Link></li>
                         </ul>

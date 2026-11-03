@@ -336,6 +336,12 @@ const ShopPage = () => {
                                 <span className="text-rose capitalize font-medium">{getLabel('category', category)}</span>
                             </>
                         )}
+                        {!category && product_type && (
+                            <>
+                                <span className="breadcrumb-separator">/</span>
+                                <span className="text-rose capitalize font-medium">{product_type.split(',').map(p => getLabel('product_type', p.trim())).join(', ')}</span>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -349,6 +355,7 @@ const ShopPage = () => {
                          currentCategory ? currentCategory.name : 
                          featured ? 'Featured Collection' :
                          isNew ? 'New Arrivals' :
+                         product_type ? product_type.split(',').map(p => getLabel('product_type', p.trim())).join(', ') :
                          'All Products'}
                     </h1>
                     <p className="text-xs text-[#4B5563] uppercase tracking-wider">{sortedProducts.length} Products Available</p>
