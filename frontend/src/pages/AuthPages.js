@@ -39,9 +39,10 @@ const LoginPage = () => {
             {/* Left Panel - Image */}
             <div className="hidden lg:block lg:w-1/2 relative">
                 <img 
-                    src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200"
-                    alt="Fashion"
-                    className="w-full h-full object-cover"
+                    src="/images/categories/ethnic-wear/ethnic-02-fuchsia-kurta-set-web.jpg"
+                    alt="Jaridar Fuchsia Kurta Set"
+                    style={{ objectFit: 'cover', objectPosition: 'top' }}
+                    className="w-full h-full object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-charcoal/50 to-transparent"></div>
                 <div className="absolute bottom-20 left-12 text-white max-w-md">
@@ -318,9 +319,10 @@ const RegisterPage = () => {
             {/* Right Panel - Image */}
             <div className="hidden lg:block lg:w-1/2 relative">
                 <img 
-                    src="https://images.unsplash.com/photo-1594463750939-ebb28c3f7f75?w=1200"
-                    alt="Fashion"
-                    className="w-full h-full object-cover"
+                    src="/images/categories/ethnic-wear/ethnic-02-fuchsia-kurta-set-web.jpg"
+                    alt="Jaridar Fuchsia Kurta Set"
+                    style={{ objectFit: 'cover', objectPosition: 'top' }}
+                    className="w-full h-full object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-l from-charcoal/50 to-transparent"></div>
                 <div className="absolute bottom-20 right-12 text-white max-w-md text-right">

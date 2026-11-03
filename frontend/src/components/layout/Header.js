@@ -472,7 +472,7 @@ export const Header = () => {
                                             {activeMenu.label}
                                         </h3>
                                         <span className="text-xs text-[#6B7280]">
-                                            ({activeMenu.items.length} items)
+                                            ({(activeMenu.items || []).filter(item => !item.hidden).length} items)
                                         </span>
                                     </div>
                                     <Link
@@ -494,7 +494,7 @@ export const Header = () => {
                                             : 'grid-cols-2'
                                     }`}
                                 >
-                                    {activeMenu.items.map((subItem, idx) => (
+                                    {(activeMenu.items || []).filter(item => !item.hidden).map((subItem, idx) => (
                                         <Link
                                             key={idx}
                                             to={subItem.url}
@@ -606,7 +606,7 @@ export const Header = () => {
                                                         : 'space-y-1'
                                                 }`}
                                             >
-                                                {menu.items.map((subItem, idx) => (
+                                                {(menu.items || []).filter(item => !item.hidden).map((subItem, idx) => (
                                                     <Link
                                                         key={idx}
                                                         to={subItem.url}

@@ -17,16 +17,16 @@ export const MENU_CONFIG = [
             { label: 'Dresses & Gowns', url: '/shop?product_type=dresses,gowns,shirt-dresses' },
             { label: 'Co-ord Sets', url: '/shop?product_type=co-ord-sets' },
             { label: 'Tops & Shirts', url: '/shop?product_type=tops,crop-tops,shirts' },
-            { label: 'Trousers & Pants', url: '/shop?product_type=pants,palazzo-pants' },
+            { label: 'Palazzo & Pant Sets', url: '/shop?search=pants|palazzo' },
             { label: 'Kurta & Suits', url: '/shop?product_type=kurta-sets,salwar-suits' },
-            { label: 'Party Wear', url: '/shop?style=party-wear' },
+            { label: 'Party Wear', url: '/shop?category=party-wear' },
             { label: 'Festive Collection', url: '/shop?style=festive-wear' },
             { label: 'Custom Couture', url: '/contact' },
             { label: 'Designer Blouses', url: '/shop?product_type=blouses' },
             { label: 'Shrugs & Jackets', url: '/shop?product_type=jackets,waistcoats' },
-            { label: 'One-Piece Dresses', url: '/shop?product_type=one-piece-dresses' },
-            { label: 'Fusion Wear', url: '/shop?style=fusion-wear' },
-            { label: 'Exclusive Jaridar Collection', url: '/shop?style=exclusive-jaridar-collection', highlight: true }
+            { label: 'One-Piece Dresses', url: '/shop?product_type=dresses,maxi-dresses,mini-dresses,midi-dresses,wrap-dresses,shirt-dresses,jumpsuits' },
+            { label: 'Fusion Wear', url: '/shop?style=kaftan-style,peplum' },
+            { label: 'Exclusive Jaridar Collection', url: '/shop?featured=true', highlight: true }
         ]
     },
     {
@@ -59,12 +59,12 @@ export const MENU_CONFIG = [
         items: [
             { label: 'Just Arrived', url: '/shop?filter=new' },
             { label: 'Latest Collection', url: '/shop?filter=new&sort=newest' },
-            { label: 'Trending Now', url: '/shop?featured=true' },
+            { label: 'Trending Now', url: '/shop?featured=true', hidden: true },
             { label: 'New Season Styles', url: '/shop?filter=new' },
             { label: 'Latest Co-ord Sets', url: '/shop?filter=new&product_type=co-ord-sets' },
             { label: 'New Dresses & Gowns', url: '/shop?filter=new&product_type=dresses,gowns,shirt-dresses' },
             { label: 'New Festive Collection', url: '/shop?filter=new&style=festive-wear' },
-            { label: 'New Statement Pieces', url: '/shop?filter=new&featured=true' },
+            { label: 'New Statement Pieces', url: '/shop?filter=new&featured=true', hidden: true },
             { label: 'Explore What\'s New', url: '/shop?filter=new' }
         ]
     },
