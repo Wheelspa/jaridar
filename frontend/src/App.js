@@ -33,6 +33,7 @@ import OurStoresPage from "@/pages/OurStoresPage";
 import BlogPage from "@/pages/BlogPage";
 import BulkOrdersPage from "@/pages/BulkOrdersPage";
 import OffersPage from "@/pages/OffersPage";
+import { WhatsAppFloatingButton } from "@/components/common/WhatsAppFloatingButton";
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
                 </Routes>
               </main>
               <Footer />
+              <WhatsAppFloatingButton />
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

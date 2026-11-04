@@ -12,6 +12,8 @@ import { TryOnModal } from '../components/product/TryOnModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
 import { formatAttributeLabel } from '../lib/utils';
+import { buildWhatsAppLink } from '../config/contact';
+import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -255,6 +257,26 @@ const ProductDetailPage = () => {
             currency: 'INR',
             maximumFractionDigits: 0
         }).format(price);
+    };
+
+    const buildWhatsAppOrderLink = () => {
+        const isOutOfStock = !product?.stock || product.stock <= 0;
+        const greeting = isOutOfStock
+            ? 'Hi Jaridar Fashion Couture, is this product available?'
+            : 'Hi Jaridar Fashion Couture, I want to order this:';
+
+        const formattedPrice = product?.price != null ? Number(product.price).toLocaleString('en-IN') : '0';
+        const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+        const message = `${greeting}
+*${product?.name || ''}*
+Size: ${selectedSize || 'please confirm'}
+Colour: ${selectedColor || '-'}
+Quantity: ${quantity}
+Price: ₹${formattedPrice}
+Link: ${pageUrl}`;
+
+        return buildWhatsAppLink(message);
     };
 
     if (loading) {
@@ -556,6 +578,18 @@ const ProductDetailPage = () => {
                                     AI Preview
                                 </span>
                             </button>
+
+                            {/* Order on WhatsApp Button */}
+                            <a
+                                href={buildWhatsAppOrderLink()}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full py-3.5 px-4 rounded-md border-2 border-[#25D366] bg-white text-[#128C7E] hover:bg-[#25D366]/5 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer hover:border-[#128C7E]"
+                                data-testid="order-on-whatsapp-btn"
+                            >
+                                <WhatsAppIcon className="w-4 h-4 fill-[#25D366]" />
+                                <span>Order on WhatsApp</span>
+                            </a>
                         </div>
 
                         {/* Stock Status */}
