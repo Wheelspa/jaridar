@@ -134,6 +134,31 @@ const defaultCategories = [
     { id: 'festive-wear', name: 'Festive Wear', subcategories: ['Kaftans', 'Blouses', 'Waistcoats', 'Three-Piece Sets'], image: '/images/categories/festive/festive-01-multicolour-kaftan-drape-set-web.jpg', href: '/shop?category=festive-wear' }
 ];
 
+const CATEGORIES_CACHE_KEY = 'jaridar_home_categories_v1';
+const CATEGORIES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+const getInitialCategories = () => {
+    if (typeof window === 'undefined') return defaultCategories;
+    try {
+        const cached = localStorage.getItem(CATEGORIES_CACHE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (
+                parsed &&
+                parsed.timestamp &&
+                (Date.now() - parsed.timestamp < CATEGORIES_CACHE_TTL) &&
+                Array.isArray(parsed.data) &&
+                parsed.data.length > 0
+            ) {
+                return parsed.data;
+            }
+        }
+    } catch (e) {
+        // Fallback to static list on any error
+    }
+    return defaultCategories;
+};
+
 const SectionDivider = ({ align = "center" }) => (
     <div className={`flex items-center gap-2 my-3 ${align === "left" ? "justify-center lg:justify-start" : "justify-center"}`}>
         <div className="w-8 h-[1px] bg-[#3B6FA0]/40"></div>
@@ -163,11 +188,9 @@ const SectionHeader = ({ label, title, align = "center", rightAction = null }) =
 
 const HomePage = () => {
     const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState(defaultCategories);
+    const [categories, setCategories] = useState(getInitialCategories);
     const [prodLoading, setProdLoading] = useState(true);
     const [prodError, setProdError] = useState(false);
-    const [catLoading, setCatLoading] = useState(true);
-    const [catError, setCatError] = useState(false);
 
     // Hero Carousel state
     const [slides, setSlides] = useState(defaultHeroSlides);
@@ -609,23 +632,11 @@ const HomePage = () => {
     };
 
     const fetchCategoriesData = async () => {
-        setCatLoading(true);
-        setCatError(false);
         try {
-            const [catRes, attrRes] = await Promise.all([
-                axios.get(`${API}/categories`).catch(() => ({ data: [] })),
-                axios.get(`${API}/attributes?with_counts=true`).catch(() => ({ data: {} }))
-            ]);
-
-            const loadedCats = catRes.data && catRes.data.length > 0 ? catRes.data : defaultCategories;
-
-            // Map product counts by category value
-            const countMap = {};
-            if (attrRes.data && attrRes.data.category) {
-                attrRes.data.category.forEach(c => {
-                    countMap[c.value] = c.count || 0;
-                });
-            }
+            const catRes = await axios.get(`${API}/categories`);
+            const loadedCats = catRes.data && Array.isArray(catRes.data) && catRes.data.length > 0
+                ? catRes.data
+                : defaultCategories;
 
             const canonicalNames = {
                 'formal-wear': 'Formal Wear',
@@ -683,22 +694,20 @@ const HomePage = () => {
                     };
                 });
 
-            // Keep only the 7 official categories, ensure at least 1 product
+            // Keep only the 7 official categories
             const catMap = new Map();
             resolvedCats.forEach(cat => {
                 if (!OFFICIAL_ORDER.includes(cat.id)) return;
-                const count = countMap[cat.id] !== undefined ? countMap[cat.id] : 1;
-                if (count > 0 && !catMap.has(cat.id)) {
+                if (!catMap.has(cat.id)) {
                     catMap.set(cat.id, cat);
                 }
             });
 
-            // Ensure fallbacks for any missing official category with products
+            // Ensure fallbacks for any missing official category
             OFFICIAL_ORDER.forEach(id => {
                 if (!catMap.has(id)) {
                     const fallback = defaultCategories.find(c => c.id === id);
-                    const count = countMap[id] !== undefined ? countMap[id] : 1;
-                    if (fallback && count > 0) {
+                    if (fallback && !catMap.has(id)) {
                         catMap.set(id, fallback);
                     }
                 }
@@ -709,13 +718,20 @@ const HomePage = () => {
                 .map(id => catMap.get(id))
                 .filter(Boolean);
 
-            setCategories(sortedCats);
+            if (sortedCats.length > 0) {
+                setCategories(sortedCats);
+                try {
+                    localStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify({
+                        timestamp: Date.now(),
+                        data: sortedCats
+                    }));
+                } catch (e) {
+                    // Ignore localStorage quota errors
+                }
+            }
         } catch (error) {
-            console.error('Failed to fetch categories:', error);
-            setCatError(true);
-            setCategories(defaultCategories);
-        } finally {
-            setCatLoading(false);
+            console.warn('Failed to refresh categories in background:', error);
+            // Do NOT show error banner on Home page; keep existing static/cached tiles
         }
     };
 
@@ -953,25 +969,7 @@ const HomePage = () => {
                         title="Shop by Category" 
                     />
 
-                    {catLoading ? (
-                        <div className="flex flex-wrap justify-center -m-1.5 sm:-m-2 md:-m-2.5">
-                            {[1, 2, 3, 4].map((n) => (
-                                <div key={n} className="w-1/2 lg:w-1/4 p-1.5 sm:p-2 md:p-2.5 flex-none">
-                                    <div className="aspect-[3/4] bg-[#E5E7EB]/50 animate-pulse rounded-xl md:rounded-2xl border border-[#E5E7EB]" />
-                                </div>
-                            ))}
-                        </div>
-                    ) : catError || categories.length === 0 ? (
-                        <div className="text-center py-12 px-4 bg-white/70 rounded-xl border border-[#E5E7EB] max-w-md mx-auto">
-                            <p className="text-[#1F2937] text-base font-medium mb-4">Categories could not be loaded. Please try again.</p>
-                            <button 
-                                onClick={fetchCategoriesData}
-                                className="px-6 py-2.5 bg-[#C2255C] text-white text-sm uppercase tracking-wide font-semibold rounded-xl hover:bg-[#9C1D49] transition-colors shadow-xs"
-                            >
-                                Retry
-                            </button>
-                        </div>
-                    ) : (
+                    {categories && categories.length > 0 && (
                         <div className="flex flex-wrap justify-center -m-1.5 sm:-m-2 md:-m-2.5">
                             {categories.map((category) => {
                                 const editorialImg = categoryEditorialImages[category.id] || category.image;
