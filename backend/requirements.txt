@@ -30,8 +30,6 @@ fastapi==0.110.1
 
 flake8==7.3.0
 
-google-genai==2.32.0
-
 h11==0.16.0
 
 idna==3.11
