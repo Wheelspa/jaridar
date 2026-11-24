@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Lock, Eye } from 'lucide-react';
+import { ShieldCheck, Lock, Eye, Sparkles } from 'lucide-react';
 
 export default function PrivacyPolicyPage() {
     return (
@@ -37,6 +37,15 @@ export default function PrivacyPolicyPage() {
                     </h2>
                     <p className="text-[#4B5563] text-base leading-relaxed">
                         [Placeholder Text] We implement security measures to maintain the safety of your personal information. We do not sell, trade, or otherwise transfer your personally identifiable information to outside third parties.
+                    </p>
+                </div>
+
+                <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-charcoal flex items-center gap-3">
+                        <Sparkles className="text-rose" size={24} /> 4. AI Virtual Try-On ("Try Me On") Data Privacy
+                    </h2>
+                    <p className="text-[#4B5563] text-base leading-relaxed">
+                        When you use our "Try Me On" AI virtual fitting room, your uploaded photograph is processed strictly in-memory solely for generating your real-time garment preview. We never save, store, or log your personal photographs on our servers or databases. For image generation, the photograph is transmitted securely via encrypted API to our trusted technology partner, FASHN AI (third-party AI infrastructure provider), exclusively to perform the virtual drape session. Your photo is never used for AI model training or retained permanently.
                     </p>
                 </div>
             </div>

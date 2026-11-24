@@ -2117,6 +2117,7 @@ async def root():
 
 # Include router
 app.include_router(api_router)
+from tryon import router as tryon_router; app.include_router(tryon_router)
 
 # Mount public images directory for static serving
 images_dir = ROOT_DIR.parent / "frontend" / "public" / "images"
@@ -2143,6 +2144,7 @@ async def startup_event():
     await ensure_admin_user()
     await ensure_seed_attributes()
     await ensure_seed_site_content()
+    from tryon import start_tryon_background_tasks; start_tryon_background_tasks()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

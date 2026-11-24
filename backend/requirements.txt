@@ -138,3 +138,4 @@ uvicorn==0.25.0
 
 watchfiles==1.1.1
 
+httpx==0.28.1

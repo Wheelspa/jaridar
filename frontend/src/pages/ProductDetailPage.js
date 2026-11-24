@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingBag, Minus, Plus, Truck, RefreshCw, Shield, ChevronRight, Star, X, ChevronLeft, Search } from 'lucide-react';
+import { Heart, ShoppingBag, Minus, Plus, Truck, RefreshCw, Shield, ChevronRight, Star, X, ChevronLeft, Search, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { StarRating } from '../components/common/StarRating';
 import { ProductCard } from '../components/common/ProductCard';
+import { TryOnModal } from '../components/product/TryOnModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
 import { formatAttributeLabel } from '../lib/utils';
@@ -40,6 +41,16 @@ const ProductDetailPage = () => {
     const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    // Virtual Try-On State
+    const [tryOnConfig, setTryOnConfig] = useState({ enabled: false, price_inr: 15 });
+    const [isTryOnOpen, setIsTryOnOpen] = useState(false);
+
+    useEffect(() => {
+        axios.get(`${API}/tryon/config`)
+            .then(res => setTryOnConfig(res.data))
+            .catch(() => setTryOnConfig({ enabled: false, price_inr: 15 }));
+    }, []);
 
     const inWishlist = product ? isInWishlist(product.id) : false;
 
@@ -561,6 +572,29 @@ Link: ${pageUrl}`;
                                 </button>
                             </div>
 
+                            {/* Try Me On Button */}
+                            {tryOnConfig.enabled && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!isAuthenticated) {
+                                            toast.error('Please login to try on outfits with AI');
+                                            navigate('/login', { state: { from: `/product/${id}` } });
+                                            return;
+                                        }
+                                        setIsTryOnOpen(true);
+                                    }}
+                                    className="w-full py-3.5 px-4 rounded-md border-2 border-rose/30 bg-rose/5 hover:bg-rose/10 text-rose font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs hover:border-rose cursor-pointer"
+                                    data-testid="try-me-on-btn"
+                                >
+                                    <Sparkles size={16} className="text-rose animate-pulse" />
+                                    <span>Try Me On</span>
+                                    <span className="text-[10px] lowercase px-2 py-0.5 rounded-full bg-rose/10 text-rose font-medium border border-rose/20">
+                                        AI Preview • ₹{tryOnConfig.price_inr}
+                                    </span>
+                                </button>
+                            )}
+
                             {/* Order on WhatsApp Button */}
                             <a
                                 href={buildWhatsAppOrderLink()}
@@ -799,6 +833,15 @@ Link: ${pageUrl}`;
                     )}
                 </div>
             )}
+
+            {/* Virtual Try-On Modal */}
+            <TryOnModal
+                isOpen={isTryOnOpen}
+                onClose={() => setIsTryOnOpen(false)}
+                product={product}
+                isAuthenticated={isAuthenticated}
+                priceInr={tryOnConfig.price_inr}
+            />
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Scale, CheckCircle } from 'lucide-react';
+import { FileText, Scale, CheckCircle, Sparkles } from 'lucide-react';
 
 export default function TermsPage() {
     return (
@@ -37,6 +37,15 @@ export default function TermsPage() {
                     </h2>
                     <p className="text-[#4B5563] text-base leading-relaxed">
                         [Placeholder Text] All content included on this website, such as images, designs, logos, text, and graphics, is the property of Jaridar Fashion Couture and is protected by copyright laws.
+                    </p>
+                </div>
+
+                <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-charcoal flex items-center gap-3">
+                        <Sparkles className="text-rose" size={24} /> 4. AI Virtual Try-On ("Try Me On") Terms
+                    </h2>
+                    <p className="text-[#4B5563] text-base leading-relaxed">
+                        The "Try Me On" service provides an artificial intelligence (AI) generated visual representation to assist customers in previewing garments prior to ordering. The rendered output is an illustrative visual estimation. Because physical drape, texture, fit, and color reproduction can be affected by ambient lighting and screen calibrations, actual handcrafted couture garments may exhibit subtle natural variations from the AI preview. Users must only upload photos they have the legal right and consent to use.
                     </p>
                 </div>
             </div>
